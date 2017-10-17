@@ -17,3 +17,5 @@ traditional to choose a [Creative Commons][cc] license for this type of content.
 
 How should others cite your work? Don't forget to update the file `CITATION` in
 the root of your Git repo.
+
+edit
