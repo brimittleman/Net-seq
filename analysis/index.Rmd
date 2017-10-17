@@ -14,4 +14,4 @@ Specifically,
 [rmarkdown]: http://rmarkdown.rstudio.com/rmarkdown_websites.htm
 [rstudio]: https://www.rstudio.com/products/rstudio/download/preview/
 
-edit
+Click on this [link](test-analysis.Rmd) to see my results.
