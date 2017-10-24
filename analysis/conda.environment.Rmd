@@ -1,0 +1,60 @@
+---
+title: "Setting up Conda Environment"
+author: "Briana Mittleman"
+date: 2017-10-24
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+This file describes how I will set up a conda environment to ensure the code is reproducible. 
+
+**1. Start interactive session on midway2**
+```
+#log into midway2
+ssh brimittleman@midway2.rcc.uchicago.edu
+
+#on midway2 start an interactive session
+sinteractive  --partition=broadwl
+```
+
+**2. Create a conda computing environment**
+
+This environment was adapted from sebastianp79/dropseq_pipeline.  
+
+```
+module load Anaconda3
+
+conda env create --file /project2/gilad/briana/net_seq_pipeline/environment.yaml
+```
+
+To update the environment, you can run the following command:
+
+```
+conda env update --file /project2/gilad/briana/net_seq_pipeline/environment.yaml
+```
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
