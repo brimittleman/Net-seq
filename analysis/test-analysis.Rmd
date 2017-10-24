@@ -24,7 +24,33 @@ knitr::read_chunk("chunks.R")
 ```{r code-version, echo=FALSE, results='asis'}
 ```
 
-<!-- Add your analysis here -->
+
+**1. Start interactive session on midway2**
+```
+#log into midway2
+ssh brimittleman@midway2.rcc.uchicago.edu
+
+#on midway2 start an interactive session
+sinteractive  --partition=broadwl
+```
+
+**2. Create a conda computing environment**
+
+This environment was adapted from sebastianp79/dropseq_pipeline.  
+
+```
+module load Anaconda3
+
+conda env create --file /project2/gilad/briana/net_seq_pipeline/environment.yaml
+```
+
+To update the environment, you can run the following command:
+
+```
+conda env update --file /project2/gilad/briana/net_seq_pipeline/environment.yaml
+```
+
+
 
 ## Session information
 
