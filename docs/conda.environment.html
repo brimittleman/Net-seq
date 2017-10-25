@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-10-24</p>
+<p><strong>Last updated:</strong> 2017-10-25</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 13f7b6a</p>
+<p><strong>Code version:</strong> a396bc3</p>
 <p>This file describes how I will set up a conda environment to ensure the code is reproducible.</p>
 <p><strong>1. Start interactive session on midway2</strong></p>
 <pre><code>#log into midway2
@@ -331,6 +331,10 @@ sinteractive  --partition=broadwl</code></pre>
 conda env create --file /project2/gilad/briana/net_seq_pipeline/environment.yaml</code></pre>
 <p>To update the environment, you can run the following command:</p>
 <pre><code>conda env update --file /project2/gilad/briana/net_seq_pipeline/environment.yaml</code></pre>
+<p>To activate the environment:</p>
+<pre><code>source activate net-seq</code></pre>
+<p>To de-activate the environemtn:</p>
+<pre><code>source deactivate</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->

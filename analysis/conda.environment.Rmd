@@ -51,7 +51,15 @@ To update the environment, you can run the following command:
 conda env update --file /project2/gilad/briana/net_seq_pipeline/environment.yaml
 ```
 
+To activate the environment:
+```
+source activate net-seq
+```
 
+To de-activate the environemtn:
+```
+source deactivate
+```
 
 ## Session information
 
