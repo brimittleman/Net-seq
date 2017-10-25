@@ -1,0 +1,45 @@
+#comments taken from John's scqtl environment file
+# Conda configuration file to reproduce computing environment
+#
+# Create the conda environment:
+#
+# conda env create --file environment.yaml
+#
+# Update the conda environment:
+#
+# conda env update --file environment.yaml
+#
+# Activate the conda environment:
+#
+# source activate net-seq
+#
+# Deactivate the conda environment:
+#
+# source deactivate net-seq
+#
+# Resources:
+
+
+name:
+    net-seq
+channels:
+    - bioconda
+    - conda-forge
+    - jdblischak
+    - defaults
+    - r
+dependencies:
+    - python
+    - fastqc
+    - snakemake
+    - umi_tools
+    - STAR
+    - subread
+    - samtools
+    - r-base
+    - multiqc
+    - cutadapt
+    - r-dplyr
+    - r-ggplot2
+    - r-tidyr
+    - r-optparse
