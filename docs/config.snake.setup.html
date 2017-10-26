@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 7748ac5</p>
+<p><strong>Code version:</strong> e69f9a0</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <div id="set-up-config-file" class="section level3">
 <h3>Set up config file:</h3>
@@ -396,18 +396,43 @@ if not os.path.isdir(dir_log):
 <h2>Rules to add to my snake file</h2>
 <div id="rules-to-download-and-index-genome" class="section level3">
 <h3>Rules to download and index genome</h3>
-<p>This is from John’s cardioQTL snake file ``` rule download_genome: output: dir_genome + “Homo_sapiens.” + ensembl_genome +<br />
-“.dna_sm.chromosome.{chr}.fa.gz” params: chr = “{chr}”, build = ensembl_genome shell: “wget -O {output} {ensembl_ftp}Homo_sapiens.{params.build}.dna_sm.chromosome.{params.chr}.fa.gz”</p>
-<p>rule unzip_chromosome_fasta: input: dir_genome + “Homo_sapiens.” + ensembl_genome +<br />
-“.dna_sm.chromosome.{chr}.fa.gz” output: temp(dir_genome + “Homo_sapiens.” + ensembl_genome +<br />
-“.dna_sm.chromosome.{chr}.fa”) shell: “zcat {input} &gt; {output}”</p>
-<p>rule subread_index: input: expand(dir_genome + “Homo_sapiens.” + ensembl_genome +<br />
-“.dna_sm.chromosome.{chr}.fa”,<br />
-chr = chr_genes) output: dir_genome + ensembl_genome + “.reads” params: prefix = dir_genome + ensembl_genome shell: “subread-buildindex -o {params.prefix} {input}” ```</p>
-</div>
-<div id="cluster" class="section level3">
-<h3>Cluster</h3>
-<p>Will need to create a cluster.json file where I specify the memory for each of my rules <strong>come back to this</strong></p>
+<p>This is from John’s cardioQTL snake file</p>
+<pre><code>rule download_genome:
+    output: dir_genome + &quot;Homo_sapiens.&quot; + ensembl_genome + \
+            &quot;.dna_sm.chromosome.{chr}.fa.gz&quot;
+    params: chr = &quot;{chr}&quot;, build = ensembl_genome
+    shell: &quot;wget -O {output} {ensembl_ftp}Homo_sapiens.{params.build}.dna_sm.chromosome.{params.chr}.fa.gz&quot;
+
+rule unzip_chromosome_fasta:
+    input: dir_genome + &quot;Homo_sapiens.&quot; + ensembl_genome + \
+           &quot;.dna_sm.chromosome.{chr}.fa.gz&quot;
+    output: temp(dir_genome + &quot;Homo_sapiens.&quot; + ensembl_genome + \
+                 &quot;.dna_sm.chromosome.{chr}.fa&quot;)
+    shell: &quot;zcat {input} &gt; {output}&quot;
+
+rule subread_index:
+    input: expand(dir_genome + &quot;Homo_sapiens.&quot; + ensembl_genome + \
+                  &quot;.dna_sm.chromosome.{chr}.fa&quot;, \
+                  chr = chr_genes)
+    output: dir_genome + ensembl_genome + &quot;.reads&quot;
+    params: prefix = dir_genome + ensembl_genome
+    shell: &quot;subread-buildindex -o {params.prefix} {input}&quot;
+  ```
+
+###Fastqc rule  
+First add a path to the fastqc dir.
+</code></pre>
+<p>fastqc_dir = output + “fastqc/</p>
+<pre><code></code></pre>
+<p>rule fastqc: input: fastq + “{read_num}.fastq” output: fastqc_dir + “{read_num}_fastqc.html“, fastqc_dir +”{read_num}_fastqc.zip&quot; params: outdir = fastqc_dir shell: “fastqc -o {params.outdir} {input}”</p>
+<pre><code>
+###Cluster
+Will need to create a cluster.json file where I specify the memory for each of my rules
+
+Create for first 2 rules:
+</code></pre>
+<p>{ “<strong>default</strong>” : { “mem” : 2000, “n” : 1, “tasks” : 1, “name” : “{rule}-{wildcards}”, “logfile”: “log/snake-{rule}-{wildcards}-%j.out” },</p>
+<p>“subread_index” : { “mem” : 8000 }, “fastqc” : { “mem” : 8000 } } ```</p>
 </div>
 </div>
 <div id="session-information" class="section level2">
