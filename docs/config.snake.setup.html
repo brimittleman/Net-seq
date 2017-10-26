@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d6f45ef</p>
+<p><strong>Code version:</strong> 93f7b01</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <div id="set-up-config-file" class="section level3">
 <h3>Set up config file:</h3>
@@ -381,7 +381,13 @@ ensembl_genome = config[&quot;ensembl_genome&quot;]
 #Paths for data (end with forward slash)
 dir_proj=config[&quot;dir_proj&quot;]
 dir_data= dir_proj + &quot;data/&quot;
-fastq_dir= data + &quot;fastq/&quot;
+dir_genome= dir_proj + &quot;genome/&quot;
+output= dir_proj + &quot;output/&quot;
+fastq_dir= dir_data + &quot;fastq/&quot;
+fastqc_dir = output + &quot;fastqc/&quot;
+chr_genes = config[&quot;chr_genes&quot;]
+
+
 
 assert os.path.exists(dir_proj), &quot;Project directory exists&quot;
 
@@ -390,6 +396,15 @@ assert os.path.exists(dir_proj), &quot;Project directory exists&quot;
 dir_log = config[&quot;dir_log&quot;] 
 if not os.path.isdir(dir_log):
      os.mkdir(dir_log)
+     
+     
+#Specify chromosomes
+#
+# For quantifying gene expression
+chr_genes: [&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;,
+            &quot;10&quot;, &quot;11&quot;, &quot;12&quot;, &quot;13&quot;, &quot;14&quot;, &quot;15&quot;, &quot;16&quot;,
+            &quot;17&quot;, &quot;18&quot;, &quot;19&quot;, &quot;20&quot;, &quot;21&quot;, &quot;22&quot;,
+            &quot;X&quot;, &quot;Y&quot;, &quot;MT&quot;]
 </code></pre>
 </div>
 <div id="rules-to-add-to-my-snake-file" class="section level2">
@@ -432,6 +447,11 @@ rule subread_index:
         outdir = fastqc_dir
     shell:
         &quot;fastqc -o {params.outdir} {input}&quot;</code></pre>
+<p>Rule all:</p>
+<pre><code>rule all:
+    input:
+       fastqc_dir + &quot;SRR1575922_CUT_fastqc.html&quot;,
+       dir_genome + ensembl_genome + &quot;.reads&quot;</code></pre>
 </div>
 <div id="cluster" class="section level3">
 <h3>Cluster</h3>
