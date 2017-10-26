@@ -51,6 +51,14 @@ ensembl_archive: feb2014.archive.ensembl.org
 ensembl_rel: 75
 ensembl_genome: GRCh37.75
 
+#Specify chromosomes
+#
+# For quantifying gene expression
+chr_genes: ["1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "10", "11", "12", "13", "14", "15", "16",
+            "17", "18", "19", "20", "21", "22",
+            "X", "Y", "MT"]
+
 ```
 
 Make this file executable:  
@@ -111,15 +119,7 @@ assert os.path.exists(dir_proj), "Project directory exists"
 dir_log = config["dir_log"] 
 if not os.path.isdir(dir_log):
      os.mkdir(dir_log)
-     
-     
-#Specify chromosomes
-#
-# For quantifying gene expression
-chr_genes: ["1", "2", "3", "4", "5", "6", "7", "8", "9",
-            "10", "11", "12", "13", "14", "15", "16",
-            "17", "18", "19", "20", "21", "22",
-            "X", "Y", "MT"]
+
 
 ```
 
