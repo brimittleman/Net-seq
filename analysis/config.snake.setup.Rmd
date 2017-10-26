@@ -137,7 +137,7 @@ rule subread_index:
   ```
 
 ###Fastqc rule  
-First add a path to the fastqc dir.
+First add a path to the fastqc dir.  
 
 ```
 fastqc_dir = output + "fastqc/
@@ -155,10 +155,10 @@ rule fastqc:
         "fastqc -o {params.outdir} {input}"
 ```
 
-###Cluster
-Will need to create a cluster.json file where I specify the memory for each of my rules
+###Cluster  
+Will need to create a cluster.json file where I specify the memory for each of my rules   
 
-Create for first 2 rules:
+Create for first 2 rules:  
 
 ```
 {
