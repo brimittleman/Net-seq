@@ -10,4 +10,6 @@ This is the workflowr site for my Net-seq project. I will have all of the data, 
 ####Getting Started  
 
 * [Setting up conda environment](conda.environment.html) 
-* [Setting up config and snake files](config.snake.setup.html)
+* [Setting up config and snake files](config.snake.setup.html)  
+
+
