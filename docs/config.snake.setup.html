@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> baeec88</p>
+<p><strong>Code version:</strong> cbc9a59</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <div id="set-up-config-file" class="section level3">
 <h3>Set up config file:</h3>
@@ -340,6 +340,14 @@ dir_log: log/
 ensembl_archive: feb2014.archive.ensembl.org
 ensembl_rel: 75
 ensembl_genome: GRCh37.75
+
+#Specify chromosomes
+#
+# For quantifying gene expression
+chr_genes: [&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;,
+            &quot;10&quot;, &quot;11&quot;, &quot;12&quot;, &quot;13&quot;, &quot;14&quot;, &quot;15&quot;, &quot;16&quot;,
+            &quot;17&quot;, &quot;18&quot;, &quot;19&quot;, &quot;20&quot;, &quot;21&quot;, &quot;22&quot;,
+            &quot;X&quot;, &quot;Y&quot;, &quot;MT&quot;]
 </code></pre>
 <p>Make this file executable:</p>
 <pre><code>chmod 700 config.yaml</code></pre>
@@ -396,15 +404,7 @@ assert os.path.exists(dir_proj), &quot;Project directory exists&quot;
 dir_log = config[&quot;dir_log&quot;] 
 if not os.path.isdir(dir_log):
      os.mkdir(dir_log)
-     
-     
-#Specify chromosomes
-#
-# For quantifying gene expression
-chr_genes: [&quot;1&quot;, &quot;2&quot;, &quot;3&quot;, &quot;4&quot;, &quot;5&quot;, &quot;6&quot;, &quot;7&quot;, &quot;8&quot;, &quot;9&quot;,
-            &quot;10&quot;, &quot;11&quot;, &quot;12&quot;, &quot;13&quot;, &quot;14&quot;, &quot;15&quot;, &quot;16&quot;,
-            &quot;17&quot;, &quot;18&quot;, &quot;19&quot;, &quot;20&quot;, &quot;21&quot;, &quot;22&quot;,
-            &quot;X&quot;, &quot;Y&quot;, &quot;MT&quot;]
+
 </code></pre>
 </div>
 <div id="rules-to-add-to-my-snake-file" class="section level2">
