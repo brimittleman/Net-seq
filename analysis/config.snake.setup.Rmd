@@ -1,0 +1,148 @@
+---
+title: "Set up my Snake and Config files "
+author: "Briana Mittleman"
+date: 2016-10-26
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+
+The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.  
+
+###Set up config file:
+
+```
+# Snakemake configuration file
+
+# Specify paths to data files
+
+# Paths must end with forward slash
+
+#project directory 
+dir_proj: /project2/gilad/briana/net_seq_pipeline/
+
+#directory with aditional scripts:
+scripts: /project2/gilad/briana/net_seq_pipeline/scripts/
+
+# Make sure to also update path for log files in cluster.json
+dir_log: log/
+
+# Specify Ensembl release for genome sequence and annotation
+# http://feb2014.archive.ensembl.org/index.html
+ensembl_archive: feb2014.archive.ensembl.org
+ensembl_rel: 75
+ensembl_genome: GRCh37.75
+
+```
+
+Make this file executable:  
+```
+chmod 700 config.yaml
+```
+
+###Set up snakefile:  
+
+```
+#Snakefile
+#
+#This file will run the net-seq pipeline from fastq files including assembling reference genome
+#
+#To configure the paths to data files and other settings, edit
+#config.yaml
+#
+#to configure job submission settings for cluster, edit
+#cluster.json and submit.snakemake.sh
+
+#to run on RCC midway2 use 'bash submit-snakemake.sh'
+
+
+import glob
+import os
+from snakemake.utils import R
+
+#Configuration -------------------------------------  
+
+
+configfile:  "config.yaml"
+
+
+#Specifu Ensembl release for genome sequence and annotation
+ensembl_archive = config["ensembl_archive"]
+ensembl_rel = config["ensembl_rel"]
+ensembl_ftp = "ftp://ftp.ensembl.org/pub/release-" + \
+              str(ensembl_rel) + \
+              "/fasta/homo_sapiens/dna/"
+ensembl_exons = "exons-ensembl-release-" + str(ensembl_rel) + ".saf"
+ensembl_genome = config["ensembl_genome"]
+
+#Paths for data (end with forward slash)
+dir_proj=config["dir_proj"]
+dir_data= dir_proj + "data/"
+fastq_dir= data + "fastq/"
+
+assert os.path.exists(dir_proj), "Project directory exists"
+
+#Directory to send log files. Needs to be created manually since it
+#is not a file created by a Snakemake rule.
+dir_log = config["dir_log"] 
+if not os.path.isdir(dir_log):
+     os.mkdir(dir_log)
+
+```
+
+
+##Rules to add to my snake file  
+
+###Rules to download and index genome  
+This is from John's cardioQTL snake file
+```
+rule download_genome:
+    output: dir_genome + "Homo_sapiens." + ensembl_genome + \
+            ".dna_sm.chromosome.{chr}.fa.gz"
+    params: chr = "{chr}", build = ensembl_genome
+    shell: "wget -O {output} {ensembl_ftp}Homo_sapiens.{params.build}.dna_sm.chromosome.{params.chr}.fa.gz"
+
+rule unzip_chromosome_fasta:
+    input: dir_genome + "Homo_sapiens." + ensembl_genome + \
+           ".dna_sm.chromosome.{chr}.fa.gz"
+    output: temp(dir_genome + "Homo_sapiens." + ensembl_genome + \
+                 ".dna_sm.chromosome.{chr}.fa")
+    shell: "zcat {input} > {output}"
+
+rule subread_index:
+    input: expand(dir_genome + "Homo_sapiens." + ensembl_genome + \
+                  ".dna_sm.chromosome.{chr}.fa", \
+                  chr = chr_genes)
+    output: dir_genome + ensembl_genome + ".reads"
+    params: prefix = dir_genome + ensembl_genome
+    shell: "subread-buildindex -o {params.prefix} {input}"
+  ```
+
+
+
+###Cluster
+Will need to create a cluster.json file where I specify the memory for each of my rules **come back to this**  
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
