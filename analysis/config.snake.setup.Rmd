@@ -112,7 +112,8 @@ if not os.path.isdir(dir_log):
 ##Rules to add to my snake file  
 
 ###Rules to download and index genome  
-This is from John's cardioQTL snake file
+This is from John's cardioQTL snake file  
+
 ```
 rule download_genome:
     output: dir_genome + "Homo_sapiens." + ensembl_genome + \
@@ -134,7 +135,7 @@ rule subread_index:
     output: dir_genome + ensembl_genome + ".reads"
     params: prefix = dir_genome + ensembl_genome
     shell: "subread-buildindex -o {params.prefix} {input}"
-  ```
+```
 
 ###Fastqc rule  
 First add a path to the fastqc dir.  
