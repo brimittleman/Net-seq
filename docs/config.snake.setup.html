@@ -313,11 +313,13 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-10-26</p>
+<p><strong>Last updated:</strong> 2017-11-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> cbc9a59</p>
+<p><strong>Code version:</strong> 9771fe6</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
+<p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
+<p>To test my snake file: <code>snakemake -np</code></p>
 <div id="set-up-config-file" class="section level3">
 <h3>Set up config file:</h3>
 <pre><code># Snakemake configuration file
@@ -447,6 +449,23 @@ rule subread_index:
         outdir = fastqc_dir
     shell:
         &quot;fastqc -o {params.outdir} {input}&quot;</code></pre>
+</div>
+<div id="unzip-fastqc" class="section level3">
+<h3>Unzip fastqc</h3>
+<p>Maybe I dont need to do this right now: This is code to maybe add later:</p>
+<pre><code>rule unzip:
+    input:
+        fastqc_dir + &quot;{read_num}_fastqc.zip&quot;
+    output:
+        fastqc_dir + &quot;{read_num}_fastqc.zip/fastqc_data.txt&quot;
+    params:
+        outdir = fastqc_dir
+    shell:
+        &quot;unzip -d {params.outdir} {input}&quot;</code></pre>
+</div>
+<div id="extract-umi-data" class="section level3">
+<h3>Extract umi data</h3>
+<p>This is the next step to figure out. I need to trim the primer and extract the barcode from the linker.</p>
 <p>Rule all:</p>
 <pre><code>rule all:
     input:
@@ -477,6 +496,10 @@ rule subread_index:
     }
 }</code></pre>
 <p>Full files are in my pipeline folder on midway</p>
+</div>
+<div id="run" class="section level3">
+<h3>Run</h3>
+<p>To run the snakefile, in the pipleline directory <code>scripts/submit-snakemake.sh</code></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
