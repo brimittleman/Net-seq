@@ -196,7 +196,52 @@ rule unzip:
 ```
 
 ###Extract umi data 
-This is the next step to figure out. I need to trim the primer and extract the barcode from the linker.  
+This is the next step to figure out. I need to trim the primer and extract the barcode from the linker.    
+
+Barcode DNA linker /5rApp/(N)6CTGTAGGCACCATCAAT/3ddC  
+
+Use UMI tools to extract first 6 for each read  
+
+
+info from help:  
+
+* need whitelist 
+
+```
+rule umi_create_whitelist:
+    input:
+        fastq_dir + "fastq_dir + "SRR1575922_CUT.fastq",
+    output:
+        output + "whitelist.txt"
+    params:
+        bc = "NNNNNN"
+    shell:
+        "umi_tools whitelist --stdin {input} --bc-pattern={params.bc} --extract-method=string --log2stderr > {output}"
+
+
+#add to rule all
+#output + "whitelist.txt"
+
+        
+```
+Just try to create whitelist first.  
+
+ERROR -CHECK LOG! 
+
+
+```
+rule umi_extract_bc_and_umi:
+    input:
+        r1 = fastq + "{read_num}_.fastq",
+    output:
+        r1_ext = temp(fastq_extr + "combined_r1_extracted.fastq.gz"),
+        r2_ext = fastq_extr + "combined_r2_extracted.fastq.gz"
+    params:
+        bc = barcode
+    shell:
+        "umi_tools extract --bc-pattern={NNNNNN} --stdin {input.r1} --stdout {output.r1_ext} --read2-in {input.r2} --read2-out={output.r2_ext}  --error-correct-cell --filter-cell-barcode --whitelist={input.wl}"
+```    
+
 
 
 
@@ -242,6 +287,8 @@ Full files are in my pipeline folder on midway
 
 To run the snakefile, in the pipleline directory
 ``` scripts/submit-snakemake.sh ```
+to check running jobs:
+``` squeue -user=brimittleman```  
 
 
 ## Session information
