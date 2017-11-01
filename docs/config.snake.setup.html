@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 057c560</p>
+<p><strong>Code version:</strong> 50638e9</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -480,15 +480,14 @@ rule subread_index:
     params:
         bc = &quot;NNNNNN&quot;
     shell:
-        &quot;umi_tools whitelist --stdin {input} --bc-pattern={params.bc} --extract-method=string --log2stderr &gt; {output}&quot;
+        &quot;umi_tools whitelist -I {input} --bc-pattern={params.bc} -S {output}&quot;
 
 
 #add to rule all
 #output + &quot;whitelist.txt&quot;
 
         </code></pre>
-<p>Just try to create whitelist first.</p>
-<p>ERROR -CHECK LOG!</p>
+<p><strong>Problem- cant use this with no cell indicator</strong> Maybe I dont need this…</p>
 <pre><code>rule umi_extract_bc_and_umi:
     input:
         r1 = fastq + &quot;{read_num}_.fastq&quot;,
