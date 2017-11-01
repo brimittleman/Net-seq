@@ -216,7 +216,7 @@ rule umi_create_whitelist:
     params:
         bc = "NNNNNN"
     shell:
-        "umi_tools whitelist --stdin {input} --bc-pattern={params.bc} --extract-method=string --log2stderr > {output}"
+        "umi_tools whitelist -I {input} --bc-pattern={params.bc} -S {output}"
 
 
 #add to rule all
@@ -224,9 +224,8 @@ rule umi_create_whitelist:
 
         
 ```
-Just try to create whitelist first.  
-
-ERROR -CHECK LOG! 
+**Problem- cant use this with no cell indicator**
+Maybe I dont need this...
 
 
 ```
