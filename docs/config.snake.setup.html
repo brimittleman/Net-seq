@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 9771fe6</p>
+<p><strong>Code version:</strong> 057c560</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -466,6 +466,39 @@ rule subread_index:
 <div id="extract-umi-data" class="section level3">
 <h3>Extract umi data</h3>
 <p>This is the next step to figure out. I need to trim the primer and extract the barcode from the linker.</p>
+<p>Barcode DNA linker /5rApp/(N)6CTGTAGGCACCATCAAT/3ddC</p>
+<p>Use UMI tools to extract first 6 for each read</p>
+<p>info from help:</p>
+<ul>
+<li>need whitelist</li>
+</ul>
+<pre><code>rule umi_create_whitelist:
+    input:
+        fastq_dir + &quot;fastq_dir + &quot;SRR1575922_CUT.fastq&quot;,
+    output:
+        output + &quot;whitelist.txt&quot;
+    params:
+        bc = &quot;NNNNNN&quot;
+    shell:
+        &quot;umi_tools whitelist --stdin {input} --bc-pattern={params.bc} --extract-method=string --log2stderr &gt; {output}&quot;
+
+
+#add to rule all
+#output + &quot;whitelist.txt&quot;
+
+        </code></pre>
+<p>Just try to create whitelist first.</p>
+<p>ERROR -CHECK LOG!</p>
+<pre><code>rule umi_extract_bc_and_umi:
+    input:
+        r1 = fastq + &quot;{read_num}_.fastq&quot;,
+    output:
+        r1_ext = temp(fastq_extr + &quot;combined_r1_extracted.fastq.gz&quot;),
+        r2_ext = fastq_extr + &quot;combined_r2_extracted.fastq.gz&quot;
+    params:
+        bc = barcode
+    shell:
+        &quot;umi_tools extract --bc-pattern={NNNNNN} --stdin {input.r1} --stdout {output.r1_ext} --read2-in {input.r2} --read2-out={output.r2_ext}  --error-correct-cell --filter-cell-barcode --whitelist={input.wl}&quot;</code></pre>
 <p>Rule all:</p>
 <pre><code>rule all:
     input:
@@ -499,7 +532,7 @@ rule subread_index:
 </div>
 <div id="run" class="section level3">
 <h3>Run</h3>
-<p>To run the snakefile, in the pipleline directory <code>scripts/submit-snakemake.sh</code></p>
+<p>To run the snakefile, in the pipleline directory <code>scripts/submit-snakemake.sh</code> to check running jobs: <code>squeue -user=brimittleman</code></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
