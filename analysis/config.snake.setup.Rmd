@@ -326,10 +326,11 @@ Create for first 2 rules:
 Full files are in my pipeline folder on midway  
 
 ###Run
-
-To run the snakefile, in the pipleline directory
+To check the snakefile:  
+```snakefile -np```
+To run the snakefile, in the pipleline directory:  
 ``` scripts/submit-snakemake.sh ```
-to check running jobs:
+to check running jobs:  
 ``` squeue -user=brimittleman```  
 
 
