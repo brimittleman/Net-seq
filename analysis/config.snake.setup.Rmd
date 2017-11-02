@@ -218,17 +218,59 @@ Need to tell it which samples to use:
 samples = set(glob_wildcards(fastq_dir + "{samples}.fastq").samples)
 
 ```
+###Align with Subread-subjunc 
+
+
+```
+rule subjunc:
+    input: 
+        read = fastq_extr + "{samples}_extracted.fastq",
+        index = dir_genome + ensembl_genome + ".reads"
+    output: 
+        dir_bam + "{samples}.bam"
+    params: 
+        prefix = dir_genome + ensembl_genome
+    threads: 8
+    shell: "subjunc -i {params.prefix} -r {input.read} -T {threads} > {output}"
+
+rule sort_bam:
+    input: 
+        dir_bam + "{samples}.bam"
+    output:
+        dir_bam + "{samples}-sort.bam"
+    shell: "samtools sort -o {output} {input}"   
+    
+    
+rule index_bam:
+    input: 
+        dir_bam + "{samples}-sort.bam"
+    output:
+        dir_bam + "{samples}-sort.bam.bai"
+    shell: "samtools index {input}"
+    
+#add folder
+dir_bam= dir_data + "bam/"
+
+
+```
 
 
 
-Rule all:
+
+
+
+###Rule all:
 
 ```
 rule all:
     input:
        expand(fastqc_dir + "{samples}_fastqc.html", samples = samples),	
        dir_genome + ensembl_genome + ".reads",
-       expand(fastq_extr + "{samples}_extracted.fastq", samples = samples)
+       expand(fastq_extr + "{samples}_extracted.fastq", samples = samples),
+       expand(dir_bam + "{samples}.bam", samples = samples),
+       expand(dir_bam + "{samples}-sort.bam", samples= samples),
+       expand(dir_bam + "{samples}-sort.bam.bai", samples=samples)
+       
 ```
 
 ###Cluster  
@@ -253,8 +295,18 @@ Create for first 2 rules:
     },
 "fastqc" :
     {
-	    "mem" : 8000
+	          "mem" : 8000
     }
+"subjunc" :
+    {
+	         "mem": 16000,
+	         "tasks" : 8
+    },
+"sort_bam" :
+    {
+	         "mem": 8000
+    }
+
 }
 ```
 
