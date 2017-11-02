@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-02</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 6aa3c95</p>
+<p><strong>Code version:</strong> d88b2b3</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -480,12 +480,51 @@ rule subread_index:
 <p>Need to tell it which samples to use:</p>
 <pre><code>samples = set(glob_wildcards(fastq_dir + &quot;{samples}.fastq&quot;).samples)
 </code></pre>
-<p>Rule all:</p>
+</div>
+<div id="align-with-subread-subjunc" class="section level3">
+<h3>Align with Subread-subjunc</h3>
+<pre><code>rule subjunc:
+    input: 
+        read = fastq_extr + &quot;{samples}_extracted.fastq&quot;,
+        index = dir_genome + ensembl_genome + &quot;.reads&quot;
+    output: 
+        dir_bam + &quot;{samples}.bam&quot;
+    params: 
+        prefix = dir_genome + ensembl_genome
+    threads: 8
+    shell: &quot;subjunc -i {params.prefix} -r {input.read} -T {threads} &gt; {output}&quot;
+
+rule sort_bam:
+    input: 
+        dir_bam + &quot;{samples}.bam&quot;
+    output:
+        dir_bam + &quot;{samples}-sort.bam&quot;
+    shell: &quot;samtools sort -o {output} {input}&quot;   
+    
+    
+rule index_bam:
+    input: 
+        dir_bam + &quot;{samples}-sort.bam&quot;
+    output:
+        dir_bam + &quot;{samples}-sort.bam.bai&quot;
+    shell: &quot;samtools index {input}&quot;
+    
+#add folder
+dir_bam= dir_data + &quot;bam/&quot;
+
+</code></pre>
+</div>
+<div id="rule-all" class="section level3">
+<h3>Rule all:</h3>
 <pre><code>rule all:
     input:
        expand(fastqc_dir + &quot;{samples}_fastqc.html&quot;, samples = samples), 
        dir_genome + ensembl_genome + &quot;.reads&quot;,
-       expand(fastq_extr + &quot;{samples}_extracted.fastq&quot;, samples = samples)</code></pre>
+       expand(fastq_extr + &quot;{samples}_extracted.fastq&quot;, samples = samples),
+       expand(dir_bam + &quot;{samples}.bam&quot;, samples = samples),
+       expand(dir_bam + &quot;{samples}-sort.bam&quot;, samples= samples),
+       expand(dir_bam + &quot;{samples}-sort.bam.bai&quot;, samples=samples)
+       </code></pre>
 </div>
 <div id="cluster" class="section level3">
 <h3>Cluster</h3>
@@ -507,8 +546,18 @@ rule subread_index:
     },
 &quot;fastqc&quot; :
     {
-        &quot;mem&quot; : 8000
+              &quot;mem&quot; : 8000
     }
+&quot;subjunc&quot; :
+    {
+             &quot;mem&quot;: 16000,
+             &quot;tasks&quot; : 8
+    },
+&quot;sort_bam&quot; :
+    {
+             &quot;mem&quot;: 8000
+    }
+
 }</code></pre>
 <p>Full files are in my pipeline folder on midway</p>
 </div>
