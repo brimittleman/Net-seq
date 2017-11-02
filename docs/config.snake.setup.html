@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-02</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d88b2b3</p>
+<p><strong>Code version:</strong> 82b609b</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -498,21 +498,36 @@ rule sort_bam:
     input: 
         dir_bam + &quot;{samples}.bam&quot;
     output:
-        dir_bam + &quot;{samples}-sort.bam&quot;
+        dir_sort + &quot;{samples}-sort.bam&quot;
     shell: &quot;samtools sort -o {output} {input}&quot;   
     
     
 rule index_bam:
     input: 
-        dir_bam + &quot;{samples}-sort.bam&quot;
+        dir_sort + &quot;{samples}-sort.bam&quot;
     output:
-        dir_bam + &quot;{samples}-sort.bam.bai&quot;
+        dir_sort + &quot;{samples}-sort.bam.bai&quot;
     shell: &quot;samtools index {input}&quot;
     
 #add folder
 dir_bam= dir_data + &quot;bam/&quot;
+dir_sort= dir_data + &quot;sort/&quot;
 
 </code></pre>
+</div>
+<div id="rule-dedup" class="section level3">
+<h3>Rule dedup</h3>
+<pre><code>rule dedup_bam:
+    input: 
+        bam = dir_sort + &quot;{samples}-sort.bam&quot;,
+        index = dir_sort + &quot;{samples}-sort.bam.bai&quot;
+    output:
+        dir_dedup + &quot;{samples}-sort.dedup.bam&quot;
+    shell: &quot;umi_tools dedup -I {input.bam} -S {output}&quot;
+    
+    
+#dir to add
+dir_dedup=dir_data + &quot;dedup/&quot;</code></pre>
 </div>
 <div id="rule-all" class="section level3">
 <h3>Rule all:</h3>
@@ -522,8 +537,9 @@ dir_bam= dir_data + &quot;bam/&quot;
        dir_genome + ensembl_genome + &quot;.reads&quot;,
        expand(fastq_extr + &quot;{samples}_extracted.fastq&quot;, samples = samples),
        expand(dir_bam + &quot;{samples}.bam&quot;, samples = samples),
-       expand(dir_bam + &quot;{samples}-sort.bam&quot;, samples= samples),
-       expand(dir_bam + &quot;{samples}-sort.bam.bai&quot;, samples=samples)
+       expand(dir_sort + &quot;{samples}-sort.bam&quot;, samples= samples),
+       expand(dir_sort + &quot;{samples}-sort.bam.bai&quot;, samples=samples),
+       expand(dir_dedup + &quot;{samples}-sort.dedup.bam&quot;, samples=samples)
        </code></pre>
 </div>
 <div id="cluster" class="section level3">
