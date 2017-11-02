@@ -237,27 +237,39 @@ rule sort_bam:
     input: 
         dir_bam + "{samples}.bam"
     output:
-        dir_bam + "{samples}-sort.bam"
+        dir_sort + "{samples}-sort.bam"
     shell: "samtools sort -o {output} {input}"   
     
     
 rule index_bam:
     input: 
-        dir_bam + "{samples}-sort.bam"
+        dir_sort + "{samples}-sort.bam"
     output:
-        dir_bam + "{samples}-sort.bam.bai"
+        dir_sort + "{samples}-sort.bam.bai"
     shell: "samtools index {input}"
     
 #add folder
 dir_bam= dir_data + "bam/"
+dir_sort= dir_data + "sort/"
 
 
 ```
 
+### Rule dedup
 
-
-
-
+```
+rule dedup_bam:
+    input: 
+        bam = dir_sort + "{samples}-sort.bam",
+        index = dir_sort + "{samples}-sort.bam.bai"
+    output:
+        dir_dedup + "{samples}-sort.dedup.bam"
+    shell: "umi_tools dedup -I {input.bam} -S {output}"
+    
+    
+#dir to add
+dir_dedup=dir_data + "dedup/"
+```
 
 ###Rule all:
 
@@ -268,8 +280,9 @@ rule all:
        dir_genome + ensembl_genome + ".reads",
        expand(fastq_extr + "{samples}_extracted.fastq", samples = samples),
        expand(dir_bam + "{samples}.bam", samples = samples),
-       expand(dir_bam + "{samples}-sort.bam", samples= samples),
-       expand(dir_bam + "{samples}-sort.bam.bai", samples=samples)
+       expand(dir_sort + "{samples}-sort.bam", samples= samples),
+       expand(dir_sort + "{samples}-sort.bam.bai", samples=samples),
+       expand(dir_dedup + "{samples}-sort.dedup.bam", samples=samples)
        
 ```
 
