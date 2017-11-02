@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-01</p>
+<p><strong>Last updated:</strong> 2017-11-02</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 50638e9</p>
+<p><strong>Code version:</strong> 6aa3c95</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -441,10 +441,10 @@ rule subread_index:
 <pre><code>fastqc_dir = output + &quot;fastqc/</code></pre>
 <pre><code>rule fastqc:
     input:
-        fastq + &quot;{read_num}.fastq&quot;
+        fastq + &quot;{samples}.fastq&quot;
     output:
-        fastqc_dir + &quot;{read_num}_fastqc.html&quot;,
-        fastqc_dir + &quot;{read_num}_fastqc.zip&quot;
+        fastqc_dir + &quot;{samples}_fastqc.html&quot;,
+        fastqc_dir + &quot;{samples}_fastqc.zip&quot;
     params:
         outdir = fastqc_dir
     shell:
@@ -455,9 +455,9 @@ rule subread_index:
 <p>Maybe I dont need to do this right now: This is code to maybe add later:</p>
 <pre><code>rule unzip:
     input:
-        fastqc_dir + &quot;{read_num}_fastqc.zip&quot;
+        fastqc_dir + &quot;{sample}_fastqc.zip&quot;
     output:
-        fastqc_dir + &quot;{read_num}_fastqc.zip/fastqc_data.txt&quot;
+        fastqc_dir + &quot;{sample}_fastqc.zip/fastqc_data.txt&quot;
     params:
         outdir = fastqc_dir
     shell:
@@ -468,41 +468,24 @@ rule subread_index:
 <p>This is the next step to figure out. I need to trim the primer and extract the barcode from the linker.</p>
 <p>Barcode DNA linker /5rApp/(N)6CTGTAGGCACCATCAAT/3ddC</p>
 <p>Use UMI tools to extract first 6 for each read</p>
-<p>info from help:</p>
-<ul>
-<li>need whitelist</li>
-</ul>
-<pre><code>rule umi_create_whitelist:
+<pre><code>rule umi_extract_umi:
     input:
-        fastq_dir + &quot;fastq_dir + &quot;SRR1575922_CUT.fastq&quot;,
+        fastq_dir + &quot;{samples}.fastq&quot;,
     output:
-        output + &quot;whitelist.txt&quot;
+        fastq_extr + &quot;{samples}_extracted.fastq&quot;,
     params:
-        bc = &quot;NNNNNN&quot;
+        bc = &quot;NNNNNN&quot;&quot;
     shell:
-        &quot;umi_tools whitelist -I {input} --bc-pattern={params.bc} -S {output}&quot;
-
-
-#add to rule all
-#output + &quot;whitelist.txt&quot;
-
-        </code></pre>
-<p><strong>Problem- cant use this with no cell indicator</strong> Maybe I dont need this…</p>
-<pre><code>rule umi_extract_bc_and_umi:
-    input:
-        r1 = fastq + &quot;{read_num}_.fastq&quot;,
-    output:
-        r1_ext = temp(fastq_extr + &quot;combined_r1_extracted.fastq.gz&quot;),
-        r2_ext = fastq_extr + &quot;combined_r2_extracted.fastq.gz&quot;
-    params:
-        bc = barcode
-    shell:
-        &quot;umi_tools extract --bc-pattern={NNNNNN} --stdin {input.r1} --stdout {output.r1_ext} --read2-in {input.r2} --read2-out={output.r2_ext}  --error-correct-cell --filter-cell-barcode --whitelist={input.wl}&quot;</code></pre>
+        &quot;umi_tools extract --bc-pattern={params.bc} --stdin {input} --stdout {output}&quot;</code></pre>
+<p>Need to tell it which samples to use:</p>
+<pre><code>samples = set(glob_wildcards(fastq_dir + &quot;{samples}.fastq&quot;).samples)
+</code></pre>
 <p>Rule all:</p>
 <pre><code>rule all:
     input:
-       fastqc_dir + &quot;SRR1575922_CUT_fastqc.html&quot;,
-       dir_genome + ensembl_genome + &quot;.reads&quot;</code></pre>
+       expand(fastqc_dir + &quot;{samples}_fastqc.html&quot;, samples = samples), 
+       dir_genome + ensembl_genome + &quot;.reads&quot;,
+       expand(fastq_extr + &quot;{samples}_extracted.fastq&quot;, samples = samples)</code></pre>
 </div>
 <div id="cluster" class="section level3">
 <h3>Cluster</h3>
