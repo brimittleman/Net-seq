@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-02</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 82b609b</p>
+<p><strong>Code version:</strong> 138bcb9</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -579,7 +579,10 @@ dir_dedup=dir_data + &quot;dedup/&quot;</code></pre>
 </div>
 <div id="run" class="section level3">
 <h3>Run</h3>
-<p>To run the snakefile, in the pipleline directory <code>scripts/submit-snakemake.sh</code> to check running jobs: <code>squeue -user=brimittleman</code></p>
+<p>To check the snakefile:<br />
+<code>snakefile -np</code> To run the snakefile, in the pipleline directory:<br />
+<code>scripts/submit-snakemake.sh</code> to check running jobs:<br />
+<code>squeue -user=brimittleman</code></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
