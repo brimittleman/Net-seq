@@ -271,6 +271,37 @@ rule dedup_bam:
 dir_dedup=dir_data + "dedup/"
 ```
 
+### Rule genomecov 
+
+I will use this bedtools command to visualize the densities of netseq reads. 
+
+http://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html  
+
+
+```
+bedtools genomecov -bg -5 -i fastq -g indexed genome
+```
+
+Flags to use:  
+
+* -bg : genome wide coverage in a bedgraph format  
+
+* -5 calculate coverage for the 5` end of the read 
+
+```
+
+rule genome_cov
+    input:
+       bam-dedup = dir_dedup + "{samples}-sort.dedup.bam"
+       genome = dir_genome + ensembl_genome + ".reads"
+    output:
+       dir_cov + ########
+    shell: "bedtools genomecov -bg -5 -i {input.bam-dedup} -g {input.genome}"
+
+
+``` 
+
+
 ###Rule all:
 
 ```
@@ -327,9 +358,9 @@ Full files are in my pipeline folder on midway
 
 ###Run
 To check the snakefile:  
-```snakefile -np```
+```snakefile -np```  
 To run the snakefile, in the pipleline directory:  
-``` scripts/submit-snakemake.sh ```
+``` scripts/submit-snakemake.sh ```  
 to check running jobs:  
 ``` squeue -user=brimittleman```  
 
