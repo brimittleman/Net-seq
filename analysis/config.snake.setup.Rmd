@@ -290,17 +290,27 @@ Flags to use:
 
 ```
 
-rule genome_cov
+rule genome_cov:
     input:
-       bam-dedup = dir_dedup + "{samples}-sort.dedup.bam"
+       bamdedup = dir_dedup + "{samples}-sort.dedup.bam",
        genome = dir_genome + ensembl_genome + ".reads"
     output:
-       dir_cov + ########
-    shell: "bedtools genomecov -bg -5 -i {input.bam-dedup} -g {input.genome}"
+       dir_cov + "{samples}-sort.dedup.cov.bed"
+    shell: "bedtools genomecov -bg -5 -ibam {input.bamdedup} -g {input.genome}"
 
 
+
+#dir to add
+dir_cov= dir_data + "cov/"
 ``` 
+Works when i run it for just the file:  
+```
+bedtools genomecov -bg -5 -ibam data/dedup/SRR1575922_CUT-sort.dedup.bam -g genome/GRCh37.75.reads
+```
 
+Problem:  
+
+This snake rule doesnt know where to write the output. I am not sure what file type this should be. 
 
 ###Rule all:
 
@@ -313,7 +323,8 @@ rule all:
        expand(dir_bam + "{samples}.bam", samples = samples),
        expand(dir_sort + "{samples}-sort.bam", samples= samples),
        expand(dir_sort + "{samples}-sort.bam.bai", samples=samples),
-       expand(dir_dedup + "{samples}-sort.dedup.bam", samples=samples)
+       expand(dir_dedup + "{samples}-sort.dedup.bam", samples=samples),
+       expand(dir_cov + "{samples}-sort.dedup.cov.bed", samples=samples)
        
 ```
 
