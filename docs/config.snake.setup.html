@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-04</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> a976926</p>
+<p><strong>Code version:</strong> 73fefa7</p>
 <p>The snake and config files are included in the net_seq_pipeline folder. This directory has the human reference genome and the conda environment file.</p>
 <p>before each session: <code>module load Anaconda3</code> <code>source activate net-seq</code></p>
 <p>To test my snake file: <code>snakemake -np</code></p>
@@ -540,15 +540,22 @@ dir_dedup=dir_data + &quot;dedup/&quot;</code></pre>
 <li><p>-5 calculate coverage for the 5` end of the read</p></li>
 </ul>
 <pre><code>
-rule genome_cov
+rule genome_cov:
     input:
-       bam-dedup = dir_dedup + &quot;{samples}-sort.dedup.bam&quot;
+       bamdedup = dir_dedup + &quot;{samples}-sort.dedup.bam&quot;,
        genome = dir_genome + ensembl_genome + &quot;.reads&quot;
     output:
-       dir_cov + ########
-    shell: &quot;bedtools genomecov -bg -5 -i {input.bam-dedup} -g {input.genome}&quot;
+       dir_cov + &quot;{samples}-sort.dedup.cov.bed&quot;
+    shell: &quot;bedtools genomecov -bg -5 -ibam {input.bamdedup} -g {input.genome}&quot;
 
-</code></pre>
+
+
+#dir to add
+dir_cov= dir_data + &quot;cov/&quot;</code></pre>
+<p>Works when i run it for just the file:</p>
+<pre><code>bedtools genomecov -bg -5 -ibam data/dedup/SRR1575922_CUT-sort.dedup.bam -g genome/GRCh37.75.reads</code></pre>
+<p>Problem:</p>
+<p>This snake rule doesnt know where to write the output. I am not sure what file type this should be.</p>
 </div>
 <div id="rule-all" class="section level3">
 <h3>Rule all:</h3>
@@ -560,7 +567,8 @@ rule genome_cov
        expand(dir_bam + &quot;{samples}.bam&quot;, samples = samples),
        expand(dir_sort + &quot;{samples}-sort.bam&quot;, samples= samples),
        expand(dir_sort + &quot;{samples}-sort.bam.bai&quot;, samples=samples),
-       expand(dir_dedup + &quot;{samples}-sort.dedup.bam&quot;, samples=samples)
+       expand(dir_dedup + &quot;{samples}-sort.dedup.bam&quot;, samples=samples),
+       expand(dir_cov + &quot;{samples}-sort.dedup.cov.bed&quot;, samples=samples)
        </code></pre>
 </div>
 <div id="cluster" class="section level3">
