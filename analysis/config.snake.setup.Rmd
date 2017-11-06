@@ -376,6 +376,13 @@ to check running jobs:
 ``` squeue -user=brimittleman```  
 
 
+###Things to Change  
+
+* Have final bam go to output folder  
+
+* Add rule to unzip  
+
+
 ## Session information
 
 <!-- Insert the session information into the document -->
