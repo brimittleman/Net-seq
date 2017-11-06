@@ -39,7 +39,7 @@ Sorted Bam files:
    8408777 YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.bam  
   12164551 YG-SP-NET1-Unk1_S6_R1_001-sort.bam  
 
-Deduplicated Bam files:
+Deduplicated Bam files:  
     51460 Undetermined_S0_R1_001-sort.dedup.bam  
    211005 YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.bam  
       205 YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.dedup.bam  
