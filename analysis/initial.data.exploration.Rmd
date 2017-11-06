@@ -1,0 +1,58 @@
+---
+title: "Initial Data Exploration Netseq1"
+author: "Brina Mittleman"
+date: 2017-11-06
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+I will use this analysis to look at inital data QC and points of interests.  
+
+First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.  
+
+
+Sorted Bam files:  
+  388305 Undetermined_S0_R1_001-sort.bam  
+   5111260 YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam  
+       688 YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam  
+   7775502 YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.bam  
+   8408777 YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.bam  
+  12164551 YG-SP-NET1-Unk1_S6_R1_001-sort.bam  
+
+Deduplicated Bam files:
+    51460 Undetermined_S0_R1_001-sort.dedup.bam  
+   211005 YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.bam  
+      205 YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.dedup.bam  
+   252074 YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.dedup.bam  
+   275790 YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.dedup.bam  
+   252305 YG-SP-NET1-Unk1_S6_R1_001-sort.dedup.bam  
+
+
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
