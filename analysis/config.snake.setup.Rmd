@@ -296,7 +296,7 @@ rule genome_cov:
        genome = dir_genome + ensembl_genome + ".reads"
     output:
        dir_cov + "{samples}-sort.dedup.cov.bed"
-    shell: "bedtools genomecov -bg -5 -ibam {input.bamdedup} -g {input.genome}"
+    shell: "bedtools genomecov -bg -5 -ibam {input.bamdedup} -g {input.genome}" > {output}
 
 
 
