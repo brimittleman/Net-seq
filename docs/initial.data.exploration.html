@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-06</p>
+<p><strong>Last updated:</strong> 2017-11-07</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 02d9593</p>
+<p><strong>Code version:</strong> b17ffea</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -334,6 +334,12 @@ shared across the workflowr files. -->
 252074 YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.dedup.bam<br />
 275790 YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.dedup.bam<br />
 252305 YG-SP-NET1-Unk1_S6_R1_001-sort.dedup.bam</p>
+<pre class="r"><code>sort=c(388305,5111260,688, 7775502,8408777, 12164551)
+dedup= c(51460, 211005, 205, 252074 ,275790,252305 )
+diff= sort - dedup
+# % change
+perc_diff= (sort-dedup)/sort
+UMI_diff= rbind(sort, dedup, diff, perc_diff)</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
