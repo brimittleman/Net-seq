@@ -48,6 +48,16 @@ Deduplicated Bam files:
    252305 YG-SP-NET1-Unk1_S6_R1_001-sort.dedup.bam  
 
 
+```{r}
+sort=c(388305,5111260,688, 7775502,8408777, 12164551)
+dedup= c(51460, 211005, 205, 252074 ,275790,252305 )
+diff= sort - dedup
+# % change
+perc_diff= (sort-dedup)/sort
+UMI_diff= rbind(sort, dedup, diff, perc_diff)
+
+
+```
 
 
 
