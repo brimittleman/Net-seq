@@ -316,30 +316,46 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-07</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> b17ffea</p>
+<p><strong>Code version:</strong> 5c076c0</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
-<p>Sorted Bam files:<br />
-388305 Undetermined_S0_R1_001-sort.bam<br />
-5111260 YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam<br />
-688 YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam<br />
-7775502 YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.bam<br />
-8408777 YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.bam<br />
-12164551 YG-SP-NET1-Unk1_S6_R1_001-sort.bam</p>
-<p>Deduplicated Bam files:<br />
-51460 Undetermined_S0_R1_001-sort.dedup.bam<br />
-211005 YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.bam<br />
-205 YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.dedup.bam<br />
-252074 YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.dedup.bam<br />
-275790 YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.dedup.bam<br />
-252305 YG-SP-NET1-Unk1_S6_R1_001-sort.dedup.bam</p>
-<pre class="r"><code>sort=c(388305,5111260,688, 7775502,8408777, 12164551)
-dedup= c(51460, 211005, 205, 252074 ,275790,252305 )
-diff= sort - dedup
-# % change
-perc_diff= (sort-dedup)/sort
-UMI_diff= rbind(sort, dedup, diff, perc_diff)</code></pre>
+<p><code>samtools view -c -f 4</code></p>
+<p>Mayer data: fastq: 137281933<br />
+sorted: 120124203 dedup: 2262387<br />
+dedup/sorted: 0.01883373</p>
+<pre class="r"><code>library= c(&quot;und&quot;, &quot;18486-dep&quot;, &quot;18486-tot&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;unk1&quot;, &quot;mayer&quot;)
+
+fastq= c(3102688, 45803834, 4006, 70776230, 77223987, 113160855, 137281933    )  
+
+sorted= c(1341658 ,28467038, 2748, 27528483, 27034413, 72740222,120124203 )
+
+dedup= c(320894, 1533069, 1105, 1776330,1919904,
+1870359,2262387    )
+
+perc= dedup/sorted
+
+reads_mapped_dedup= rbind(library, fastq, sorted, dedup,perc)
+
+reads_mapped_dedup</code></pre>
+<pre><code>        [,1]                [,2]                 [,3]               
+library &quot;und&quot;               &quot;18486-dep&quot;          &quot;18486-tot&quot;        
+fastq   &quot;3102688&quot;           &quot;45803834&quot;           &quot;4006&quot;             
+sorted  &quot;1341658&quot;           &quot;28467038&quot;           &quot;2748&quot;             
+dedup   &quot;320894&quot;            &quot;1533069&quot;            &quot;1105&quot;             
+perc    &quot;0.239177197169472&quot; &quot;0.0538541804033142&quot; &quot;0.402110625909753&quot;
+        [,4]                 [,5]                 [,6]                
+library &quot;18508-dep&quot;          &quot;18508-nondep&quot;       &quot;unk1&quot;              
+fastq   &quot;70776230&quot;           &quot;77223987&quot;           &quot;113160855&quot;         
+sorted  &quot;27528483&quot;           &quot;27034413&quot;           &quot;72740222&quot;          
+dedup   &quot;1776330&quot;            &quot;1919904&quot;            &quot;1870359&quot;           
+perc    &quot;0.0645269846507706&quot; &quot;0.0710170403921846&quot; &quot;0.0257128580113489&quot;
+        [,7]                
+library &quot;mayer&quot;             
+fastq   &quot;137281933&quot;         
+sorted  &quot;120124203&quot;         
+dedup   &quot;2262387&quot;           
+perc    &quot;0.0188337316169332&quot;</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
