@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-08</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 13b877e</p>
+<p><strong>Code version:</strong> e08a411</p>
 <p>In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the analysis.</p>
 <p>This code is used to create a text file that I can explore in R. It has a list of all of the UMIs used for the sample sorted by usage with the number of times each is used. This is run before the duduplication step.</p>
 <pre class="bash"><code>samtools view {file} | tr &quot;_&quot; &quot;\t&quot; | cut -f 2 | sort | uniq -c &gt; ../../output/UMI_{file}_stat.txt</code></pre>
@@ -516,6 +516,9 @@ ggseqlogo(UMI_18486_dep$umi, col_scheme=cs1)</code></pre>
 <p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-4.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggseqlogo(UMI_mayer$umi, col_scheme=cs1)</code></pre>
 <p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-5.png" width="672" style="display: block; margin: auto;" /> Does not look like we get overrepresentation of one letter at any particular location in the UMI.</p>
+<pre class="r"><code>test.seqs= c(&quot;ATGC&quot;, &quot;TAGC&quot;, &quot;ATGC&quot;, &quot;ATGC&quot;)
+ggseqlogo(test.seqs, col_scheme=cs1)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <!-- Insert the session information into the document -->
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.4.2 (2017-09-28)
