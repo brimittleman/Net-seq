@@ -316,12 +316,207 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-08</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 9a86ba3</p>
-<p>In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the anaysis.</p>
+<p><strong>Code version:</strong> 13b877e</p>
+<p>In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the analysis.</p>
 <p>This code is used to create a text file that I can explore in R. It has a list of all of the UMIs used for the sample sorted by usage with the number of times each is used. This is run before the duduplication step.</p>
 <pre class="bash"><code>samtools view {file} | tr &quot;_&quot; &quot;\t&quot; | cut -f 2 | sort | uniq -c &gt; ../../output/UMI_{file}_stat.txt</code></pre>
-<p>All files have been create. Will import to R when I can mount midway on my computer.<br />
-<!-- Insert the session information into the document --></p>
+<div id="packages" class="section level3">
+<h3>Packages</h3>
+<pre class="r"><code>library(&quot;tidyr&quot;)
+library(&quot;dplyr&quot;)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(&quot;ggplot2&quot;)
+library(&quot;seqLogo&quot;)</code></pre>
+<pre><code>Loading required package: grid</code></pre>
+<pre class="r"><code>library(&quot;Biostrings&quot;)</code></pre>
+<pre><code>Loading required package: BiocGenerics</code></pre>
+<pre><code>Loading required package: parallel</code></pre>
+<pre><code>
+Attaching package: &#39;BiocGenerics&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:parallel&#39;:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB</code></pre>
+<pre><code>The following objects are masked from &#39;package:dplyr&#39;:
+
+    combine, intersect, setdiff, union</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    IQR, mad, sd, var, xtabs</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    anyDuplicated, append, as.data.frame, cbind, colMeans,
+    colnames, colSums, do.call, duplicated, eval, evalq, Filter,
+    Find, get, grep, grepl, intersect, is.unsorted, lapply,
+    lengths, Map, mapply, match, mget, order, paste, pmax,
+    pmax.int, pmin, pmin.int, Position, rank, rbind, Reduce,
+    rowMeans, rownames, rowSums, sapply, setdiff, sort, table,
+    tapply, union, unique, unsplit, which, which.max, which.min</code></pre>
+<pre><code>Loading required package: S4Vectors</code></pre>
+<pre><code>Loading required package: stats4</code></pre>
+<pre><code>
+Attaching package: &#39;S4Vectors&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:dplyr&#39;:
+
+    first, rename</code></pre>
+<pre><code>The following object is masked from &#39;package:tidyr&#39;:
+
+    expand</code></pre>
+<pre><code>The following object is masked from &#39;package:base&#39;:
+
+    expand.grid</code></pre>
+<pre><code>Loading required package: IRanges</code></pre>
+<pre><code>
+Attaching package: &#39;IRanges&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:dplyr&#39;:
+
+    collapse, desc, slice</code></pre>
+<pre><code>Loading required package: XVector</code></pre>
+<pre><code>
+Attaching package: &#39;Biostrings&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:base&#39;:
+
+    strsplit</code></pre>
+<pre class="r"><code>require(Biostrings)</code></pre>
+</div>
+<div id="input-data" class="section level3">
+<h3>Input data</h3>
+<pre class="r"><code>#18486_dep
+UMI_18486_dep = read.delim(file=&quot;../data/UMI_18486_dep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_18486_dep) &lt;- &quot;UMI&quot;
+UMI_18486_dep= data.frame(sapply(UMI_18486_dep, trimws), stringsAsFactors = FALSE)
+UMI_18486_dep= separate(data=UMI_18486_dep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
+UMI_18486_dep$number= as.numeric(UMI_18486_dep$number)
+UMI_18486_dep= arrange(UMI_18486_dep, desc(number))
+
+
+#18508 dep
+UMI_18508_dep = read.delim(file=&quot;../data/UMI_18508_dep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_18508_dep) &lt;- &quot;UMI&quot;
+UMI_18508_dep= data.frame(sapply(UMI_18508_dep, trimws), stringsAsFactors = FALSE)
+UMI_18508_dep= separate(data=UMI_18508_dep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
+UMI_18508_dep$number= as.numeric(UMI_18508_dep$number)
+UMI_18508_dep= arrange(UMI_18508_dep, desc(number))
+
+#18508 nondep
+UMI_18508_nondep = read.delim(file=&quot;../data/UMI_18508_nondep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_18508_nondep) &lt;- &quot;UMI&quot;
+UMI_18508_nondep= data.frame(sapply(UMI_18508_nondep, trimws), stringsAsFactors = FALSE)
+UMI_18508_nondep= separate(data=UMI_18508_nondep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
+UMI_18508_nondep$number= as.numeric(UMI_18508_nondep$number)
+UMI_18508_nondep= arrange(UMI_18508_nondep, desc(number))
+
+
+#19238
+UMI_19238_dep = read.delim(file=&quot;../data/UMI_19238_dep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_19238_dep) &lt;- &quot;UMI&quot;
+UMI_19238_dep= data.frame(sapply(UMI_19238_dep, trimws), stringsAsFactors = FALSE)
+UMI_19238_dep= separate(data=UMI_19238_dep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
+UMI_19238_dep$number= as.numeric(UMI_19238_dep$number)
+UMI_19238_dep= arrange(UMI_19238_dep, desc(number))
+
+
+#Mayer
+UMI_mayer = read.delim(file=&quot;../data/UMI_mayer_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_mayer) &lt;- &quot;UMI&quot;
+UMI_mayer= data.frame(sapply(UMI_mayer, trimws), stringsAsFactors = FALSE)
+UMI_mayer= separate(data=UMI_mayer, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
+UMI_mayer$number= as.numeric(UMI_mayer$number)
+UMI_mayer= arrange(UMI_mayer, desc(number))</code></pre>
+<div id="plot-the-umi-distributions" class="section level4">
+<h4>Plot the umi distributions</h4>
+<pre class="r"><code>par(mfrow = c(2,3))
+plot(UMI_18486_dep$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18486-dep distribution&quot;)
+plot(UMI_18508_dep$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18508-dep distribution&quot;)
+plot(UMI_18508_nondep$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;1508- nondep distribution&quot;)
+plot(UMI_19238_dep$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;19238-dep distribution&quot;)
+plot(UMI_mayer$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;Mayer distribution&quot;)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /> Look at the top used UMI for each data set.</p>
+<pre class="r"><code>UMI_18486_dep[1:3,]</code></pre>
+<pre><code>   number    umi
+1 3617979 ATCTCG
+2  592512 CACCCG
+3   90128 TCTCGT</code></pre>
+<pre class="r"><code>UMI_18508_dep[1:3,]</code></pre>
+<pre><code>   number    umi
+1 9270083 ATCTCG
+2  880379 CACCCG
+3  201796 TCTCGT</code></pre>
+<pre class="r"><code>UMI_18508_nondep[1:3, ]</code></pre>
+<pre><code>    number    umi
+1 12216803 ATCTCG
+2   911426 CACCCG
+3   401897 TCTCGT</code></pre>
+<pre class="r"><code>UMI_19238_dep[1:3,]</code></pre>
+<pre><code>   number    umi
+1 6058977 ATCTCG
+2 1852855 CACCCG
+3  235866 TATCTC</code></pre>
+<pre class="r"><code>UMI_mayer[1:3,]</code></pre>
+<pre><code>   number    umi
+1 1040195 ATCTCG
+2  172910 TTTCAC
+3  169350 TTACAC</code></pre>
+<p>The top used UMIs are similar accross samples. This preference could be due to annealing temperatures.(Conversation with Po) All data sets show an overrepresentation of a few UMIs, I will remove the top 5 to get a better look at the distribution.</p>
+<pre class="r"><code>par(mfrow = c(2,3))
+plot(UMI_18486_dep[6:5388,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18486-dep distribution -5&quot;)
+
+plot(UMI_18508_dep[6:5471,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18508-dep distribution -5&quot;)
+
+plot(UMI_18508_nondep[6:5535,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18508-nondep distribution -5&quot;)
+
+plot(UMI_19238_dep[6:5699,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;19328-dep distribution -5&quot;)
+
+plot(UMI_mayer[6:6101,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;Mayer distribution -5&quot;)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/plot-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="seq-logo-plots" class="section level4">
+<h4>Seq Logo Plots</h4>
+<p>Use Biostrings to get the PMW then create the logoplots with seqlogo.</p>
+<pre class="r"><code>#source(&quot;https://bioconductor.org/biocLite.R&quot;)
+#biocLite(&quot;seqLogo&quot;)
+#source(&quot;http://bioconductor.org/biocLite.R&quot;)
+#biocLite(&quot;Biostrings&quot;)
+#set= DNAStringSet(UMI_18486_dep$umi)
+#length(set)
+#set.freq=data.frame(alphabetFrequency(set, baseOnly=T, as.prob=T))
+#set_noN=set[set.freq$other==0,]
+#length(set_noN)
+#width(set_noN)
+#x=consensusMatrix(set_noN) #problem here, getting 1024 for all
+#freq_18486= PWM(x[1:4,])
+
+#sum(UMI_18486_dep$number==0) &gt; 0 : shows no UMIs are never used 
+
+#seqLogo(freq_18486, ic.scale = TRUE, xaxis = TRUE, yaxis = TRUE, xfontsize = 15, yfontsize =15)</code></pre>
+<p>Try with a different package:</p>
+<pre class="r"><code>#library(&quot;devtools&quot;)
+#install_github(&quot;omarwagih/ggseqlogo&quot;)
+require(ggseqlogo)</code></pre>
+<pre><code>Loading required package: ggseqlogo</code></pre>
+<pre class="r"><code>cs1 = make_col_scheme(chars=c(&#39;A&#39;, &#39;T&#39;, &#39;C&#39;, &#39;G&#39;, &#39;N&#39;), groups=c(&#39;A&#39;, &#39;T&#39;, &#39;C&#39;, &#39;G&#39;, &#39;N&#39;), cols=c(&#39;red&#39;, &#39;blue&#39;, &#39;green&#39;, &#39;yellow&#39;, &#39;pink&#39;))
+
+
+par(mfrow = c(2,3))
+ggseqlogo(UMI_18486_dep$umi, col_scheme=cs1)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggseqlogo(UMI_18508_dep$umi, col_scheme=cs1)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggseqlogo(UMI_18508_nondep$umi, col_scheme=cs1)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggseqlogo(UMI_19238_dep$umi, col_scheme=cs1)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggseqlogo(UMI_mayer$umi, col_scheme=cs1)</code></pre>
+<p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-7-5.png" width="672" style="display: block; margin: auto;" /> Does not look like we get overrepresentation of one letter at any particular location in the UMI.</p>
+<!-- Insert the session information into the document -->
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.4.2 (2017-09-28)
 Platform: x86_64-apple-darwin15.6.0 (64-bit)
@@ -335,13 +530,26 @@ locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+ [1] stats4    parallel  grid      stats     graphics  grDevices utils    
+ [8] datasets  methods   base     
+
+other attached packages:
+ [1] ggseqlogo_0.1       bindrcpp_0.2        Biostrings_2.46.0  
+ [4] XVector_0.18.0      IRanges_2.12.0      S4Vectors_0.16.0   
+ [7] BiocGenerics_0.24.0 seqLogo_1.44.0      ggplot2_2.2.1      
+[10] dplyr_0.7.4         tidyr_0.7.2        
 
 loaded via a namespace (and not attached):
- [1] compiler_3.4.2  backports_1.1.1 magrittr_1.5    rprojroot_1.2  
- [5] tools_3.4.2     htmltools_0.3.6 yaml_2.1.14     Rcpp_0.12.13   
- [9] stringi_1.1.5   rmarkdown_1.6   knitr_1.17      git2r_0.19.0   
-[13] stringr_1.2.0   digest_0.6.12   evaluate_0.10.1</code></pre>
+ [1] Rcpp_0.12.13     compiler_3.4.2   git2r_0.19.0     plyr_1.8.4      
+ [5] bindr_0.1        tools_3.4.2      zlibbioc_1.24.0  digest_0.6.12   
+ [9] evaluate_0.10.1  tibble_1.3.4     gtable_0.2.0     pkgconfig_2.0.1 
+[13] rlang_0.1.4      yaml_2.1.14      stringr_1.2.0    knitr_1.17      
+[17] tidyselect_0.2.3 rprojroot_1.2    glue_1.2.0       R6_2.2.2        
+[21] rmarkdown_1.6    purrr_0.2.4      magrittr_1.5     backports_1.1.1 
+[25] scales_0.5.0     htmltools_0.3.6  assertthat_0.2.0 colorspace_1.3-2
+[29] labeling_0.3     stringi_1.1.5    lazyeval_0.2.1   munsell_0.4.3   </code></pre>
+</div>
+</div>
 
 <hr>
 <p>
