@@ -30,7 +30,9 @@ I will use this analysis to look at inital data QC and points of interests.
 
 First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.  
 
-`samtools view -c -f 4`
+`samtools view -c -F 4`  
+
+For flag info: https://broadinstitute.github.io/picard/explain-flags.html  
 
 
 Mayer data:
@@ -40,22 +42,45 @@ dedup: 2262387
 dedup/sorted: 0.01883373  
 
 ```{r}
-library= c("und", "18486-dep", "18486-tot", "18508-dep", "18508-nondep", "unk1", "mayer")
+library= c( "18486-dep", "18486-tot", "18508-dep", "18508-nondep", "19238-dep", "mayer")
 
-fastq= c(3102688, 45803834, 4006, 70776230, 77223987, 113160855, 137281933    )  
+fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 13728193)  
 
-sorted= c(1341658 ,28467038, 2748, 27528483, 27034413, 72740222,120124203 )
+sorted= c(17336796, 1258, 43247747, 50189574, 40420633, 17157730 )
 
-dedup= c(320894, 1533069, 1105, 1776330,1919904,
-1870359,2262387    )
+dedup= c(1533069, 1105, 1776330,1919904,
+1870359,2262387)
 
 perc= dedup/sorted
 
-reads_mapped_dedup= rbind(library, fastq, sorted, dedup,perc)
+reads_mapped_dedup= data.frame(rbind(library, fastq, sorted, dedup, perc))
 
 reads_mapped_dedup
 
+total_reads= sum(fastq)
+
+sorted/fastq
 ```
+
+
+
+Undetermined is nothing: it corresponds to random reads  
+
+From meeting:  
+
+* Allign with star and bwa to compare  
+
+* compare to http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chr7%3A5568588%2D5568715&hgsid=642260271_FLEwDANY0lSWCFhW4QjbmbASDDnB  
+
+###Explore UMIs
+
+'samtools view YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > UMI_18486_total_stats.txt '  
+
+'samtools view YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam | tr "_" "\t" | cut -f 2 > UMI_18486_total.txt'  
+
+Run this for the files and put in output- then i can make plots based on this.  
+
+
 
 
 ## Session information

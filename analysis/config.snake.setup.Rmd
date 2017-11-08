@@ -378,9 +378,10 @@ to check running jobs:
 
 ###Things to Change  
 
-* Have final bam go to output folder  
+* add a get exons rule/download exon file 
 
-* Add rule to unzip  
+
+
 
 
 ## Session information
