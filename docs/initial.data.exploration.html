@@ -316,46 +316,57 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-07</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8525170</p>
+<p><strong>Code version:</strong> cdfdd68</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
-<p><code>samtools view -c -f 4</code></p>
+<p><code>samtools view -c -F 4</code></p>
+<p>For flag info: <a href="https://broadinstitute.github.io/picard/explain-flags.html" class="uri">https://broadinstitute.github.io/picard/explain-flags.html</a></p>
 <p>Mayer data: fastq: 137281933<br />
 sorted: 120124203 dedup: 2262387<br />
 dedup/sorted: 0.01883373</p>
-<pre class="r"><code>library= c(&quot;und&quot;, &quot;18486-dep&quot;, &quot;18486-tot&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;unk1&quot;, &quot;mayer&quot;)
+<pre class="r"><code>library= c( &quot;18486-dep&quot;, &quot;18486-tot&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;19238-dep&quot;, &quot;mayer&quot;)
 
-fastq= c(3102688, 45803834, 4006, 70776230, 77223987, 113160855, 137281933    )  
+fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 13728193)  
 
-sorted= c(1341658 ,28467038, 2748, 27528483, 27034413, 72740222,120124203 )
+sorted= c(17336796, 1258, 43247747, 50189574, 40420633, 17157730 )
 
-dedup= c(320894, 1533069, 1105, 1776330,1919904,
-1870359,2262387    )
+dedup= c(1533069, 1105, 1776330,1919904,
+1870359,2262387)
 
 perc= dedup/sorted
 
-reads_mapped_dedup= rbind(library, fastq, sorted, dedup,perc)
+reads_mapped_dedup= data.frame(rbind(library, fastq, sorted, dedup, perc))
 
 reads_mapped_dedup</code></pre>
-<pre><code>        [,1]                [,2]                 [,3]               
-library &quot;und&quot;               &quot;18486-dep&quot;          &quot;18486-tot&quot;        
-fastq   &quot;3102688&quot;           &quot;45803834&quot;           &quot;4006&quot;             
-sorted  &quot;1341658&quot;           &quot;28467038&quot;           &quot;2748&quot;             
-dedup   &quot;320894&quot;            &quot;1533069&quot;            &quot;1105&quot;             
-perc    &quot;0.239177197169472&quot; &quot;0.0538541804033142&quot; &quot;0.402110625909753&quot;
-        [,4]                 [,5]                 [,6]                
-library &quot;18508-dep&quot;          &quot;18508-nondep&quot;       &quot;unk1&quot;              
-fastq   &quot;70776230&quot;           &quot;77223987&quot;           &quot;113160855&quot;         
-sorted  &quot;27528483&quot;           &quot;27034413&quot;           &quot;72740222&quot;          
-dedup   &quot;1776330&quot;            &quot;1919904&quot;            &quot;1870359&quot;           
-perc    &quot;0.0645269846507706&quot; &quot;0.0710170403921846&quot; &quot;0.0257128580113489&quot;
-        [,7]                
-library &quot;mayer&quot;             
-fastq   &quot;137281933&quot;         
-sorted  &quot;120124203&quot;         
-dedup   &quot;2262387&quot;           
-perc    &quot;0.0188337316169332&quot;</code></pre>
+<pre><code>                        X1                X2                 X3
+library          18486-dep         18486-tot          18508-dep
+fastq             45803834              4006           70776230
+sorted            17336796              1258           43247747
+dedup              1533069              1105            1776330
+perc    0.0884286231435151 0.878378378378378 0.0410733534859053
+                        X4                 X5                X6
+library       18508-nondep          19238-dep             mayer
+fastq             77223987          113160855          13728193
+sorted            50189574           40420633          17157730
+dedup              1919904            1870359           2262387
+perc    0.0382530443474177 0.0462723827209732 0.131858177043234</code></pre>
+<pre class="r"><code>total_reads= sum(fastq)
+
+sorted/fastq</code></pre>
+<pre><code>[1] 0.3785010 0.3140290 0.6110490 0.6499221 0.3571962 1.2498171</code></pre>
+<p>Undetermined is nothing: it corresponds to random reads</p>
+<p>From meeting:</p>
+<ul>
+<li><p>Allign with star and bwa to compare</p></li>
+<li><p>compare to <a href="http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&amp;lastVirtModeType=default&amp;lastVirtModeExtraState" class="uri">http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&amp;lastVirtModeType=default&amp;lastVirtModeExtraState</a>=&amp;virtModeType=default&amp;virtMode=0&amp;nonVirtPosition=&amp;position=chr7%3A5568588%2D5568715&amp;hgsid=642260271_FLEwDANY0lSWCFhW4QjbmbASDDnB</p></li>
+</ul>
+<div id="explore-umis" class="section level3">
+<h3>Explore UMIs</h3>
+<p>’samtools view YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam | tr “_&quot; “” | cut -f 2 | sort | uniq -c &gt; UMI_18486_total_stats.txt ’</p>
+<p>’samtools view YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam | tr “_&quot; “” | cut -f 2 &gt; UMI_18486_total.txt’</p>
+<p>Run this for the files and put in output- then i can make plots based on this.</p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
