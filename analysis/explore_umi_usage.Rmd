@@ -24,7 +24,7 @@ knitr::read_chunk("chunks.R")
 ```{r code-version, echo=FALSE, results='asis'}
 ```
 
-In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the anaysis.  
+In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the analysis.  
 
 This code is used to create a text file that I can explore in R. It has a list of all of the UMIs used for the sample sorted by usage with the number of times each is used. This is run before the duduplication step.   
 
@@ -32,8 +32,150 @@ This code is used to create a text file that I can explore in R. It has a list o
 samtools view {file} | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_{file}_stat.txt
 ```
 
+###Packages  
+```{r}
+library("tidyr")
+library("dplyr")
+library("ggplot2")
+library("seqLogo")
+library("Biostrings")
+require(Biostrings)
+```
 
-All files have been create. Will import to R when I can mount midway on my computer.  
+
+
+
+###Input data  
+
+```{r}
+#18486_dep
+UMI_18486_dep = read.delim(file="../data/UMI_18486_dep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_18486_dep) <- "UMI"
+UMI_18486_dep= data.frame(sapply(UMI_18486_dep, trimws), stringsAsFactors = FALSE)
+UMI_18486_dep= separate(data=UMI_18486_dep, col = UMI, into= c("number", "umi"), sep="\\s+")
+UMI_18486_dep$number= as.numeric(UMI_18486_dep$number)
+UMI_18486_dep= arrange(UMI_18486_dep, desc(number))
+
+
+#18508 dep
+UMI_18508_dep = read.delim(file="../data/UMI_18508_dep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_18508_dep) <- "UMI"
+UMI_18508_dep= data.frame(sapply(UMI_18508_dep, trimws), stringsAsFactors = FALSE)
+UMI_18508_dep= separate(data=UMI_18508_dep, col = UMI, into= c("number", "umi"), sep="\\s+")
+UMI_18508_dep$number= as.numeric(UMI_18508_dep$number)
+UMI_18508_dep= arrange(UMI_18508_dep, desc(number))
+
+#18508 nondep
+UMI_18508_nondep = read.delim(file="../data/UMI_18508_nondep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_18508_nondep) <- "UMI"
+UMI_18508_nondep= data.frame(sapply(UMI_18508_nondep, trimws), stringsAsFactors = FALSE)
+UMI_18508_nondep= separate(data=UMI_18508_nondep, col = UMI, into= c("number", "umi"), sep="\\s+")
+UMI_18508_nondep$number= as.numeric(UMI_18508_nondep$number)
+UMI_18508_nondep= arrange(UMI_18508_nondep, desc(number))
+
+
+#19238
+UMI_19238_dep = read.delim(file="../data/UMI_19238_dep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_19238_dep) <- "UMI"
+UMI_19238_dep= data.frame(sapply(UMI_19238_dep, trimws), stringsAsFactors = FALSE)
+UMI_19238_dep= separate(data=UMI_19238_dep, col = UMI, into= c("number", "umi"), sep="\\s+")
+UMI_19238_dep$number= as.numeric(UMI_19238_dep$number)
+UMI_19238_dep= arrange(UMI_19238_dep, desc(number))
+
+
+#Mayer
+UMI_mayer = read.delim(file="../data/UMI_mayer_stat.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(UMI_mayer) <- "UMI"
+UMI_mayer= data.frame(sapply(UMI_mayer, trimws), stringsAsFactors = FALSE)
+UMI_mayer= separate(data=UMI_mayer, col = UMI, into= c("number", "umi"), sep="\\s+")
+UMI_mayer$number= as.numeric(UMI_mayer$number)
+UMI_mayer= arrange(UMI_mayer, desc(number))
+```
+
+
+####Plot the umi distributions  
+```{r}
+par(mfrow = c(2,3))
+plot(UMI_18486_dep$number, ylab="UMI count", xlab="UMI", main="18486-dep distribution")
+plot(UMI_18508_dep$number, ylab="UMI count", xlab="UMI", main="18508-dep distribution")
+plot(UMI_18508_nondep$number, ylab="UMI count", xlab="UMI", main="1508- nondep distribution")
+plot(UMI_19238_dep$number, ylab="UMI count", xlab="UMI", main="19238-dep distribution")
+plot(UMI_mayer$number, ylab="UMI count", xlab="UMI", main="Mayer distribution")
+```
+Look at the top used UMI for each data set.   
+```{r}
+UMI_18486_dep[1:3,]
+UMI_18508_dep[1:3,]
+UMI_18508_nondep[1:3, ]
+UMI_19238_dep[1:3,]
+UMI_mayer[1:3,]
+
+```
+The top used UMIs are similar accross samples. This preference could be due to annealing temperatures.(Conversation with Po) All data sets show an overrepresentation of a few UMIs, I will remove the top 5 to get a better look at the distribution.   
+
+```{r plot}
+par(mfrow = c(2,3))
+plot(UMI_18486_dep[6:5388,]$number, ylab="UMI count", xlab="UMI", main="18486-dep distribution -5")
+
+plot(UMI_18508_dep[6:5471,]$number, ylab="UMI count", xlab="UMI", main="18508-dep distribution -5")
+
+plot(UMI_18508_nondep[6:5535,]$number, ylab="UMI count", xlab="UMI", main="18508-nondep distribution -5")
+
+plot(UMI_19238_dep[6:5699,]$number, ylab="UMI count", xlab="UMI", main="19328-dep distribution -5")
+
+plot(UMI_mayer[6:6101,]$number, ylab="UMI count", xlab="UMI", main="Mayer distribution -5")
+```
+
+####Seq Logo Plots 
+
+Use Biostrings to get the PMW then create the logoplots with seqlogo.  
+
+```{r}
+#source("https://bioconductor.org/biocLite.R")
+#biocLite("seqLogo")
+#source("http://bioconductor.org/biocLite.R")
+#biocLite("Biostrings")
+#set= DNAStringSet(UMI_18486_dep$umi)
+#length(set)
+#set.freq=data.frame(alphabetFrequency(set, baseOnly=T, as.prob=T))
+#set_noN=set[set.freq$other==0,]
+#length(set_noN)
+#width(set_noN)
+#x=consensusMatrix(set_noN) #problem here, getting 1024 for all
+#freq_18486= PWM(x[1:4,])
+
+#sum(UMI_18486_dep$number==0) > 0 : shows no UMIs are never used 
+
+#seqLogo(freq_18486, ic.scale = TRUE, xaxis = TRUE, yaxis = TRUE, xfontsize = 15, yfontsize =15)
+
+  
+  
+```
+Try with a different package:  
+
+```{r}
+#library("devtools")
+#install_github("omarwagih/ggseqlogo")
+require(ggseqlogo)
+
+cs1 = make_col_scheme(chars=c('A', 'T', 'C', 'G', 'N'), groups=c('A', 'T', 'C', 'G', 'N'), cols=c('red', 'blue', 'green', 'yellow', 'pink'))
+
+
+par(mfrow = c(2,3))
+ggseqlogo(UMI_18486_dep$umi, col_scheme=cs1)
+ggseqlogo(UMI_18508_dep$umi, col_scheme=cs1)
+ggseqlogo(UMI_18508_nondep$umi, col_scheme=cs1)
+ggseqlogo(UMI_19238_dep$umi, col_scheme=cs1)
+ggseqlogo(UMI_mayer$umi, col_scheme=cs1)
+
+
+
+
+
+```
+Does not look like we get overrepresentation of one letter at any particular location in the UMI.  
+
+
 <!-- Insert the session information into the document -->
 ```{r session-info}
 ```
