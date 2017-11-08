@@ -1,0 +1,39 @@
+---
+title: "Explore UMI Usage in Netseq1 libary"
+author: "Briana Mittleman"
+date: 2017-11-08
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the anaysis.  
+
+This code is used to create a text file that I can explore in R. It has a list of all of the UMIs used for the sample sorted by usage with the number of times each is used. This is run before the duduplication step.   
+
+```{bash, eval=FALSE}
+samtools view {file} | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_{file}_stat.txt
+```
+
+
+All files have been create. Will import to R when I can mount midway on my computer.  
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
