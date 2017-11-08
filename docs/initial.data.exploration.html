@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-07</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> cdfdd68</p>
+<p><strong>Code version:</strong> ae10632</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -327,7 +327,7 @@ sorted: 120124203 dedup: 2262387<br />
 dedup/sorted: 0.01883373</p>
 <pre class="r"><code>library= c( &quot;18486-dep&quot;, &quot;18486-tot&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;19238-dep&quot;, &quot;mayer&quot;)
 
-fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 13728193)  
+fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 137281933)  
 
 sorted= c(17336796, 1258, 43247747, 50189574, 40420633, 17157730 )
 
@@ -347,14 +347,14 @@ dedup              1533069              1105            1776330
 perc    0.0884286231435151 0.878378378378378 0.0410733534859053
                         X4                 X5                X6
 library       18508-nondep          19238-dep             mayer
-fastq             77223987          113160855          13728193
+fastq             77223987          113160855         137281933
 sorted            50189574           40420633          17157730
 dedup              1919904            1870359           2262387
 perc    0.0382530443474177 0.0462723827209732 0.131858177043234</code></pre>
 <pre class="r"><code>total_reads= sum(fastq)
 
 sorted/fastq</code></pre>
-<pre><code>[1] 0.3785010 0.3140290 0.6110490 0.6499221 0.3571962 1.2498171</code></pre>
+<pre><code>[1] 0.3785010 0.3140290 0.6110490 0.6499221 0.3571962 0.1249817</code></pre>
 <p>Undetermined is nothing: it corresponds to random reads</p>
 <p>From meeting:</p>
 <ul>
