@@ -72,16 +72,16 @@ From meeting:
 
 * compare to http://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chr7%3A5568588%2D5568715&hgsid=642260271_FLEwDANY0lSWCFhW4QjbmbASDDnB  
 
-###Explore UMIs
+### Explore different mappers
 
-'samtools view YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > UMI_18486_total_stats.txt '  
-
-'samtools view YG-SP-NET1-18486-total-2017-10-13_S5_R1_001-sort.bam | tr "_" "\t" | cut -f 2 > UMI_18486_total.txt'  
-
-Run this for the files and put in output- then i can make plots based on this.  
+```{bash, eval=FALSE}
+#mayer data first 
 
 
+ sbatch --mem=8g STAR --runThreadN 4 --genomeDir ../genome/ --readFilesIn fastq_extr/ SRR1575922_extracted.fastq --readFilesCommand zcat --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/mayer_star_align.bam
+```
 
+Problem: I need the genome annotation file to use STAR to allign the genome.  
 
 ## Session information
 
