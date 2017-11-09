@@ -1,0 +1,68 @@
+---
+title: "Use the genomation package to vizualize genome features and see overlap with Net-seq1"
+author: "Briana Mittleman"
+date: 2017-11-09
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+I will look at genome feature overlap with the Netseq1 libary. I will start with one sample then move to more once the code is working. I will look specifically at overlap with CTCF sites. 
+
+
+Load libraries:  
+```{r}
+library(genomation)
+library(genomationData)
+```
+
+
+###Load gata: 
+
+```{r}
+CTCF_gen= readGeneric(file = "../data/hg19.GM72.CTCF", header=FALSE, keep.all.metadata = TRUE)
+#bed file for one of my libraries  
+# to get from midway
+#scp brimittleman@midway2.rcc.uchicago.edu:/project2/gilad/briana/Net-seq/Net-seq1/data/cov/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.cov.bed .
+
+cov.18486.dep= readGeneric(file= "../data/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.cov.bed", header = FALSE, keep.all.metadata = TRUE)
+
+
+
+```
+
+
+###Data extaction:  
+
+Try to get the density of net-seq reads around CTCF sites  
+
+```{r}
+#sm=ScoreMatrixBin(target = cov.18486.dep, windows = CTCF_gen, bin.num = 10 )
+```
+```{r}
+#peak.annot = annotateWithFeature(CTCF_gen, cov.18486.dep, intersect.chr = TRUE)
+```
+ Maybe the problem is the names of the coloumns.  
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```

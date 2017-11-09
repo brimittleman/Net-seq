@@ -13,3 +13,4 @@ This is the workflowr site for my Net-seq project. I will have all of the data, 
 * [Setting up config and snake files](config.snake.setup.html)  
 * [Initial data exploration for NetSeq1 libary](initial.data.exploration.html)
 * [Explore the UMI usage in the NetSeq1 library](explore_umi_usage.html)
+* [Use the genomation package to vizualize genome features and see overlap with Net-seq1](visualize_genomefeatures.html)
