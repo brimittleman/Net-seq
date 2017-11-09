@@ -42,7 +42,7 @@ CTCF_gen= readGeneric(file = "../data/hg19.GM72.CTCF", header=FALSE, keep.all.me
 # to get from midway
 #scp brimittleman@midway2.rcc.uchicago.edu:/project2/gilad/briana/Net-seq/Net-seq1/data/cov/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.cov.bed .
 
-cov.18486.dep= readGeneric(file= "../data/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.cov.bed", header = FALSE, keep.all.metadata = TRUE)
+dedup.18486.dep= readGeneric(file= "../data/net1_18486_dep_dedup_chr.bed", header = FALSE, keep.all.metadata = TRUE)
 
 
 
@@ -53,13 +53,31 @@ cov.18486.dep= readGeneric(file= "../data/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_
 
 Try to get the density of net-seq reads around CTCF sites  
 
-```{r}
-#sm=ScoreMatrixBin(target = cov.18486.dep, windows = CTCF_gen, bin.num = 10 )
+fix formating of file with 
+
+```{bash, eval=FALSE }
+#awk '$0="chr"$0' file  > newfile
 ```
+
+Need to do this with the reads not the coverage file. I used the samtools bamtobed function on one of the dedup files and copied this to the data file here.  
+
+
 ```{r}
-#peak.annot = annotateWithFeature(CTCF_gen, cov.18486.dep, intersect.chr = TRUE)
+peak.annot = annotateWithFeature(CTCF_gen, dedup.18486.dep, intersect.chr = TRUE)
+peak.annot
+
+
 ```
- Maybe the problem is the names of the coloumns.  
+I need to compare this to another feature. I will look at the genes file.  
+
+```{r}
+genes= readGeneric(file= "../data/hg19.ref.genes.bed", header = FALSE, keep.all.metadata = TRUE)
+head(genes)
+
+peak.annot_genes = annotateWithFeature(genes, dedup.18486.dep, intersect.chr = TRUE)
+peak.annot_genes
+```
+The genes file has a lot of random chr tags at the end.  
 
 ## Session information
 
