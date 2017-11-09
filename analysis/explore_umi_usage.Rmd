@@ -48,48 +48,24 @@ require(Biostrings)
 ###Input data  
 
 ```{r}
-#18486_dep
-UMI_18486_dep = read.delim(file="../data/UMI_18486_dep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_18486_dep) <- "UMI"
-UMI_18486_dep= data.frame(sapply(UMI_18486_dep, trimws), stringsAsFactors = FALSE)
-UMI_18486_dep= separate(data=UMI_18486_dep, col = UMI, into= c("number", "umi"), sep="\\s+")
-UMI_18486_dep$number= as.numeric(UMI_18486_dep$number)
-UMI_18486_dep= arrange(UMI_18486_dep, desc(number))
+prepare_UMI_data=function(path.txt){
+  x=read.delim(file=path.txt, header = FALSE,stringsAsFactors = FALSE)
+  colnames(x) <- "UMI"
+  x= data.frame(sapply(x, trimws), stringsAsFactors = FALSE)
+  x= separate(data=x, col = UMI, into= c("number", "umi"), sep="\\s+")
+  x$number= as.numeric(x$number)
+  arrange(x, desc(number))
+  return(x)
+}
+
+UMI_18486_dep = prepare_UMI_data("../data/UMI_18486_dep_stat.txt")
+UMI_18508_dep= prepare_UMI_data("../data/UMI_18508_dep_stat.txt")
+UMI_18508_nondep= prepare_UMI_data("../data/UMI_18508_nondep_stat.txt")
+UMI_19238_dep= prepare_UMI_data("../data/UMI_19238_dep_stat.txt")
+UMI_mayer= prepare_UMI_data("../data/UMI_mayer_stat.txt")
 
 
-#18508 dep
-UMI_18508_dep = read.delim(file="../data/UMI_18508_dep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_18508_dep) <- "UMI"
-UMI_18508_dep= data.frame(sapply(UMI_18508_dep, trimws), stringsAsFactors = FALSE)
-UMI_18508_dep= separate(data=UMI_18508_dep, col = UMI, into= c("number", "umi"), sep="\\s+")
-UMI_18508_dep$number= as.numeric(UMI_18508_dep$number)
-UMI_18508_dep= arrange(UMI_18508_dep, desc(number))
 
-#18508 nondep
-UMI_18508_nondep = read.delim(file="../data/UMI_18508_nondep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_18508_nondep) <- "UMI"
-UMI_18508_nondep= data.frame(sapply(UMI_18508_nondep, trimws), stringsAsFactors = FALSE)
-UMI_18508_nondep= separate(data=UMI_18508_nondep, col = UMI, into= c("number", "umi"), sep="\\s+")
-UMI_18508_nondep$number= as.numeric(UMI_18508_nondep$number)
-UMI_18508_nondep= arrange(UMI_18508_nondep, desc(number))
-
-
-#19238
-UMI_19238_dep = read.delim(file="../data/UMI_19238_dep_stat.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_19238_dep) <- "UMI"
-UMI_19238_dep= data.frame(sapply(UMI_19238_dep, trimws), stringsAsFactors = FALSE)
-UMI_19238_dep= separate(data=UMI_19238_dep, col = UMI, into= c("number", "umi"), sep="\\s+")
-UMI_19238_dep$number= as.numeric(UMI_19238_dep$number)
-UMI_19238_dep= arrange(UMI_19238_dep, desc(number))
-
-
-#Mayer
-UMI_mayer = read.delim(file="../data/UMI_mayer_stat.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_mayer) <- "UMI"
-UMI_mayer= data.frame(sapply(UMI_mayer, trimws), stringsAsFactors = FALSE)
-UMI_mayer= separate(data=UMI_mayer, col = UMI, into= c("number", "umi"), sep="\\s+")
-UMI_mayer$number= as.numeric(UMI_mayer$number)
-UMI_mayer= arrange(UMI_mayer, desc(number))
 ```
 
 
