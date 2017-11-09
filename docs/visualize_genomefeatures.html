@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-09</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> aee8225</p>
+<p><strong>Code version:</strong> 5fb86b2</p>
 <p>I will look at genome feature overlap with the Netseq1 libary. I will start with one sample then move to more once the code is working. I will look specifically at overlap with CTCF sites.</p>
 <p>Load libraries:</p>
 <pre class="r"><code>library(genomation)</code></pre>
@@ -329,14 +329,89 @@ shared across the workflowr files. -->
 # to get from midway
 #scp brimittleman@midway2.rcc.uchicago.edu:/project2/gilad/briana/Net-seq/Net-seq1/data/cov/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.cov.bed .
 
-cov.18486.dep= readGeneric(file= &quot;../data/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.cov.bed&quot;, header = FALSE, keep.all.metadata = TRUE)</code></pre>
+dedup.18486.dep= readGeneric(file= &quot;../data/net1_18486_dep_dedup_chr.bed&quot;, header = FALSE, keep.all.metadata = TRUE)</code></pre>
 </div>
 <div id="data-extaction" class="section level3">
 <h3>Data extaction:</h3>
 <p>Try to get the density of net-seq reads around CTCF sites</p>
-<pre class="r"><code>#sm=ScoreMatrixBin(target = cov.18486.dep, windows = CTCF_gen, bin.num = 10 )</code></pre>
-<pre class="r"><code>#peak.annot = annotateWithFeature(CTCF_gen, cov.18486.dep, intersect.chr = TRUE)</code></pre>
-<p>Maybe the problem is the names of the coloumns.</p>
+<p>fix formating of file with</p>
+<pre class="bash"><code>#awk &#39;$0=&quot;chr&quot;$0&#39; file  &gt; newfile</code></pre>
+<p>Need to do this with the reads not the coverage file. I used the samtools bamtobed function on one of the dedup files and copied this to the data file here.</p>
+<pre class="r"><code>peak.annot = annotateWithFeature(CTCF_gen, dedup.18486.dep, intersect.chr = TRUE)</code></pre>
+<pre><code>intersecting chromosomes...</code></pre>
+<pre class="r"><code>peak.annot</code></pre>
+<pre><code>summary of target set annotation with feature annotation:</code></pre>
+<pre><code>Rows in target set: 175659</code></pre>
+<pre><code>----------------------------</code></pre>
+<pre><code>percentage of target elements overlapping with features:</code></pre>
+<pre><code>dedup.18486.dep           other 
+          11.03           88.97 </code></pre>
+<pre><code></code></pre>
+<pre><code>percentage of feature elements overlapping with target:</code></pre>
+<pre><code>[1] 17.52</code></pre>
+<pre><code></code></pre>
+<p>I need to compare this to another feature. I will look at the genes file.</p>
+<pre class="r"><code>genes= readGeneric(file= &quot;../data/hg19.ref.genes.bed&quot;, header = FALSE, keep.all.metadata = TRUE)
+head(genes)</code></pre>
+<pre><code>GRanges object with 6 ranges and 9 metadata columns:
+      seqnames               ranges strand |           V4        V5
+         &lt;Rle&gt;            &lt;IRanges&gt;  &lt;Rle&gt; |  &lt;character&gt; &lt;integer&gt;
+  [1]     chr1 [66999251, 67216822]      * | NM_001308203         0
+  [2]     chr1 [66999638, 67216822]      * | NM_001350217         0
+  [3]     chr1 [66999638, 67216822]      * | NM_001350218         0
+  [4]     chr1 [66999638, 67216822]      * |    NM_032291         0
+  [5]     chr1 [25071759, 25170815]      * |    NM_013943         0
+  [6]     chr1 [33546713, 33586132]      * | NM_001293562         0
+               V6        V7        V8        V9       V10
+      &lt;character&gt; &lt;integer&gt; &lt;integer&gt; &lt;integer&gt; &lt;integer&gt;
+  [1]           +  67000041  67208778         0        22
+  [2]           +  67000041  67208778         0        25
+  [3]           +  67000041  67208778         0        23
+  [4]           +  67000041  67208778         0        25
+  [5]           +  25072044  25167428         0         6
+  [6]           +  33547850  33585783         0        11
+                                                                                          V11
+                                                                                  &lt;character&gt;
+  [1]          104,123,64,25,57,55,176,25,52,86,93,75,128,127,66,112,156,133,203,65,165,8067,
+  [2] 413,64,25,84,57,55,176,12,12,25,52,86,93,75,501,128,127,60,112,156,133,203,65,165,8067,
+  [3]        413,64,25,57,55,176,12,12,25,52,86,93,75,128,127,60,112,156,133,203,65,165,8067,
+  [4] 413,64,25,72,57,55,176,12,12,25,52,86,93,75,501,128,127,60,112,156,133,203,65,165,8067,
+  [5]                                                               357,110,126,107,182,3552,
+  [6]                                            182,118,177,174,173,135,166,163,113,215,488,
+                                                                                                                                                                           V12
+                                                                                                                                                                   &lt;character&gt;
+  [1]                         0,677,92278,99501,106208,109241,109975,137426,138375,139712,143435,146109,155579,156621,160870,185725,195695,200179,205766,207089,207703,209504,
+  [2] 0,91891,99114,100124,105821,108854,109588,126557,133574,137039,137988,139325,143048,145722,147913,155192,156234,161478,185338,195308,199792,205379,206702,207316,209117,
+  [3]               0,91891,99114,105821,108854,109588,126557,133574,137039,137988,139325,143048,145722,155192,156234,161478,185338,195308,199792,205379,206702,207316,209117,
+  [4] 0,91891,99114,101988,105821,108854,109588,126557,133574,137039,137988,139325,143048,145722,147913,155192,156234,161478,185338,195308,199792,205379,206702,207316,209117,
+  [5]                                                                                                                                         0,52473,68825,81741,94591,95504,
+  [6]                                                                                                               0,278,1065,2841,10937,12169,13435,15594,16954,36789,38931,
+  -------
+  seqinfo: 54 sequences from an unspecified genome; no seqlengths</code></pre>
+<pre class="r"><code>peak.annot_genes = annotateWithFeature(genes, dedup.18486.dep, intersect.chr = TRUE)</code></pre>
+<pre><code>intersecting chromosomes...</code></pre>
+<pre><code>Warning in .Seqinfo.mergexy(x, y): Each of the 2 combined objects has sequence levels not in the other:
+  - in &#39;x&#39;: chrM, chr1_gl000191_random, chr1_gl000192_random, chr4_ctg9_hap1, chr4_gl000193_random, chr4_gl000194_random, chr6_apd_hap1, chr6_cox_hap2, chr6_dbb_hap3, chr6_mann_hap4, chr6_mcf_hap5, chr6_qbl_hap6, chr6_ssto_hap7, chr7_gl000195_random, chr17_ctg5_hap1, chr17_gl000205_random, chr19_gl000209_random, chrUn_gl000211, chrUn_gl000212, chrUn_gl000213, chrUn_gl000215, chrUn_gl000218, chrUn_gl000219, chrUn_gl000220, chrUn_gl000222, chrUn_gl000223, chrUn_gl000224, chrUn_gl000227, chrUn_gl000228, chrUn_gl000241
+  - in &#39;y&#39;: chrMT
+  Make sure to always combine/compare objects based on the same reference
+  genome (use suppressWarnings() to suppress this warning).</code></pre>
+<pre><code>Warning in .Seqinfo.mergexy(x, y): Each of the 2 combined objects has sequence levels not in the other:
+  - in &#39;x&#39;: chrMT
+  - in &#39;y&#39;: chrM, chr1_gl000191_random, chr1_gl000192_random, chr4_ctg9_hap1, chr4_gl000193_random, chr4_gl000194_random, chr6_apd_hap1, chr6_cox_hap2, chr6_dbb_hap3, chr6_mann_hap4, chr6_mcf_hap5, chr6_qbl_hap6, chr6_ssto_hap7, chr7_gl000195_random, chr17_ctg5_hap1, chr17_gl000205_random, chr19_gl000209_random, chrUn_gl000211, chrUn_gl000212, chrUn_gl000213, chrUn_gl000215, chrUn_gl000218, chrUn_gl000219, chrUn_gl000220, chrUn_gl000222, chrUn_gl000223, chrUn_gl000224, chrUn_gl000227, chrUn_gl000228, chrUn_gl000241
+  Make sure to always combine/compare objects based on the same reference
+  genome (use suppressWarnings() to suppress this warning).</code></pre>
+<pre class="r"><code>peak.annot_genes</code></pre>
+<pre><code>summary of target set annotation with feature annotation:</code></pre>
+<pre><code>Rows in target set: 66635</code></pre>
+<pre><code>----------------------------</code></pre>
+<pre><code>percentage of target elements overlapping with features:</code></pre>
+<pre><code>dedup.18486.dep           other 
+          86.97           13.03 </code></pre>
+<pre><code></code></pre>
+<pre><code>percentage of feature elements overlapping with target:</code></pre>
+<pre><code>[1] 60.91</code></pre>
+<pre><code></code></pre>
+<p>The genes file has a lot of random chr tags at the end.</p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
