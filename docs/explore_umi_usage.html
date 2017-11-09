@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-08</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> e08a411</p>
+<p><strong>Code version:</strong> a059a2c</p>
 <p>In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the analysis.</p>
 <p>This code is used to create a text file that I can explore in R. It has a list of all of the UMIs used for the sample sorted by usage with the number of times each is used. This is run before the duduplication step.</p>
 <pre class="bash"><code>samtools view {file} | tr &quot;_&quot; &quot;\t&quot; | cut -f 2 | sort | uniq -c &gt; ../../output/UMI_{file}_stat.txt</code></pre>
@@ -389,48 +389,21 @@ Attaching package: &#39;Biostrings&#39;</code></pre>
 </div>
 <div id="input-data" class="section level3">
 <h3>Input data</h3>
-<pre class="r"><code>#18486_dep
-UMI_18486_dep = read.delim(file=&quot;../data/UMI_18486_dep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_18486_dep) &lt;- &quot;UMI&quot;
-UMI_18486_dep= data.frame(sapply(UMI_18486_dep, trimws), stringsAsFactors = FALSE)
-UMI_18486_dep= separate(data=UMI_18486_dep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
-UMI_18486_dep$number= as.numeric(UMI_18486_dep$number)
-UMI_18486_dep= arrange(UMI_18486_dep, desc(number))
+<pre class="r"><code>prepare_UMI_data=function(path.txt){
+  x=read.delim(file=path.txt, header = FALSE,stringsAsFactors = FALSE)
+  colnames(x) &lt;- &quot;UMI&quot;
+  x= data.frame(sapply(x, trimws), stringsAsFactors = FALSE)
+  x= separate(data=x, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
+  x$number= as.numeric(x$number)
+  arrange(x, desc(number))
+  return(x)
+}
 
-
-#18508 dep
-UMI_18508_dep = read.delim(file=&quot;../data/UMI_18508_dep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_18508_dep) &lt;- &quot;UMI&quot;
-UMI_18508_dep= data.frame(sapply(UMI_18508_dep, trimws), stringsAsFactors = FALSE)
-UMI_18508_dep= separate(data=UMI_18508_dep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
-UMI_18508_dep$number= as.numeric(UMI_18508_dep$number)
-UMI_18508_dep= arrange(UMI_18508_dep, desc(number))
-
-#18508 nondep
-UMI_18508_nondep = read.delim(file=&quot;../data/UMI_18508_nondep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_18508_nondep) &lt;- &quot;UMI&quot;
-UMI_18508_nondep= data.frame(sapply(UMI_18508_nondep, trimws), stringsAsFactors = FALSE)
-UMI_18508_nondep= separate(data=UMI_18508_nondep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
-UMI_18508_nondep$number= as.numeric(UMI_18508_nondep$number)
-UMI_18508_nondep= arrange(UMI_18508_nondep, desc(number))
-
-
-#19238
-UMI_19238_dep = read.delim(file=&quot;../data/UMI_19238_dep_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_19238_dep) &lt;- &quot;UMI&quot;
-UMI_19238_dep= data.frame(sapply(UMI_19238_dep, trimws), stringsAsFactors = FALSE)
-UMI_19238_dep= separate(data=UMI_19238_dep, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
-UMI_19238_dep$number= as.numeric(UMI_19238_dep$number)
-UMI_19238_dep= arrange(UMI_19238_dep, desc(number))
-
-
-#Mayer
-UMI_mayer = read.delim(file=&quot;../data/UMI_mayer_stat.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(UMI_mayer) &lt;- &quot;UMI&quot;
-UMI_mayer= data.frame(sapply(UMI_mayer, trimws), stringsAsFactors = FALSE)
-UMI_mayer= separate(data=UMI_mayer, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
-UMI_mayer$number= as.numeric(UMI_mayer$number)
-UMI_mayer= arrange(UMI_mayer, desc(number))</code></pre>
+UMI_18486_dep = prepare_UMI_data(&quot;../data/UMI_18486_dep_stat.txt&quot;)
+UMI_18508_dep= prepare_UMI_data(&quot;../data/UMI_18508_dep_stat.txt&quot;)
+UMI_18508_nondep= prepare_UMI_data(&quot;../data/UMI_18508_nondep_stat.txt&quot;)
+UMI_19238_dep= prepare_UMI_data(&quot;../data/UMI_19238_dep_stat.txt&quot;)
+UMI_mayer= prepare_UMI_data(&quot;../data/UMI_mayer_stat.txt&quot;)</code></pre>
 <div id="plot-the-umi-distributions" class="section level4">
 <h4>Plot the umi distributions</h4>
 <pre class="r"><code>par(mfrow = c(2,3))
@@ -441,30 +414,30 @@ plot(UMI_19238_dep$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, mai
 plot(UMI_mayer$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;Mayer distribution&quot;)</code></pre>
 <p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /> Look at the top used UMI for each data set.</p>
 <pre class="r"><code>UMI_18486_dep[1:3,]</code></pre>
-<pre><code>   number    umi
-1 3617979 ATCTCG
-2  592512 CACCCG
-3   90128 TCTCGT</code></pre>
+<pre><code>  number    umi
+1    137 AAAAAA
+2    266 AAAAAC
+3    386 AAAAAG</code></pre>
 <pre class="r"><code>UMI_18508_dep[1:3,]</code></pre>
-<pre><code>   number    umi
-1 9270083 ATCTCG
-2  880379 CACCCG
-3  201796 TCTCGT</code></pre>
+<pre><code>  number    umi
+1   1442 AAAAAA
+2   1094 AAAAAC
+3   1566 AAAAAG</code></pre>
 <pre class="r"><code>UMI_18508_nondep[1:3, ]</code></pre>
-<pre><code>    number    umi
-1 12216803 ATCTCG
-2   911426 CACCCG
-3   401897 TCTCGT</code></pre>
+<pre><code>  number    umi
+1   1951 AAAAAA
+2   1276 AAAAAC
+3   1790 AAAAAG</code></pre>
 <pre class="r"><code>UMI_19238_dep[1:3,]</code></pre>
-<pre><code>   number    umi
-1 6058977 ATCTCG
-2 1852855 CACCCG
-3  235866 TATCTC</code></pre>
+<pre><code>  number    umi
+1    236 AAAAAA
+2    509 AAAAAC
+3    647 AAAAAG</code></pre>
 <pre class="r"><code>UMI_mayer[1:3,]</code></pre>
-<pre><code>   number    umi
-1 1040195 ATCTCG
-2  172910 TTTCAC
-3  169350 TTACAC</code></pre>
+<pre><code>  number    umi
+1  62872 AAAAAA
+2  92127 AAAAAC
+3  38306 AAAAAG</code></pre>
 <p>The top used UMIs are similar accross samples. This preference could be due to annealing temperatures.(Conversation with Po) All data sets show an overrepresentation of a few UMIs, I will remove the top 5 to get a better look at the distribution.</p>
 <pre class="r"><code>par(mfrow = c(2,3))
 plot(UMI_18486_dep[6:5388,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18486-dep distribution -5&quot;)
