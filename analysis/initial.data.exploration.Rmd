@@ -85,25 +85,15 @@ STAR --runThreadN 2 --runMode genomeGenerate --genomeDir /scratch/midway2/brimit
 STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/SRR1575922_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/mayer_star_align.bam
 ```
 
-Run this on my data as well. 
-
 ```{bash, eval=FALSE}
-#!/bin/bash
+samtools sort -o star.sort/star_mayer.sort.bam star/mayer_star_align.bam
 
-#SBATCH --job-name=star_align_mayer
-#SBATCH --time=8:00:00
-#SBATCH --partition=broadwl
-#SBATCH --mem=50G
-#SBATCH --tasks-per-node=4 
-
-module load Anaconda3
-source activate net-seq
-
-STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18508-dep.bam
-
-#to run: sbatch --partition=broadwl --mem=50G
 ```
 
+
+
+
+Run this on my data as well. 
 
 
 ```{bash, eval=FALSE}
@@ -123,8 +113,67 @@ STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --rea
 #to run: sbatch --partition=broadwl --mem=50G
 ```
 
-YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001_extracted.fastq
+Continue with the sort and index the bam.  
 
+```{bash, eval=FALSE}
+samtools sort -o star.sort/star_18486_dep_sort.bam  star/star_18486-dep.bam
+samtools index star_18486_dep_sort.bam
+```
+
+Look at the percent mapped with star.  
+```{r}
+samples=c("18486_dep", "mayer")
+fastq_star= c(45803834,137281933)
+bam_star= c(1996777,1993674)
+bam_star/fastq_star
+```
+
+Thats way too low. This didnt work.  
+
+In the log.Final file.  
+
+% of reads unmapped: too many mismatches | 0.00%  
+% of reads unmapped: too short | 79.96%  
+% of reads unmapped: other | 0.00%
+
+"--outFilterScoreMinOverLread 0 --outFilterMatchNminOverLread 0 --outFilterMatchNmin 0"
+Try to add these parameters on the mayer map.  
+
+This run gave too many multi-map reads. 64.82%. 
+
+Try:  
+"--outFilterScoreMinOverLread 0.3 --outFilterMatchNminOverLread 0.3"  
+% of reads mapped to too many loci |	63.75%  
+
+
+Other ways to fix this:  
+
+* cut the low quality tails- Qtrim   
+
+* try blasting the unmapped reads 
+
+* 
+
+ **didnt work**
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=star_align_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18508-dep.bam
+
+#to run: sbatch --partition=broadwl --mem=50G
+```
+
+YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001_extracted.fastq
+**didnt work**
 ```{bash, eval=FALSE}
 #!/bin/bash
 
@@ -144,7 +193,7 @@ STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --rea
 
 
 YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq
-
+**Didnt work**
 
 ```{bash, eval=FALSE}
 #!/bin/bash
@@ -162,6 +211,9 @@ STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --rea
 
 #to run: sbatch --partition=broadwl --mem=50G
 ```
+
+###Look into BWA mapping  
+
 ## Session information
 
 <!-- Insert the session information into the document -->
