@@ -75,14 +75,93 @@ From meeting:
 ### Explore different mappers
 
 ```{bash, eval=FALSE}
-#mayer data first 
+
+#index and prepare ref genome:
+
+STAR --runThreadN 2 --runMode genomeGenerate --genomeDir /scratch/midway2/brimittleman/star_genome/ --genomeFastaFiles  /project2/gilad/briana/Net-seq/STAR_genome/hg19.fa  --sjdbGTFfile /project2/gilad/briana/Net-seq/Homo_sapiens.GRCh37.75.chr.gtf --sjdbOverhang 43
 
 
- sbatch --mem=8g STAR --runThreadN 4 --genomeDir ../genome/ --readFilesIn fastq_extr/ SRR1575922_extracted.fastq --readFilesCommand zcat --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/mayer_star_align.bam
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/SRR1575922_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/mayer_star_align.bam
 ```
 
-Problem: I need the genome annotation file to use STAR to allign the genome.  
+Run this on my data as well. 
 
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=star_align_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18508-dep.bam
+
+#to run: sbatch --partition=broadwl --mem=50G
+```
+
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=star_align_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18486-dep.bam
+
+#to run: sbatch --partition=broadwl --mem=50G
+```
+
+YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001_extracted.fastq
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=star_align_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-nondep-2017-10-13_S4_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18508-nondep.bam
+
+#to run: sbatch --partition=broadwl --mem=50G
+```
+
+
+YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=star_align_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_19238_dep.bam
+
+#to run: sbatch --partition=broadwl --mem=50G
+```
 ## Session information
 
 <!-- Insert the session information into the document -->
