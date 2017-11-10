@@ -41,6 +41,8 @@ sorted: 120124203
 dedup: 2262387  
 dedup/sorted: 0.01883373  
 
+"#SBATCH --mail-type=ALL"
+
 ```{r}
 library= c( "18486-dep", "18486-tot", "18508-dep", "18508-nondep", "19238-dep", "mayer")
 
@@ -80,6 +82,7 @@ From meeting:
 
 STAR --runThreadN 2 --runMode genomeGenerate --genomeDir /scratch/midway2/brimittleman/star_genome/ --genomeFastaFiles  /project2/gilad/briana/Net-seq/STAR_genome/hg19.fa  --sjdbGTFfile /project2/gilad/briana/Net-seq/Homo_sapiens.GRCh37.75.chr.gtf --sjdbOverhang 43
 
+# --sjdbOverhang read length -1 
 
 
 STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/SRR1575922_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/mayer_star_align.bam
@@ -146,73 +149,27 @@ Try:
 % of reads mapped to too many loci |	63.75%  
 
 
-Other ways to fix this:  
+Test length of fastq reads:  
+Mayer: total 137281933 avg=70.000000 stddev=0.000000
+18486_dep: total 45803834 avg=44.000000 stddev=0.000000
 
-* cut the low quality tails- Qtrim   
+Try clipping last 10 bases with : "--clip3pNbases 10"  
+* This didnt work for the mayer data but that is long. I will try it on ours.  
+
+Our data:  
+
+* % of reads mapped to too many loci |	31.70%   
+* % of reads unmapped: too short |	55.32%  
+
+Other ways to fix this:  
 
 * try blasting the unmapped reads 
 
-* 
-
- **didnt work**
-```{bash, eval=FALSE}
-#!/bin/bash
-
-#SBATCH --job-name=star_align_mayer
-#SBATCH --time=8:00:00
-#SBATCH --partition=broadwl
-#SBATCH --mem=50G
-#SBATCH --tasks-per-node=4 
-
-module load Anaconda3
-source activate net-seq
-
-STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18508-dep.bam
-
-#to run: sbatch --partition=broadwl --mem=50G
-```
-
-YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001_extracted.fastq
-**didnt work**
-```{bash, eval=FALSE}
-#!/bin/bash
-
-#SBATCH --job-name=star_align_mayer
-#SBATCH --time=8:00:00
-#SBATCH --partition=broadwl
-#SBATCH --mem=50G
-#SBATCH --tasks-per-node=4 
-
-module load Anaconda3
-source activate net-seq
-
-STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-nondep-2017-10-13_S4_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_18508-nondep.bam
-
-#to run: sbatch --partition=broadwl --mem=50G
-```
-
-
-YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq
-**Didnt work**
-
-```{bash, eval=FALSE}
-#!/bin/bash
-
-#SBATCH --job-name=star_align_mayer
-#SBATCH --time=8:00:00
-#SBATCH --partition=broadwl
-#SBATCH --mem=50G
-#SBATCH --tasks-per-node=4 
-
-module load Anaconda3
-source activate net-seq
-
-STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > star/star_19238_dep.bam
-
-#to run: sbatch --partition=broadwl --mem=50G
-```
 
 ###Look into BWA mapping  
+
+Still need to add this section.  
+
 
 ## Session information
 
