@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-09</p>
+<p><strong>Last updated:</strong> 2017-11-10</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8fded60</p>
+<p><strong>Code version:</strong> e3d57b4</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -371,21 +371,9 @@ STAR --runThreadN 2 --runMode genomeGenerate --genomeDir /scratch/midway2/brimit
 
 
 STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/SRR1575922_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; star/mayer_star_align.bam</code></pre>
+<pre class="bash"><code>samtools sort -o star.sort/star_mayer.sort.bam star/mayer_star_align.bam
+</code></pre>
 <p>Run this on my data as well.</p>
-<pre class="bash"><code>#!/bin/bash
-
-#SBATCH --job-name=star_align_mayer
-#SBATCH --time=8:00:00
-#SBATCH --partition=broadwl
-#SBATCH --mem=50G
-#SBATCH --tasks-per-node=4 
-
-module load Anaconda3
-source activate net-seq
-
-STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; star/star_18508-dep.bam
-
-#to run: sbatch --partition=broadwl --mem=50G</code></pre>
 <pre class="bash"><code>#!/bin/bash
 
 #SBATCH --job-name=star_align_mayer
@@ -400,7 +388,47 @@ source activate net-seq
 STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; star/star_18486-dep.bam
 
 #to run: sbatch --partition=broadwl --mem=50G</code></pre>
-<p>YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001_extracted.fastq</p>
+<p>Continue with the sort and index the bam.</p>
+<pre class="bash"><code>samtools sort -o star.sort/star_18486_dep_sort.bam  star/star_18486-dep.bam
+samtools index star_18486_dep_sort.bam</code></pre>
+<p>Look at the percent mapped with star.</p>
+<pre class="r"><code>samples=c(&quot;18486_dep&quot;, &quot;mayer&quot;)
+fastq_star= c(45803834,137281933)
+bam_star= c(1996777,1993674)
+bam_star/fastq_star</code></pre>
+<pre><code>[1] 0.04359410 0.01452248</code></pre>
+<p>Thats way too low. This didnt work.</p>
+<p>In the log.Final file.</p>
+<p>% of reads unmapped: too many mismatches | 0.00%<br />
+% of reads unmapped: too short | 79.96%<br />
+% of reads unmapped: other | 0.00%</p>
+<p>“–outFilterScoreMinOverLread 0 –outFilterMatchNminOverLread 0 –outFilterMatchNmin 0” Try to add these parameters on the mayer map.</p>
+<p>This run gave too many multi-map reads. 64.82%.</p>
+<p>Try:<br />
+“–outFilterScoreMinOverLread 0.3 –outFilterMatchNminOverLread 0.3”<br />
+% of reads mapped to too many loci | 63.75%</p>
+<p>Other ways to fix this:</p>
+<ul>
+<li><p>cut the low quality tails- Qtrim</p></li>
+<li><p>try blasting the unmapped reads</p></li>
+<li></li>
+</ul>
+<p><strong>didnt work</strong></p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=star_align_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; star/star_18508-dep.bam
+
+#to run: sbatch --partition=broadwl --mem=50G</code></pre>
+<p>YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001_extracted.fastq <strong>didnt work</strong></p>
 <pre class="bash"><code>#!/bin/bash
 
 #SBATCH --job-name=star_align_mayer
@@ -415,7 +443,7 @@ source activate net-seq
 STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-18508-nondep-2017-10-13_S4_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; star/star_18508-nondep.bam
 
 #to run: sbatch --partition=broadwl --mem=50G</code></pre>
-<p>YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq</p>
+<p>YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq <strong>Didnt work</strong></p>
 <pre class="bash"><code>#!/bin/bash
 
 #SBATCH --job-name=star_align_mayer
@@ -430,6 +458,9 @@ source activate net-seq
 STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn fastq_extr/YG-SP-NET1-Unk1_S6_R1_001_extracted.fastq --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; star/star_19238_dep.bam
 
 #to run: sbatch --partition=broadwl --mem=50G</code></pre>
+</div>
+<div id="look-into-bwa-mapping" class="section level3">
+<h3>Look into BWA mapping</h3>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
