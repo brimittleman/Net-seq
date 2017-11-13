@@ -39,7 +39,7 @@ library("dplyr")
 library("ggplot2")
 library("seqLogo")
 library("Biostrings")
-require(Biostrings)
+require("Biostrings")
 ```
 
 
@@ -54,7 +54,7 @@ prepare_UMI_data=function(path.txt){
   x= data.frame(sapply(x, trimws), stringsAsFactors = FALSE)
   x= separate(data=x, col = UMI, into= c("number", "umi"), sep="\\s+")
   x$number= as.numeric(x$number)
-  arrange(x, desc(number))
+  x= arrange(x, desc(number))
   return(x)
 }
 
