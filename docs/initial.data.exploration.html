@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-10</p>
+<p><strong>Last updated:</strong> 2017-11-13</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 1e63d81</p>
+<p><strong>Code version:</strong> af41338</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -426,7 +426,26 @@ Mayer: total 137281933 avg=70.000000 stddev=0.000000 18486_dep: total 45803834 a
 </div>
 <div id="look-into-bwa-mapping" class="section level3">
 <h3>Look into BWA mapping</h3>
-<p>Still need to add this section.</p>
+<p>BWA-backtrack - for Illumina seqs up to 100 bp</p>
+<p>First step is to construt a FM-index for the reference genome.</p>
+<p>“bwa index -a bwtsw -p /scratch/midway2/brimittleman/BWA_genome/BWA.index STAR_genome/hg19.fa”</p>
+<p>Added bwa to envirnoment</p>
+<p>Mapping:</p>
+<p>bwa aln</p>
+<ul>
+<li><p>creates the .sai index files</p></li>
+<li><p>-n 0.01 1% missmatch allowed</p></li>
+<li><p>-t 2 spead up by using 2 threads</p></li>
+</ul>
+<p>bwa samse</p>
+<ul>
+<li>generates alignments in a sam format</li>
+</ul>
+<pre class="bash"><code>
+bwa aln /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq &gt; /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai
+
+bwa samse fasta_ref  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq &gt; /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sam
+</code></pre>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
