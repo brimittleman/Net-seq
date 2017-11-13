@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-13</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> af41338</p>
+<p><strong>Code version:</strong> e0869ba</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -325,7 +325,6 @@ shared across the workflowr files. -->
 <p>Mayer data: fastq: 137281933<br />
 sorted: 120124203 dedup: 2262387<br />
 dedup/sorted: 0.01883373</p>
-<p>“#SBATCH –mail-type=ALL”</p>
 <pre class="r"><code>library= c( &quot;18486-dep&quot;, &quot;18486-tot&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;19238-dep&quot;, &quot;mayer&quot;)
 
 fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 137281933)  
@@ -383,6 +382,7 @@ STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --rea
 #SBATCH --partition=broadwl
 #SBATCH --mem=50G
 #SBATCH --tasks-per-node=4 
+
 
 module load Anaconda3
 source activate net-seq
@@ -442,9 +442,48 @@ Mayer: total 137281933 avg=70.000000 stddev=0.000000 18486_dep: total 45803834 a
 <li>generates alignments in a sam format</li>
 </ul>
 <pre class="bash"><code>
-bwa aln /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq &gt; /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai
+#$1 ref fa  
+#$2 fastq 
+#$3 output sai 
 
-bwa samse fasta_ref  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq &gt; /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sam
+
+module load Anaconda3
+source activate net-seq
+module load bwa
+
+bwa aln -t 3 -n 0.01 $1 $2 &gt; $3
+
+
+#submit 
+sbatch scripts/bwa_aln.sh hg19.copy.fa /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sai</code></pre>
+<pre class="bash"><code>
+
+#SBATCH --job-name=BWA_samse
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+#$1 ref fasta
+#$2 sai file  
+#$3 fastq file  
+#$4 output sam  
+
+
+module load Anaconda3
+source activate net-seq
+module load bwa
+
+bwa samse $1 $2 $3 &gt; $4
+
+
+#run on mayer  
+sbatch hg19.copy.fa /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq &gt; /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sam
+
+
+#run on 18486 dep  
+sbatch hg19.copy.fa /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sai /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq &gt; /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sam
 </code></pre>
 </div>
 <div id="session-information" class="section level2">
