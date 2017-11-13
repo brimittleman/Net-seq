@@ -186,7 +186,7 @@ bwa aln
 
 * -n 0.01 1% missmatch allowed  
 
-* -t 2 spead up by using 2 threads 
+* -t 3 spead up by using 3 threads 
 
 
 bwa samse  
