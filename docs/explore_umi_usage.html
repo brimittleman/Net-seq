@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-08</p>
+<p><strong>Last updated:</strong> 2017-11-13</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> a059a2c</p>
+<p><strong>Code version:</strong> a25b69a</p>
 <p>In this analysis I will explore the UMI usage in the Net-Seq1 library. Due to low read counts in the total sample, I will exclude this sample from the analysis.</p>
 <p>This code is used to create a text file that I can explore in R. It has a list of all of the UMIs used for the sample sorted by usage with the number of times each is used. This is run before the duduplication step.</p>
 <pre class="bash"><code>samtools view {file} | tr &quot;_&quot; &quot;\t&quot; | cut -f 2 | sort | uniq -c &gt; ../../output/UMI_{file}_stat.txt</code></pre>
@@ -385,7 +385,7 @@ Attaching package: &#39;Biostrings&#39;</code></pre>
 <pre><code>The following object is masked from &#39;package:base&#39;:
 
     strsplit</code></pre>
-<pre class="r"><code>require(Biostrings)</code></pre>
+<pre class="r"><code>require(&quot;Biostrings&quot;)</code></pre>
 </div>
 <div id="input-data" class="section level3">
 <h3>Input data</h3>
@@ -395,7 +395,7 @@ Attaching package: &#39;Biostrings&#39;</code></pre>
   x= data.frame(sapply(x, trimws), stringsAsFactors = FALSE)
   x= separate(data=x, col = UMI, into= c(&quot;number&quot;, &quot;umi&quot;), sep=&quot;\\s+&quot;)
   x$number= as.numeric(x$number)
-  arrange(x, desc(number))
+  x= arrange(x, desc(number))
   return(x)
 }
 
@@ -414,30 +414,30 @@ plot(UMI_19238_dep$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, mai
 plot(UMI_mayer$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;Mayer distribution&quot;)</code></pre>
 <p><img src="figure/explore_umi_usage.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /> Look at the top used UMI for each data set.</p>
 <pre class="r"><code>UMI_18486_dep[1:3,]</code></pre>
-<pre><code>  number    umi
-1    137 AAAAAA
-2    266 AAAAAC
-3    386 AAAAAG</code></pre>
+<pre><code>   number    umi
+1 3617979 ATCTCG
+2  592512 CACCCG
+3   90128 TCTCGT</code></pre>
 <pre class="r"><code>UMI_18508_dep[1:3,]</code></pre>
-<pre><code>  number    umi
-1   1442 AAAAAA
-2   1094 AAAAAC
-3   1566 AAAAAG</code></pre>
+<pre><code>   number    umi
+1 9270083 ATCTCG
+2  880379 CACCCG
+3  201796 TCTCGT</code></pre>
 <pre class="r"><code>UMI_18508_nondep[1:3, ]</code></pre>
-<pre><code>  number    umi
-1   1951 AAAAAA
-2   1276 AAAAAC
-3   1790 AAAAAG</code></pre>
+<pre><code>    number    umi
+1 12216803 ATCTCG
+2   911426 CACCCG
+3   401897 TCTCGT</code></pre>
 <pre class="r"><code>UMI_19238_dep[1:3,]</code></pre>
-<pre><code>  number    umi
-1    236 AAAAAA
-2    509 AAAAAC
-3    647 AAAAAG</code></pre>
+<pre><code>   number    umi
+1 6058977 ATCTCG
+2 1852855 CACCCG
+3  235866 TATCTC</code></pre>
 <pre class="r"><code>UMI_mayer[1:3,]</code></pre>
-<pre><code>  number    umi
-1  62872 AAAAAA
-2  92127 AAAAAC
-3  38306 AAAAAG</code></pre>
+<pre><code>   number    umi
+1 1040195 ATCTCG
+2  172910 TTTCAC
+3  169350 TTACAC</code></pre>
 <p>The top used UMIs are similar accross samples. This preference could be due to annealing temperatures.(Conversation with Po) All data sets show an overrepresentation of a few UMIs, I will remove the top 5 to get a better look at the distribution.</p>
 <pre class="r"><code>par(mfrow = c(2,3))
 plot(UMI_18486_dep[6:5388,]$number, ylab=&quot;UMI count&quot;, xlab=&quot;UMI&quot;, main=&quot;18486-dep distribution -5&quot;)
