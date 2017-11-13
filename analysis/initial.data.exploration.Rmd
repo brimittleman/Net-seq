@@ -168,8 +168,38 @@ Other ways to fix this:
 
 ###Look into BWA mapping  
 
-Still need to add this section.  
+BWA-backtrack - for Illumina seqs up to 100 bp  
 
+First step is to construt a FM-index for the reference genome.  
+
+"bwa index -a bwtsw  -p /scratch/midway2/brimittleman/BWA_genome/BWA.index STAR_genome/hg19.fa"
+
+Added bwa to envirnoment  
+
+
+Mapping:  
+
+bwa aln  
+
+* creates the .sai index files   
+
+* -n 0.01 1% missmatch allowed  
+
+* -t 2 spead up by using 2 threads 
+
+
+bwa samse  
+
+* generates alignments in a sam format  
+
+
+```{bash eval=FALSE}
+
+bwa aln /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq > /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai
+
+bwa samse fasta_ref  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai /project2/gilad/briana/Net-seq/data/fastq_extrSRR1575922_extracted.fastq > /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sam
+
+```
 
 ## Session information
 
