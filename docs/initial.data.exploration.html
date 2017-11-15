@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-14</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> a108c2a</p>
+<p><strong>Code version:</strong> 7f32c88</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -482,6 +482,11 @@ bwa samse $1 $2 $3 &gt; $4
 sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai /project2/gilad/briana/Net-seq/data/fastq_extr/SRR1575922_extracted.fastq  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sam
 
 
+sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.cut3prime.sai  /project2/gilad/briana/Net-seq/data/fastq_extr/SRR1575922_extracted.fastq  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.cut3prime.sam
+
+
+
+
 #run on 18486 dep  
 sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sai /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq  /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sam
 </code></pre>
@@ -495,8 +500,9 @@ sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/Net-seq1
 <p>This is super low mapping as well. Not sure what is going on.</p>
 <p>For poor quality on the ends- add -q 15 to the bwa aln command. I am trying this on the mayer data.</p>
 <ul>
-<li>18486_dep : 805899</li>
-<li>Mayer:</li>
+<li>18486_dep : 805899<br />
+</li>
+<li>Mayer: 121892</li>
 </ul>
 </div>
 <div id="session-information" class="section level2">
