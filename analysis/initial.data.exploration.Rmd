@@ -268,6 +268,47 @@ For poor quality on the ends- add -q 15 to the bwa aln command. I am trying this
 * Mayer: 121892  
 
 
+####Rerun star:
+
+I deleted the reference genome and am reindexing and rebuilding it.  
+
+####Cut polyA  
+
+Code from Sebs snakemake will allow me to cut any read that has more than 6 As. It will then keep the read if it is longer than 25 bases long post cut. I will run this on the UMI extracted fastq files.  
+
+
+This script is called cut_polyA.sh and is in the /project2/gilad/briana/Net-seq/scripts directory.  
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=cut_polyA
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=8G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+module load Anaconda3
+source activate net-seq
+
+#$1 fastq file 
+#$2 output cut file name 
+
+cutadapt --minimum-length 25 -a AAAAAA -o $2 $1
+```
+
+Run this script first on 18486 dep.  
+
+```{bash, eval=FALSE}
+sbatch scripts/cut_polyA.sh /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq /project2/gilad/briana/Net-seq/Net-seq1/data/cut_polyA/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.cutPolyA.fastq  
+
+
+```
+
+Pre-cut: 45803834  
+Cut: 40905492
+
 
 ## Session information
 
