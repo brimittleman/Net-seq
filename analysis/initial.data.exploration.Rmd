@@ -240,6 +240,11 @@ bwa samse $1 $2 $3 > $4
 sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sai /project2/gilad/briana/Net-seq/data/fastq_extr/SRR1575922_extracted.fastq  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.sam
 
 
+sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.cut3prime.sai  /project2/gilad/briana/Net-seq/data/fastq_extr/SRR1575922_extracted.fastq  /project2/gilad/briana/Net-seq/data/bwa/bwa.mayer.cut3prime.sam
+
+
+
+
 #run on 18486 dep  
 sbatch scripts/bwa_samse.sh hg19.copy.fa /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sai /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq  /project2/gilad/briana/Net-seq/Net-seq1/data/BWA/bwa.18486.dep.sam
 
@@ -253,14 +258,16 @@ Sam to bam:
 Check how big the file is:  
 
 * 18486_dep : 796546 
-* Mayer: 117726  
+* Mayer: 117726 
 
 This is super low mapping as well. Not sure what is going on.  
 
 For poor quality on the ends- add -q 15 to the bwa aln command. I am trying this on the mayer data.  
 
-* 18486_dep : 805899
-* Mayer: 
+* 18486_dep : 805899  
+* Mayer: 121892  
+
+
 
 ## Session information
 
