@@ -307,8 +307,88 @@ sbatch scripts/cut_polyA.sh /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_e
 ```
 
 Pre-cut: 45803834  
-Cut: 40905492
+Cut: 40905492  
 
+
+```{bash, eval=FALSE}
+sbatch scripts/star_allign.sh /project2/gilad/briana/Net-seq/Net-seq1/data/cut_polyA/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.cutPolyA.fastq /project2/gilad/briana/Net-seq/Net-seq1/data/star/star_18486-dep_cutPolyA.bam
+```
+Cut: 40905492  
+mapped:  1350684
+
+
+####Subjunc with --allJunctions
+
+
+I am running subjunc on the polyA cut reads with the --allJunctions to map cononincal and non-connoical exon exon boundaries.  
+
+
+This script is called subjunc_all_junc.sh and is in the /project2/gilad/briana/Net-seq/scripts directory.  
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=cut_polyA
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+module load Anaconda3
+source activate net-seq
+
+#$1 input extracted fast q  
+#$2 output bam 
+
+
+subjunc --allJunctions -i /project2/gilad/briana/Net-seq/Net-seq1/genome/ -r $1 -T 8 > $2
+```
+
+
+
+
+```{bash, eval=FALSE}
+#slurm-40290339.out
+
+sbatch scripts/subjunc_all_junc.sh /project2/gilad/briana/Net-seq/Net-seq1/data/cut_polyA/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.cutPolyA.fastq /project2/gilad/briana/Net-seq/Net-seq1/data/subjunc_all_junc/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.cutPolyA.all.junc.bam
+
+
+```
+Before subjunc mapped 37.85. Now it mapped 38.4%.  
+
+I am also going to run this on the non polyA cut samples.  
+
+```{bash, eval=FALSE}
+#slurm-40290637.out
+
+sbatch scripts/subjunc_all_junc.sh /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.fastq /project2/gilad/briana/Net-seq/Net-seq1/data/subjunc_all_junc/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001_extracted.all.junc.bam
+
+```
+
+
+Before subjunc mapped 37.85. This run is 53.1%
+
+Try for mayer:  
+
+```{bash, eval=FALSE}
+sbatch scripts/subjunc_all_junc.sh /project2/gilad/briana/Net-seq/data/fastq_extr/SRR1575922_extracted.fastq /project2/gilad/briana/Net-seq/data/subjunc_all_junc/mayer.extracted.subjunc.all.junc.bam
+
+#508 dep
+sbatch scripts/subjunc_all_junc.sh /project2/gilad/briana/Net-seq/Net-seq1/data/fastq_extr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.fastq /project2/gilad/briana/Net-seq/Net-seq1/data/subjunc_all_junc/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001_extracted.all.junc.bam  
+```
+
+508_dep  
+dep fastq: 70776230  
+mapped: 54088856  
+
+This mapped 76.4%   
+
+
+```{bash, eval=FALSE}
+samtools sort -o {output} {input}
+samtools index {input}
+umi_tools dedup -I {input.bam} -S {output}
+```
 
 ## Session information
 
