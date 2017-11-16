@@ -1,0 +1,81 @@
+---
+title: "Work on extracting mapping info from bam files"
+author: "Briana Mittleman"
+date: 2017-11-16
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+Goal: Extract the number of bases that mapped and were soft clipped from bam files and make a histogram  
+
+Look first at the original bam files from the snake mapping.  
+
+To look at bam files in python, use pysam. I added this to my environment.  
+
+Process: 
+
+* Python Script: for simplicity at first, this file is called get_mapped.py and is in the /project2/gilad/briana/Net-seq/Net-seq1/data/sort/ directory. The bam file needs to have a bai file in teh same directory to work with the pysam program  
+
+```{python, eval=FALSE}
+#!/usr/bin/env python
+import sys
+import pysam
+import re
+
+
+mapped_num = open("mapped_18486_dep.txt", "w")
+file_bam_open= open("/project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam", "r")
+file_bam= pysam.AlignmentFile(file_bam_open, "rb")
+def get_mapped(file):
+  mapped=[]
+  for read in file.fetch():
+      read= str(read)
+      cigar= read.split()[5] #python starts at 0
+      num= re.findall("\d+M", cigar) #this gives me each "##M" in the cigar
+      for i in num:
+        mapped.append(i[:-1])
+  return(mapped)
+
+get_mapped(file_bam)
+
+mapped_num.write("\n".join(mapped))
+
+mapped_num.close()
+
+  
+    
+```
+
+
+What I want: 
+
+6th column (sep by tab) of the line. ex: 7S23M14S. I want the all the numbers before the M in this string.  
+
+
+Pull the txt file with all the numbers into R and make a histogram.  
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
