@@ -54,9 +54,9 @@ def get_mapped(file):
         mapped.append(i[:-1])
   return(mapped)
 
-get_mapped(file_bam)
+a= get_mapped(file_bam)
 
-mapped_num.write("\n".join(mapped))
+mapped_num.write("\n".join(a))
 
 mapped_num.close()
 
@@ -71,6 +71,17 @@ What I want:
 
 
 Pull the txt file with all the numbers into R and make a histogram.  
+```{bash, eval=FALSE}
+scp brimittleman@midway2.rcc.uchicago.edu:/project2/gilad/briana/Net-seq/Net-seq1/data/sort/mapped_18486_dep.txt .
+
+```
+
+```{r}
+mapped=read.csv("../data/mapped_18486_dep.txt", header=FALSE)
+map.vec= as.vector(mapped[,1])
+hist(map.vec, xlab="Bases", main="Histogram of mapped reads from cigar string")
+summary(map.vec)
+```
 
 
 
