@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-16</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 332719e</p>
+<p><strong>Code version:</strong> 14f1307</p>
 <p>Goal: Extract the number of bases that mapped and were soft clipped from bam files and make a histogram</p>
 <p>Look first at the original bam files from the snake mapping.</p>
 <p>To look at bam files in python, use pysam. I added this to my environment.</p>
@@ -343,9 +343,9 @@ def get_mapped(file):
         mapped.append(i[:-1])
   return(mapped)
 
-get_mapped(file_bam)
+a= get_mapped(file_bam)
 
-mapped_num.write(&quot;\n&quot;.join(mapped))
+mapped_num.write(&quot;\n&quot;.join(a))
 
 mapped_num.close()
 
@@ -354,6 +354,15 @@ mapped_num.close()
 <p>What I want:</p>
 <p>6th column (sep by tab) of the line. ex: 7S23M14S. I want the all the numbers before the M in this string.</p>
 <p>Pull the txt file with all the numbers into R and make a histogram.</p>
+<pre class="bash"><code>scp brimittleman@midway2.rcc.uchicago.edu:/project2/gilad/briana/Net-seq/Net-seq1/data/sort/mapped_18486_dep.txt .
+</code></pre>
+<pre class="r"><code>mapped=read.csv(&quot;../data/mapped_18486_dep.txt&quot;, header=FALSE)
+map.vec= as.vector(mapped[,1])
+hist(map.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of mapped reads from cigar string&quot;)</code></pre>
+<p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(map.vec)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   1.00   21.00   23.00   23.16   26.00   44.00 </code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
