@@ -83,7 +83,7 @@ scp brimittleman@midway2.rcc.uchicago.edu:/project2/gilad/briana/Net-seq/Net-seq
 ```{r}
 mapped=read.csv("../data/mapped_18486_dep.txt", header=FALSE)
 map.vec= as.vector(mapped[,1])
-hist(map.vec, xlab="Bases", main="Histogram of mapped reads from cigar string")
+a= hist(map.vec, xlab="Bases", main="Histogram of 18486 mapped reads from cigar string")
 summary(map.vec)
 ```
 
@@ -173,6 +173,93 @@ summary(clip.vec)
 
 
 ### Make this code general 
+
+
+Use the sys.argv[1] command to pass in arguments from the command line. This script will generalize my get_mapped.py  
+
+
+```{python, eval=FALSE}
+#!/usr/bin/env python
+import sys
+import pysam
+import re
+
+file_name = sys.argv[1]
+out_file = sys.argv[2]
+
+
+#use by passing a sorted bam file, an output text file 
+
+
+mapped_num = open(out_file, "w")
+file_bam_open= open(file_name, "r")
+file_bam= pysam.AlignmentFile(file_bam_open, "rb")
+def get_mapped(file):
+  out=[]
+  for read in file.fetch():
+      read= str(read)
+      cigar= read.split()[5] #python starts at 0
+      num= re.findall("\d+M", cigar) #this gives me each "##M" in the cigar
+      for i in num:
+        out.append(i[:-1])
+  return(out)
+
+a= get_mapped(file_bam)
+
+mapped_num.write("\n".join(a))
+
+mapped_num.close()
+```
+
+
+```{bash, eval=FALSE}
+./get_mapped.py /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.bam mapped_18508_dep.txt
+
+
+./get_mapped.py /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-Unk1_S6_R1_001-sort.bam mapped_19238_dep.txt
+
+
+/project2/gilad/briana/Net-seq/Net-seq1/data/sort/get_mapped.py /project2/gilad/briana/Net-seq/data/sort/SRR1575922-sort.bam  /project2/gilad/briana/Net-seq/data/sort/mapped_mayer.txt 
+```
+
+
+```{r}
+mapped_mayer=read.csv("../data/mapped_mayer.txt", header=FALSE)
+map.mayer.vec= as.vector(mapped_mayer[,1])
+d= hist(map.mayer.vec, xlab="Bases", main="Histogram of mayer mapped reads from cigar string")
+summary(map.mayer.vec)
+```
+
+
+```{r}
+mapped_18508=read.csv("../data/mapped_18508_dep.txt", header=FALSE)
+map.18508.vec= as.vector(mapped_18508[,1])
+b= hist(map.18508.vec, xlab="Bases", main="Histogram of 18508 mapped reads from cigar string")
+summary(map.18508.vec)
+```
+
+
+```{r}
+mapped_19238=read.csv("../data/mapped_19238_dep.txt", header=FALSE)
+map.19238.vec= as.vector(mapped_19238[,1])
+c= hist(map.19238.vec, xlab="Bases", main="Histogram of 19238 mapped reads from cigar string")
+summary(map.19238.vec)
+```
+
+
+###All of the histograms: 
+
+```{r}
+par(mfrow = c(2,2))
+hist(map.vec, xlab="Bases", main="Histogram of 18486 mapped reads")
+hist(map.18508.vec, xlab="Bases", main="Histogram of 18508 mapped reads")
+hist(map.19238.vec, xlab="Bases", main="Histogram of 19238 mapped reads")
+hist(map.mayer.vec, xlab="Bases", main="Histogram of mayer reads")
+```
+
+
+###Extract the softclipped regions  
+
 
 ### Session information
 
