@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-16</p>
+<p><strong>Last updated:</strong> 2017-11-17</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 14e1622</p>
+<p><strong>Code version:</strong> e0af49e</p>
 <div id="mapped-stats" class="section level3">
 <h3>Mapped stats</h3>
 <p>Goal: Extract the number of bases that mapped and were soft clipped from bam files and make a histogram</p>
@@ -360,7 +360,7 @@ mapped_num.close()
 </code></pre>
 <pre class="r"><code>mapped=read.csv(&quot;../data/mapped_18486_dep.txt&quot;, header=FALSE)
 map.vec= as.vector(mapped[,1])
-hist(map.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of mapped reads from cigar string&quot;)</code></pre>
+a= hist(map.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of 18486 mapped reads from cigar string&quot;)</code></pre>
 <p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>summary(map.vec)</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -443,6 +443,77 @@ hist(clip.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of clipped reads fro
 </div>
 <div id="make-this-code-general" class="section level3">
 <h3>Make this code general</h3>
+<p>Use the sys.argv[1] command to pass in arguments from the command line. This script will generalize my get_mapped.py</p>
+<pre class="python"><code>#!/usr/bin/env python
+import sys
+import pysam
+import re
+
+file_name = sys.argv[1]
+out_file = sys.argv[2]
+
+
+#use by passing a sorted bam file, an output text file 
+
+
+mapped_num = open(out_file, &quot;w&quot;)
+file_bam_open= open(file_name, &quot;r&quot;)
+file_bam= pysam.AlignmentFile(file_bam_open, &quot;rb&quot;)
+def get_mapped(file):
+  out=[]
+  for read in file.fetch():
+      read= str(read)
+      cigar= read.split()[5] #python starts at 0
+      num= re.findall(&quot;\d+M&quot;, cigar) #this gives me each &quot;##M&quot; in the cigar
+      for i in num:
+        out.append(i[:-1])
+  return(out)
+
+a= get_mapped(file_bam)
+
+mapped_num.write(&quot;\n&quot;.join(a))
+
+mapped_num.close()</code></pre>
+<pre class="bash"><code>./get_mapped.py /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.bam mapped_18508_dep.txt
+
+
+./get_mapped.py /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-Unk1_S6_R1_001-sort.bam mapped_19238_dep.txt
+
+
+/project2/gilad/briana/Net-seq/Net-seq1/data/sort/get_mapped.py /project2/gilad/briana/Net-seq/data/sort/SRR1575922-sort.bam  /project2/gilad/briana/Net-seq/data/sort/mapped_mayer.txt </code></pre>
+<pre class="r"><code>mapped_mayer=read.csv(&quot;../data/mapped_mayer.txt&quot;, header=FALSE)
+map.mayer.vec= as.vector(mapped_mayer[,1])
+d= hist(map.mayer.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of mayer mapped reads from cigar string&quot;)</code></pre>
+<p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(map.mayer.vec)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    1.0    21.0    32.0    28.1    38.0    70.0 </code></pre>
+<pre class="r"><code>mapped_18508=read.csv(&quot;../data/mapped_18508_dep.txt&quot;, header=FALSE)
+map.18508.vec= as.vector(mapped_18508[,1])
+b= hist(map.18508.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of 18508 mapped reads from cigar string&quot;)</code></pre>
+<p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(map.18508.vec)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   1.00   13.00   22.00   19.21   23.00   44.00 </code></pre>
+<pre class="r"><code>mapped_19238=read.csv(&quot;../data/mapped_19238_dep.txt&quot;, header=FALSE)
+map.19238.vec= as.vector(mapped_19238[,1])
+c= hist(map.19238.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of 19238 mapped reads from cigar string&quot;)</code></pre>
+<p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(map.19238.vec)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   1.00   13.00   22.00   19.41   23.00   44.00 </code></pre>
+</div>
+<div id="all-of-the-histograms" class="section level3">
+<h3>All of the histograms:</h3>
+<pre class="r"><code>par(mfrow = c(2,2))
+hist(map.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of 18486 mapped reads&quot;)
+hist(map.18508.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of 18508 mapped reads&quot;)
+hist(map.19238.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of 19238 mapped reads&quot;)
+hist(map.mayer.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of mayer reads&quot;)</code></pre>
+<p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="extract-the-softclipped-regions" class="section level3">
+<h3>Extract the softclipped regions</h3>
 </div>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
