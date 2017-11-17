@@ -24,6 +24,10 @@ knitr::read_chunk("chunks.R")
 ```{r code-version, echo=FALSE, results='asis'}
 ```
 
+
+### Mapped stats  
+
+
 Goal: Extract the number of bases that mapped and were soft clipped from bam files and make a histogram  
 
 Look first at the original bam files from the snake mapping.  
@@ -83,9 +87,94 @@ hist(map.vec, xlab="Bases", main="Histogram of mapped reads from cigar string")
 summary(map.vec)
 ```
 
+Change the code so I only add the max mapped value from each read to the file.  get_mapped_max.py  
+
+```{bash, eval= FALSE}
+#!/usr/bin/env python
+import sys
+import pysam
+import re 
 
 
-## Session information
+mapped_num = open("mapped_18486_dep_max.txt", "w")
+
+file_bam_open= open("/project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam", "r")
+file_bam= pysam.AlignmentFile(file_bam_open, "rb")
+
+def get_mapped(file):
+  mapped=[]
+  for read in file.fetch():
+      read=str(read)
+      cigar= read.split()[5] #python starts at 0
+      num= re.findall("\d+M", cigar) #this gives me each "##M" in the cigar
+      m=[]      
+      for i in num:
+        m.append(i[:-1])
+      mapped.append(max(m))
+  return(mapped)
+
+
+a=get_mapped(file_bam)
+  
+mapped_num.write("\n".join(a))  
+
+mapped_num.close()
+```
+
+```{r}
+mapped.max=read.csv("../data/mapped_18486_dep_max.txt", header=FALSE)
+map.vec.max= as.vector(mapped.max[,1])
+hist(map.vec.max, xlab="Bases", main="Histogram of max mapped reads from cigar string")
+summary(map.vec.max)
+```
+
+###Soft Clip stats  
+
+I will change the code so it looks for the digits before the S in the cigar string.  
+
+```{python, eval=FALSE}
+#!/usr/bin/env python
+import sys
+import pysam
+import re
+
+
+clip_num = open("clip_18486_dep.txt", "w")
+file_bam_open= open("/project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam", "r")
+file_bam= pysam.AlignmentFile(file_bam_open, "rb")
+def get_clip(file):
+  clip=[]
+  for read in file.fetch():
+      read= str(read)
+      cigar= read.split()[5] #python starts at 0
+      num= re.findall("\d+S", cigar) #this gives me each "##S" in the cigar
+      for i in num:
+        clip.append(i[:-1])
+  return(clip)
+
+c= get_clip(file_bam)
+
+clip_num.write("\n".join(c))
+
+clip_num.close()
+
+  
+    
+```
+
+
+```{r}
+clip=read.csv("../data/clip_18486_dep.txt", header=FALSE)
+clip.vec= as.vector(clip[,1])
+hist(clip.vec, xlab="Bases", main="Histogram of clipped reads from cigar string")
+summary(clip.vec)
+```
+
+
+
+### Make this code general 
+
+### Session information
 
 <!-- Insert the session information into the document -->
 ```{r session-info}
