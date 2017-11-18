@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-17</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> e0af49e</p>
+<p><strong>Code version:</strong> b389b8d</p>
 <div id="mapped-stats" class="section level3">
 <h3>Mapped stats</h3>
 <p>Goal: Extract the number of bases that mapped and were soft clipped from bam files and make a histogram</p>
@@ -514,6 +514,105 @@ hist(map.mayer.vec, xlab=&quot;Bases&quot;, main=&quot;Histogram of mayer reads&
 </div>
 <div id="extract-the-softclipped-regions" class="section level3">
 <h3>Extract the softclipped regions</h3>
+<p>Example bam line:</p>
+<p>700819F:582:HNHYYBCXY:1:2214:10312:72354_TGATCC 0 1 13537 13 19M25S * 0 0 CGGTGTTTGTCATGGGCCTAATTTCGTATGCCGTCTTCTGCTTG IIIIIGIIIIIIIGGIIGIIGGIIGGGIIIIGIIIIIIIGIIII HI:i:1 NH:i:1 NM:i:0</p>
+<p>The cigar is column 6. The read is column 10.</p>
+<pre class="python"><code>import re
+cigar= &quot;18S19M7S&quot;
+read= &quot;TCTGCAACAGCTGCCCCTGATCTCGTATGCCGTCTTCTGCTTGA&quot;
+num_M= re.findall(&quot;\d+[SM]&quot;, cigar)
+num_int= re.split(&quot;[SM]&quot;, cigar)
+num_int= num_int[0:-1]
+num_int=list(map(int,num_int))
+cum_sum= [sum(num_int[:i]) for i in range(1, len(num_int)+1)]
+cum_sum= [0] + cum_sum
+split_string= [read[i:j] for i, j in zip(cum_sum[:-1], cum_sum[1:])]
+num_all= []
+for i in num_M:
+    if &quot;S&quot; in i:
+        x= re.findall(&quot;\d+&quot;, i)
+        x = int(x[0])
+        num_all.append(x)
+max_S= max(num_all)
+for i in range(len(num_M)):
+  if num_int[i] == max_S:
+      break
+final = split_string[i]</code></pre>
+<pre class="python"><code>#!/usr/bin/env python
+
+import sys
+import pysam
+import re
+
+file_name = sys.argv[1]
+out_file = sys.argv[2]
+
+
+file_bam_open= open(file_name, &quot;r&quot;)
+file_bam= pysam.AlignmentFile(file_bam_open, &quot;rb&quot;)
+softclip_tot = open(out_file, &quot;w&quot;)
+
+def soft_clip(file):
+  out= []
+  for a in file.fetch():
+    line=str(a)
+    cigar= line.split()[5]
+    read= line.split()[9]
+    num_M= re.findall(&quot;\d+[SM]&quot;, cigar)
+    num_int= re.split(&quot;[A-Z]&quot;, cigar)
+    num_int= num_int[0:-1]
+    num_int=list(map(int,num_int))
+    cum_sum= [sum(num_int[:i]) for i in range(1, len(num_int)+1)]
+    cum_sum= [0] + cum_sum
+    split_string= [read[i:j] for i, j in zip(cum_sum[:-1], cum_sum[1:])]
+    num_all= []
+    for i in num_M:
+        if &quot;S&quot; in i:
+            x= re.findall(&quot;\d+&quot;, i)
+            x = int(x[0])
+            num_all.append(x)
+    if len(num_all) != 0:
+      max_S= max(num_all)
+      for i in range(len(num_M)):
+        if num_int[i] == max_S:
+            break
+      final = split_string[i]
+      out.append(final)
+  return(out)
+
+run= soft_clip(file_bam)
+
+softclip_tot.write(&quot;\n&quot;.join(run))
+
+softclip_tot.close()
+</code></pre>
+<p>Write bash file to submit this where I input the input bam and output txt.</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=run_get_soft_clip
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+#$1 input file name
+#$2 output file 
+
+
+/project2/gilad/briana/Net-seq/Net-seq1/data/sort/get_soft_clip.py $1 $2 
+</code></pre>
+<p>Submit for 18486 dep:</p>
+<pre class="bash"><code>sbatch submit_get_soft_clip.sh YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam  soft_clip_seq_18486_dep.txt
+
+
+
+sbatch submit_get_soft_clip.sh /project2/gilad/briana/Net-seq/data/sort/SRR1575922-sort.bam /project2/gilad/briana/Net-seq/data/sort/soft_clip_mayer.txt</code></pre>
+<p>current error when i run this:<br />
+max_S= max(num_all)<br />
+ValueError: max() arg is an empty sequence</p>
 </div>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
