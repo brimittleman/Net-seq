@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-17</p>
+<p><strong>Last updated:</strong> 2017-11-18</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> b389b8d</p>
+<p><strong>Code version:</strong> affe5d0</p>
 <div id="mapped-stats" class="section level3">
 <h3>Mapped stats</h3>
 <p>Goal: Extract the number of bases that mapped and were soft clipped from bam files and make a histogram</p>
@@ -610,9 +610,89 @@ source activate net-seq
 
 
 sbatch submit_get_soft_clip.sh /project2/gilad/briana/Net-seq/data/sort/SRR1575922-sort.bam /project2/gilad/briana/Net-seq/data/sort/soft_clip_mayer.txt</code></pre>
-<p>current error when i run this:<br />
-max_S= max(num_all)<br />
-ValueError: max() arg is an empty sequence</p>
+<p>Complete and ready to analyze the txt files.</p>
+</div>
+<div id="extract-the-quality-score-per-read" class="section level3">
+<h3>Extract the quality score per read</h3>
+<p>The quality score is in the sorted bam file.</p>
+<ol start="5" style="list-style-type: decimal">
+<li>MAPQ: MAPping Quality. It equals 􀀀10 log10 Prfmapping position is wrongg, rounded to the nearest integer. A value 255 indicates that the mapping quality is not available.</li>
+</ol>
+<p>This is column 5 in the bam file.</p>
+<p>This script is called get_qual.py This is in /project2/gilad/briana/Net-seq/scripts</p>
+<p>Run by passing it the bam file and an output txt file.</p>
+<pre class="python"><code>#!/usr/bin/env python
+import sys
+import pysam
+import re
+
+file_name = sys.argv[1]
+out_file = sys.argv[2]
+
+qual_score = open(out_file, &quot;w&quot;)
+file_bam_open= open(file_name, &quot;r&quot;)
+file_bam= pysam.AlignmentFile(file_bam_open, &quot;rb&quot;)
+
+def get_qual(file):
+  out=[]
+  for read in file.fetch():
+      read= str(read)
+      cigar= read.split()[4] #python starts at 0
+      out.append(cigar)
+  return(out)
+
+a= get_qual(file_bam)
+
+qual_score.write(&quot;\n&quot;.join(a))
+
+qual_score.close()
+</code></pre>
+<p>Import data:</p>
+<pre class="r"><code>qual_18486= read.csv(&quot;../data/qual_18486_dep.txt&quot;, head=FALSE)
+qual_18508= read.csv(&quot;../data/qual_18508_dep.txt&quot;, head=FALSE)
+qual_19238= read.csv(&quot;../data/qual_19238_dep.txt&quot;, head=FALSE)
+qual_mayer= read.csv(&quot;../data/qual_mayer.txt&quot;, head=FALSE)</code></pre>
+<p>Look at the summary:</p>
+<pre class="r"><code>summary(qual_18486)</code></pre>
+<pre><code>       V1      
+ Min.   : 6.0  
+ 1st Qu.:13.0  
+ Median :13.0  
+ Mean   :14.3  
+ 3rd Qu.:13.0  
+ Max.   :40.0  </code></pre>
+<pre class="r"><code>summary(qual_18508)</code></pre>
+<pre><code>       V1       
+ Min.   : 6.00  
+ 1st Qu.:13.00  
+ Median :13.00  
+ Mean   :12.59  
+ 3rd Qu.:13.00  
+ Max.   :40.00  </code></pre>
+<pre class="r"><code>summary(qual_19238)</code></pre>
+<pre><code>       V1       
+ Min.   : 6.00  
+ 1st Qu.:13.00  
+ Median :13.00  
+ Mean   :12.88  
+ 3rd Qu.:13.00  
+ Max.   :40.00  </code></pre>
+<pre class="r"><code>summary(qual_mayer)</code></pre>
+<pre><code>       V1       
+ Min.   : 6.00  
+ 1st Qu.:10.00  
+ Median :13.00  
+ Mean   :21.11  
+ 3rd Qu.:40.00  
+ Max.   :40.00  </code></pre>
+<p>Make map quality histograms:</p>
+<pre class="r"><code>par(mfrow = c(2,2))
+
+hist(as.numeric(qual_18486[,1]), freq=FALSE, main=&quot;Quality 18486&quot;, xlab=&quot;Quality Score&quot;)
+hist(as.numeric(qual_18508[,1]), freq=FALSE, main=&quot;Quality 18508&quot;, xlab=&quot;Quality Score&quot;)
+hist(as.numeric(qual_19238[,1]), freq=FALSE, main=&quot;Quality 19238&quot;, xlab=&quot;Quality Score&quot;)
+hist(as.numeric(qual_mayer[,1]), freq=FALSE, main= &quot;Quality Mayer&quot;, xlab=&quot;Quality Score&quot;)</code></pre>
+<p><img src="figure/map_stats_from_bam.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
