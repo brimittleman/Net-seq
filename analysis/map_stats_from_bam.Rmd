@@ -261,6 +261,130 @@ hist(map.mayer.vec, xlab="Bases", main="Histogram of mayer reads")
 ###Extract the softclipped regions  
 
 
+Example bam line: 
+
+700819F:582:HNHYYBCXY:1:2214:10312:72354_TGATCC	0	1	13537	13	19M25S	*	0	0	CGGTGTTTGTCATGGGCCTAATTTCGTATGCCGTCTTCTGCTTG	IIIIIGIIIIIIIGGIIGIIGGIIGGGIIIIGIIIIIIIGIIII	HI:i:1	NH:i:1	NM:i:0
+
+The cigar is column 6. 
+The read is column 10.
+
+
+```{python, eval=FALSE}
+import re
+cigar= "18S19M7S"
+read= "TCTGCAACAGCTGCCCCTGATCTCGTATGCCGTCTTCTGCTTGA"
+num_M= re.findall("\d+[SM]", cigar)
+num_int= re.split("[SM]", cigar)
+num_int= num_int[0:-1]
+num_int=list(map(int,num_int))
+cum_sum= [sum(num_int[:i]) for i in range(1, len(num_int)+1)]
+cum_sum= [0] + cum_sum
+split_string= [read[i:j] for i, j in zip(cum_sum[:-1], cum_sum[1:])]
+num_all= []
+for i in num_M:
+    if "S" in i:
+        x= re.findall("\d+", i)
+        x = int(x[0])
+        num_all.append(x)
+max_S= max(num_all)
+for i in range(len(num_M)):
+  if num_int[i] == max_S:
+      break
+final = split_string[i]
+```
+
+
+
+
+```{python, eval=FALSE}
+#!/usr/bin/env python
+
+import sys
+import pysam
+import re
+
+file_name = sys.argv[1]
+out_file = sys.argv[2]
+
+
+file_bam_open= open(file_name, "r")
+file_bam= pysam.AlignmentFile(file_bam_open, "rb")
+softclip_tot = open(out_file, "w")
+
+def soft_clip(file):
+  out= []
+  for a in file.fetch():
+    line=str(a)
+    cigar= line.split()[5]
+    read= line.split()[9]
+    num_M= re.findall("\d+[SM]", cigar)
+    num_int= re.split("[A-Z]", cigar)
+    num_int= num_int[0:-1]
+    num_int=list(map(int,num_int))
+    cum_sum= [sum(num_int[:i]) for i in range(1, len(num_int)+1)]
+    cum_sum= [0] + cum_sum
+    split_string= [read[i:j] for i, j in zip(cum_sum[:-1], cum_sum[1:])]
+    num_all= []
+    for i in num_M:
+        if "S" in i:
+            x= re.findall("\d+", i)
+            x = int(x[0])
+            num_all.append(x)
+    if len(num_all) != 0:
+      max_S= max(num_all)
+      for i in range(len(num_M)):
+        if num_int[i] == max_S:
+            break
+      final = split_string[i]
+      out.append(final)
+  return(out)
+
+run= soft_clip(file_bam)
+
+softclip_tot.write("\n".join(run))
+
+softclip_tot.close()
+
+```
+
+Write bash file to submit this where I input the input bam and output txt.  
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=run_get_soft_clip
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --tasks-per-node=4 
+
+module load Anaconda3
+source activate net-seq
+
+#$1 input file name
+#$2 output file 
+
+
+/project2/gilad/briana/Net-seq/Net-seq1/data/sort/get_soft_clip.py $1 $2 
+
+
+```
+
+Submit for 18486 dep:  
+
+```{bash, eval=FALSE}
+sbatch submit_get_soft_clip.sh YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam  soft_clip_seq_18486_dep.txt
+
+
+
+sbatch submit_get_soft_clip.sh /project2/gilad/briana/Net-seq/data/sort/SRR1575922-sort.bam /project2/gilad/briana/Net-seq/data/sort/soft_clip_mayer.txt
+```
+
+
+current error when i run this:  
+max_S= max(num_all)  
+ValueError: max() arg is an empty sequence  
+
+
 ### Session information
 
 <!-- Insert the session information into the document -->
