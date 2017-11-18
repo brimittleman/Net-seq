@@ -380,9 +380,84 @@ sbatch submit_get_soft_clip.sh /project2/gilad/briana/Net-seq/data/sort/SRR15759
 ```
 
 
-current error when i run this:  
-max_S= max(num_all)  
-ValueError: max() arg is an empty sequence  
+Complete and ready to analyze the txt files.  
+
+
+### Extract the quality score per read  
+
+The quality score is in the sorted bam file.  
+
+5. MAPQ: MAPping Quality. It equals 􀀀10 log10 Prfmapping position is wrongg, rounded to the
+nearest integer. A value 255 indicates that the mapping quality is not available.  
+
+This is column 5 in the bam file.  
+
+
+This script is called get_qual.py This is in /project2/gilad/briana/Net-seq/scripts  
+
+Run by passing it the bam file and an output txt file.  
+
+```{python, eval=FALSE}
+#!/usr/bin/env python
+import sys
+import pysam
+import re
+
+file_name = sys.argv[1]
+out_file = sys.argv[2]
+
+qual_score = open(out_file, "w")
+file_bam_open= open(file_name, "r")
+file_bam= pysam.AlignmentFile(file_bam_open, "rb")
+
+def get_qual(file):
+  out=[]
+  for read in file.fetch():
+      read= str(read)
+      cigar= read.split()[4] #python starts at 0
+      out.append(cigar)
+  return(out)
+
+a= get_qual(file_bam)
+
+qual_score.write("\n".join(a))
+
+qual_score.close()
+
+
+```
+
+
+Import data:  
+
+```{r}
+qual_18486= read.csv("../data/qual_18486_dep.txt", head=FALSE)
+qual_18508= read.csv("../data/qual_18508_dep.txt", head=FALSE)
+qual_19238= read.csv("../data/qual_19238_dep.txt", head=FALSE)
+qual_mayer= read.csv("../data/qual_mayer.txt", head=FALSE)
+```
+
+
+Look at the summary:  
+
+
+```{r}
+summary(qual_18486)
+summary(qual_18508)
+summary(qual_19238)
+summary(qual_mayer)
+```
+
+Make map quality histograms:  
+```{r}
+par(mfrow = c(2,2))
+
+hist(as.numeric(qual_18486[,1]), freq=FALSE, main="Quality 18486", xlab="Quality Score")
+hist(as.numeric(qual_18508[,1]), freq=FALSE, main="Quality 18508", xlab="Quality Score")
+hist(as.numeric(qual_19238[,1]), freq=FALSE, main="Quality 19238", xlab="Quality Score")
+hist(as.numeric(qual_mayer[,1]), freq=FALSE, main= "Quality Mayer", xlab="Quality Score")
+```
+
 
 
 ### Session information
