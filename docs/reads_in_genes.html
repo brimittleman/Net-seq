@@ -313,10 +313,12 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-20</p>
+<p><strong>Last updated:</strong> 2017-11-21</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 750441a</p>
+<p><strong>Code version:</strong> 46a9e5e</p>
+<div id="initial-exploration-for-data-format" class="section level2">
+<h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
 <p>I have downloaded 3 bed files from the UCSC table browser:</p>
 <ul>
@@ -354,8 +356,6 @@ bedtools coverage -a $1 -b /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-
 bedtools coverage -a ref_seq_gene_hg19_ -b /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed -hist  &gt; gene_coverage_18486_dedup_hist.txt
 </code></pre>
 <p>Try with only 1 file first.</p>
-<pre class="bash"><code> #sort -k1,1 -k2,2n ref_seq_gene_hg19 &gt; ref_seq_gene_hg19_sorted.bed
-</code></pre>
 <p>Try with /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed</p>
 <p>This works but it is for the deduplicated file. I am going to do the sorted files first. I need to convert the sorted bam files to bed files. All of the sorted bed files with the chr label are in data/bed</p>
 <p>Should probably do this for the deduplicated files as well.</p>
@@ -367,18 +367,110 @@ awk &#39;$0=&quot;chr&quot;$0&#39; file &gt; new_file </code></pre>
 cat ref_seq_gene_hg19  | cut  -f 1-6 &gt; ref_seq_gene_hg19_small_cut
 </code></pre>
 <p>Still to big. Run on one file.</p>
-<pre class="bash"><code>bedtools coverage -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/net1_18486_dep_chr.bed -hist  &gt; gene_coverage_18486_hist.txt</code></pre>
-<pre class="r"><code>gene_coverage_18486_dedup= read.csv(&quot;../data/gene_coverage_18486_dedup_hist.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+<pre class="bash"><code>bedtools coverage -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/net1_18486_dep_chr.bed  &gt; gene_coverage_18486_hist.txt</code></pre>
+<p>Run this to make:</p>
+<ul>
+<li><p>gene_coverage_18508_dep_hist.txt</p></li>
+<li><p>gene_coverage_18508_dep_hist.txt</p></li>
+<li><p>gene_coverage_18508_nondep_hist.txt</p></li>
+<li><p>gene_coverage_19238_dep_hist.txt</p></li>
+<li><p>gene_coverage_mayer_SRR1575922_hist.txt</p></li>
+</ul>
+<p>Sort the bed files then rerun the coverage with the counts option to get one read count per gene. I have the script to sort the script files in each data/bed folder. ls</p>
+<pre class="bash"><code>bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18486_dep_chr_sort.bed  &gt; gene_cov_count/gene_coverage_18486_count.txt
 
-#with smaller gene file  
 
-gene_coverage_18486= read.csv(&quot;../data/gene_coverage_18486_hist.txt&quot;, head=FALSE, sep=&quot;\t&quot;)
-colnames(gene_coverage_18486)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero&quot;)
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_dep_chr_sort.bed  &gt; gene_cov_count/gene_coverage_18508_dep_count.txt
 
-gene_coverage_18486_noNA= na.omit(gene_coverage_18486)</code></pre>
-<p>After each interval in A, bedtools coverage will report:</p>
-<p>overlap= The number of features in B that overlapped (by at least one base pair) the A interval. bases_non_zero= The number of bases in A that had non-zero coverage from features in B. lengthA= The length of the entry in A. frac_A_non_zero= The fraction of bases in A that had non-zero coverage from features in B.</p>
-<p>I want the number of genes that do not have an overlap of zero:</p>
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_nondep_chr_sort.bed   &gt; gene_cov_count/gene_coverage_18508_nondep_count.txt
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_19238_dep_chr_sort.bed   &gt; gene_cov_count/gene_coverage_19238_dep_count.txt
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   &gt; gene_cov_count/gene_coverage_mayer_SRR1575922_count.txt
+</code></pre>
+</div>
+<div id="data-input-non-depuplicated" class="section level2">
+<h2>Data input (non-depuplicated)</h2>
+<div id="gene-coverage" class="section level3">
+<h3>Gene Coverage</h3>
+<pre class="r"><code>gene_coverage_18486_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+gene_coverage_18508_dep_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+gene_coverage_18508_nondep_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18508_nondep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+gene_coverage_19238_dep_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_19238_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+gene_coverage_mayer_dep_count = read.csv(&quot;../data/gene_cov_count/gene_coverage_mayer_SRR1575922_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
+<pre class="r"><code>colnames(gene_coverage_18486_count) = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(gene_coverage_18508_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(gene_coverage_18508_nondep_count)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(gene_coverage_19238_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(gene_coverage_mayer_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)</code></pre>
+</div>
+<div id="gene-and-promoter-coverage" class="section level3">
+<h3>Gene and promoter coverage</h3>
+<pre class="r"><code>prom_coverage_18486_count= read.csv(&quot;../data/prom_coverage/prom_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+prom_coverage_18508_dep_count= read.csv(&quot;../data/prom_coverage/prom_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+prom_coverage_18508_nondep_count= read.csv(&quot;../data/prom_coverage/prom_coverage_18508_nondep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+prom_coverage_19238_dep_count= read.csv(&quot;../data/prom_coverage/prom_coverage_19238_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+prom_coverage_mayer_dep_count = read.csv(&quot;../data/prom_coverage/promoter_coverage_mayer_SRR1575922_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
+<pre class="r"><code>colnames(prom_coverage_mayer_dep_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(prom_coverage_19238_dep_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(prom_coverage_18508_nondep_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(prom_coverage_18508_dep_count) =  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)  
+colnames(prom_coverage_18486_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)</code></pre>
+</div>
+<div id="exon-coverage" class="section level3">
+<h3>Exon coverage</h3>
+<pre class="r"><code>exon_coverage_18486_count= read.csv(&quot;../data/exon_cov/exon_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+exon_coverage_18508_dep_count= read.csv(&quot;../data/exon_cov/exon_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+exon_coverage_18508_nondep_count= read.csv(&quot;../data/exon_cov/exon_coverage_18508_nondep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+exon_coverage_19238_dep_count= read.csv(&quot;../data/exon_cov/exon_coverage_19238_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+exon_coverage_mayer_dep_count = read.csv(&quot;../data/exon_cov/exon_coverage_mayer_SRR1575922_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
+<pre class="r"><code>colnames(exon_coverage_mayer_dep_count)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(exon_coverage_19238_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(exon_coverage_18508_nondep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(exon_coverage_18508_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+colnames(exon_coverage_18486_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)  </code></pre>
+</div>
+<div id="coverage-with-histograms" class="section level3">
+<h3>Coverage with histograms</h3>
+<p>These are the historgram files I made.</p>
+<pre class="r"><code>#gene_coverage_18486_dedup= read.csv(&quot;../data/gene_coverage_18486_dedup_hist.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+
+#gene_coverage_18486= read.csv(&quot;../data/gene_coverage_18486_hist.txt&quot;, head=FALSE, sep=&quot;\t&quot;)
+
+#gene_coverage_18508_dep= read.csv(&quot;../data/gene_coverage_18508_dep_hist.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+#gene_coverage_18508_nondep= read.csv(&quot;../data/gene_coverage_18508_nondep_hist.txt&quot;, head=FALSE, sep=&quot;\t&quot;)
+#gene_coverage_19238_dep = read.csv(&quot;../data/gene_coverage_19238_dep_hist.txt&quot;, head=FALSE, sep=&quot;\t&quot;)
+#gene_coverage_mayer_dep = read.csv(&quot;../data/gene_coverage_mayer_SRR1575922_hist.txt&quot;, head=FALSE, sep=&quot;\t&quot;)</code></pre>
+<p>Add column names:</p>
+<pre class="r"><code>#colnames(gene_coverage_18486_dedup)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero_hist&quot;)
+#colnames(gene_coverage_18486)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero_hist&quot;)
+#colnames(gene_coverage_18508_dep)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero_hist&quot;)
+#colnames(gene_coverage_18508_nondep)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero_hist&quot;)
+#colnames(gene_coverage_19238_dep)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero_hist&quot;)
+#colnames(gene_coverage_mayer_dep)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero_hist&quot;)</code></pre>
+<p>Omit NA columns:</p>
+<pre class="r"><code># gene_coverage_18486= na.omit(gene_coverage_18486)
+# gene_coverage_18486_dedup= na.omit(gene_coverage_18486_dedup)
+# gene_coverage_18508_dep= na.omit(gene_coverage_18508_hist_dep)
+# gene_coverage_18508_nondep= na.omit(gene_coverage_18508_nondep)
+# gene_coverage_19238_dep= na.omit(gene_coverage_19238_dep)
+# gene_coverage_mayer_dep= na.omit(gene_coverage_mayer_dep)</code></pre>
+</div>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
