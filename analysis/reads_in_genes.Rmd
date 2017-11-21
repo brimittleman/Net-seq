@@ -24,6 +24,9 @@ knitr::read_chunk("chunks.R")
 ```{r code-version, echo=FALSE, results='asis'}
 ```
 
+##Initial exploration for data format  
+
+
 The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage. 
 
 I have downloaded 3 bed files from the UCSC table browser:  
@@ -74,13 +77,6 @@ bedtools coverage -a ref_seq_gene_hg19_ -b /project2/gilad/briana/Net-seq/Net-se
 
 Try with only 1 file first.  
 
-
-```{bash, eval=FALSE}
- #sort -k1,1 -k2,2n ref_seq_gene_hg19 > ref_seq_gene_hg19_sorted.bed
-
-```
-
-
 Try with /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed  
 
 This works but it is for the deduplicated file. I am going to do the sorted files first. I need to convert the sorted bam files to bed files. All of the sorted bed files with the chr label are in data/bed  
@@ -107,32 +103,158 @@ cat ref_seq_gene_hg19  | cut  -f 1-6 > ref_seq_gene_hg19_small_cut
 Still to big. Run on one file.  
 
 ```{bash, eval=FALSE}
-bedtools coverage -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/net1_18486_dep_chr.bed -hist  > gene_coverage_18486_hist.txt
+bedtools coverage -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/net1_18486_dep_chr.bed  > gene_coverage_18486_hist.txt
 ```
+Run this to make:  
 
+* gene_coverage_18508_dep_hist.txt  
+
+* gene_coverage_18508_dep_hist.txt  
+
+* gene_coverage_18508_nondep_hist.txt   
+
+* gene_coverage_19238_dep_hist.txt  
+
+* gene_coverage_mayer_SRR1575922_hist.txt  
+
+
+
+Sort the bed files then rerun the coverage with the counts option to get one read count per gene. I have the script to sort the script files in each data/bed folder.  ls
+
+
+```{bash, eval=FALSE}
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18486_dep_chr_sort.bed  > gene_cov_count/gene_coverage_18486_count.txt
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_dep_chr_sort.bed  > gene_cov_count/gene_coverage_18508_dep_count.txt
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_nondep_chr_sort.bed   > gene_cov_count/gene_coverage_18508_nondep_count.txt
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_19238_dep_chr_sort.bed   > gene_cov_count/gene_coverage_19238_dep_count.txt
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   > gene_cov_count/gene_coverage_mayer_SRR1575922_count.txt
+
+```
+##Data input (non-depuplicated)
+
+###Gene Coverage 
 
 
 ```{r}
-gene_coverage_18486_dedup= read.csv("../data/gene_coverage_18486_dedup_hist.txt", header=FALSE, sep="\t")
+gene_coverage_18486_count= read.csv("../data/gene_cov_count/gene_coverage_18486_count.txt", header=FALSE, sep="\t")
 
-#with smaller gene file  
+gene_coverage_18508_dep_count= read.csv("../data/gene_cov_count/gene_coverage_18508_dep_count.txt", header=FALSE, sep="\t")
 
-gene_coverage_18486= read.csv("../data/gene_coverage_18486_hist.txt", head=FALSE, sep="\t")
-colnames(gene_coverage_18486)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero")
+gene_coverage_18508_nondep_count= read.csv("../data/gene_cov_count/gene_coverage_18508_nondep_count.txt", header=FALSE, sep="\t")
 
-gene_coverage_18486_noNA= na.omit(gene_coverage_18486)
+gene_coverage_19238_dep_count= read.csv("../data/gene_cov_count/gene_coverage_19238_dep_count.txt", header=FALSE, sep="\t")
+
+gene_coverage_mayer_dep_count = read.csv("../data/gene_cov_count/gene_coverage_mayer_SRR1575922_count.txt", header=FALSE, sep="\t")
+```
+
+
+```{r}
+colnames(gene_coverage_18486_count) = c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_18508_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_18508_nondep_count)=c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_19238_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_mayer_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+```
+
+
+
+###Gene and promoter coverage  
+
+
+```{r}
+prom_coverage_18486_count= read.csv("../data/prom_coverage/prom_coverage_18486_count.txt", header=FALSE, sep="\t")
+
+prom_coverage_18508_dep_count= read.csv("../data/prom_coverage/prom_coverage_18508_dep_count.txt", header=FALSE, sep="\t")
+
+prom_coverage_18508_nondep_count= read.csv("../data/prom_coverage/prom_coverage_18508_nondep_count.txt", header=FALSE, sep="\t")
+
+prom_coverage_19238_dep_count= read.csv("../data/prom_coverage/prom_coverage_19238_dep_count.txt", header=FALSE, sep="\t")
+
+prom_coverage_mayer_dep_count = read.csv("../data/prom_coverage/promoter_coverage_mayer_SRR1575922_count.txt", header=FALSE, sep="\t")
+```
+
+```{r}
+colnames(prom_coverage_mayer_dep_count)=  c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(prom_coverage_19238_dep_count)=  c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(prom_coverage_18508_nondep_count)=  c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(prom_coverage_18508_dep_count) =  c("chr", "start", "end", "name", "score", "strand", "counts")  
+colnames(prom_coverage_18486_count)=  c("chr", "start", "end", "name", "score", "strand", "counts")
 
 ```
 
 
-After each interval in A, bedtools coverage will report:
 
-overlap= The number of features in B that overlapped (by at least one base pair) the A interval.
-bases_non_zero= The number of bases in A that had non-zero coverage from features in B.
-lengthA= The length of the entry in A.
-frac_A_non_zero= The fraction of bases in A that had non-zero coverage from features in B.
 
-I want the number of genes that do not have an overlap of zero:  
+###Exon coverage  
+
+```{r}
+exon_coverage_18486_count= read.csv("../data/exon_cov/exon_coverage_18486_count.txt", header=FALSE, sep="\t")
+
+exon_coverage_18508_dep_count= read.csv("../data/exon_cov/exon_coverage_18508_dep_count.txt", header=FALSE, sep="\t")
+
+exon_coverage_18508_nondep_count= read.csv("../data/exon_cov/exon_coverage_18508_nondep_count.txt", header=FALSE, sep="\t")
+
+exon_coverage_19238_dep_count= read.csv("../data/exon_cov/exon_coverage_19238_dep_count.txt", header=FALSE, sep="\t")
+
+exon_coverage_mayer_dep_count = read.csv("../data/exon_cov/exon_coverage_mayer_SRR1575922_count.txt", header=FALSE, sep="\t")
+```
+
+```{r}
+colnames(exon_coverage_mayer_dep_count)=c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(exon_coverage_19238_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(exon_coverage_18508_nondep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(exon_coverage_18508_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(exon_coverage_18486_count)= c("chr", "start", "end", "name", "score", "strand", "counts")  
+```
+
+
+###Coverage with histograms  
+These are the historgram files I made.  
+
+```{r}
+#gene_coverage_18486_dedup= read.csv("../data/gene_coverage_18486_dedup_hist.txt", header=FALSE, sep="\t")
+
+
+#gene_coverage_18486= read.csv("../data/gene_coverage_18486_hist.txt", head=FALSE, sep="\t")
+
+#gene_coverage_18508_dep= read.csv("../data/gene_coverage_18508_dep_hist.txt", header=FALSE, sep="\t")
+#gene_coverage_18508_nondep= read.csv("../data/gene_coverage_18508_nondep_hist.txt", head=FALSE, sep="\t")
+#gene_coverage_19238_dep = read.csv("../data/gene_coverage_19238_dep_hist.txt", head=FALSE, sep="\t")
+#gene_coverage_mayer_dep = read.csv("../data/gene_coverage_mayer_SRR1575922_hist.txt", head=FALSE, sep="\t")
+
+
+```
+Add column names:  
+
+```{r}
+#colnames(gene_coverage_18486_dedup)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero_hist")
+#colnames(gene_coverage_18486)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero_hist")
+#colnames(gene_coverage_18508_dep)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero_hist")
+#colnames(gene_coverage_18508_nondep)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero_hist")
+#colnames(gene_coverage_19238_dep)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero_hist")
+#colnames(gene_coverage_mayer_dep)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero_hist")
+
+```
+
+Omit NA columns:  
+
+```{r}
+# gene_coverage_18486= na.omit(gene_coverage_18486)
+# gene_coverage_18486_dedup= na.omit(gene_coverage_18486_dedup)
+# gene_coverage_18508_dep= na.omit(gene_coverage_18508_hist_dep)
+# gene_coverage_18508_nondep= na.omit(gene_coverage_18508_nondep)
+# gene_coverage_19238_dep= na.omit(gene_coverage_19238_dep)
+# gene_coverage_mayer_dep= na.omit(gene_coverage_mayer_dep)
+
+```
+
+
 
 ## Session information
 
