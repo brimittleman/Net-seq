@@ -1,0 +1,110 @@
+---
+title: "Coverage in gene regions"
+author: "Briana Mittleman"
+date: 2017-11-20
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage. 
+
+I have downloaded 3 bed files from the UCSC table browser:  
+
+* Ref seq genes  
+
+* Ref seq genes + 250 upstream  
+
+* Ref seq exons  
+
+
+I will use the bedtools coverage function. Documentation is below:  
+
+http://bedtools.readthedocs.io/en/latest/content/tools/coverage.html  
+
+* a bed file for the genes/exons  
+* bam files for my data and the mayer data  
+
+```{bash, eval=FALSE}
+
+bedtools coverage -a <FILE> \
+                             -b <FILE1, FILE2, ..., FILEN>
+```
+
+
+Write a bash script for genes overlap:  genome_overlap.sh
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=bedtools_coverage
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=8G
+#SBATCH --tasks-per-node=4 
+
+#$1 reference to use 
+
+
+bedtools coverage -a $1 -b /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-SP-NET1-Unk1_S6_R1_001-sort.bam /project2/gilad/briana/Net-seq/data/sort/SRR1575922-sort.bam 
+
+#> to a txt file  
+
+
+bedtools coverage -a ref_seq_gene_hg19 -b /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed -hist  > gene_coverage_18486_dedup_hist.txt
+
+```
+
+
+Try with only 1 file first.  
+
+
+```{bash, eval=FALSE}
+ #sort -k1,1 -k2,2n ref_seq_gene_hg19 > ref_seq_gene_hg19_sorted.bed
+
+```
+
+
+Try with /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed  
+
+This works but it is for the deduplicated file. I am going to do the sorted files first. I need to convert the sorted bam files to bed files. All of the sorted bed files with the chr label are in data/bed  
+
+```{bash, eval=FALSE}
+bedtools bamtobed [OPTIONS] -i <BAM>
+awk '$0="chr"$0' file > new_file 
+```
+
+
+Not sure what column is which.... need to look into the output more  
+
+```{r}
+gene_coverage_18486_dedup= read.csv("../data/gene_coverage_18486_dedup_hist.txt", header=FALSE, sep="\t")
+```
+
+
+
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+
+```
