@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-20</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 560df7d</p>
+<p><strong>Code version:</strong> 750441a</p>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
 <p>I have downloaded 3 bed files from the UCSC table browser:</p>
 <ul>
@@ -351,17 +351,34 @@ bedtools coverage -a $1 -b /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-
 #&gt; to a txt file  
 
 
-bedtools coverage -a ref_seq_gene_hg19 -b /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed -hist  &gt; gene_coverage_18486_dedup_hist.txt
+bedtools coverage -a ref_seq_gene_hg19_ -b /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed -hist  &gt; gene_coverage_18486_dedup_hist.txt
 </code></pre>
 <p>Try with only 1 file first.</p>
 <pre class="bash"><code> #sort -k1,1 -k2,2n ref_seq_gene_hg19 &gt; ref_seq_gene_hg19_sorted.bed
 </code></pre>
 <p>Try with /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed</p>
 <p>This works but it is for the deduplicated file. I am going to do the sorted files first. I need to convert the sorted bam files to bed files. All of the sorted bed files with the chr label are in data/bed</p>
+<p>Should probably do this for the deduplicated files as well.</p>
 <pre class="bash"><code>bedtools bamtobed [OPTIONS] -i &lt;BAM&gt;
 awk &#39;$0=&quot;chr&quot;$0&#39; file &gt; new_file </code></pre>
-<p>Not sure what column is which…. need to look into the output more</p>
-<pre class="r"><code>gene_coverage_18486_dedup= read.csv(&quot;../data/gene_coverage_18486_dedup_hist.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
+<p>Only want first 6 columns of the ref file</p>
+<pre class="bash"><code>
+
+cat ref_seq_gene_hg19  | cut  -f 1-6 &gt; ref_seq_gene_hg19_small_cut
+</code></pre>
+<p>Still to big. Run on one file.</p>
+<pre class="bash"><code>bedtools coverage -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/net1_18486_dep_chr.bed -hist  &gt; gene_coverage_18486_hist.txt</code></pre>
+<pre class="r"><code>gene_coverage_18486_dedup= read.csv(&quot;../data/gene_coverage_18486_dedup_hist.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+
+#with smaller gene file  
+
+gene_coverage_18486= read.csv(&quot;../data/gene_coverage_18486_hist.txt&quot;, head=FALSE, sep=&quot;\t&quot;)
+colnames(gene_coverage_18486)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;overlap&quot;, &quot;bases_non_zero&quot;, &quot;lengthA&quot;, &quot;frac_A_non_zero&quot;)
+
+gene_coverage_18486_noNA= na.omit(gene_coverage_18486)</code></pre>
+<p>After each interval in A, bedtools coverage will report:</p>
+<p>overlap= The number of features in B that overlapped (by at least one base pair) the A interval. bases_non_zero= The number of bases in A that had non-zero coverage from features in B. lengthA= The length of the entry in A. frac_A_non_zero= The fraction of bases in A that had non-zero coverage from features in B.</p>
+<p>I want the number of genes that do not have an overlap of zero:</p>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
