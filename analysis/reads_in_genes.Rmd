@@ -67,7 +67,7 @@ bedtools coverage -a $1 -b /project2/gilad/briana/Net-seq/Net-seq1/data/sort/YG-
 #> to a txt file  
 
 
-bedtools coverage -a ref_seq_gene_hg19 -b /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed -hist  > gene_coverage_18486_dedup_hist.txt
+bedtools coverage -a ref_seq_gene_hg19_ -b /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.bed -hist  > gene_coverage_18486_dedup_hist.txt
 
 ```
 
@@ -85,22 +85,54 @@ Try with /project2/gilad/briana/Net-seq/Net-seq1/data/net1_18486_dep_dedup_chr.b
 
 This works but it is for the deduplicated file. I am going to do the sorted files first. I need to convert the sorted bam files to bed files. All of the sorted bed files with the chr label are in data/bed  
 
+Should probably do this for the deduplicated files as well.  
+
 ```{bash, eval=FALSE}
 bedtools bamtobed [OPTIONS] -i <BAM>
 awk '$0="chr"$0' file > new_file 
 ```
 
 
-Not sure what column is which.... need to look into the output more  
 
-```{r}
-gene_coverage_18486_dedup= read.csv("../data/gene_coverage_18486_dedup_hist.txt", header=FALSE, sep="\t")
+Only want first 6 columns of the ref file  
+
+```{bash, eval=FALSE}
+
+
+cat ref_seq_gene_hg19  | cut  -f 1-6 > ref_seq_gene_hg19_small_cut
+
+```
+
+
+Still to big. Run on one file.  
+
+```{bash, eval=FALSE}
+bedtools coverage -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/net1_18486_dep_chr.bed -hist  > gene_coverage_18486_hist.txt
 ```
 
 
 
+```{r}
+gene_coverage_18486_dedup= read.csv("../data/gene_coverage_18486_dedup_hist.txt", header=FALSE, sep="\t")
+
+#with smaller gene file  
+
+gene_coverage_18486= read.csv("../data/gene_coverage_18486_hist.txt", head=FALSE, sep="\t")
+colnames(gene_coverage_18486)= c("chr", "start", "end", "name", "score", "strand", "overlap", "bases_non_zero", "lengthA", "frac_A_non_zero")
+
+gene_coverage_18486_noNA= na.omit(gene_coverage_18486)
+
+```
 
 
+After each interval in A, bedtools coverage will report:
+
+overlap= The number of features in B that overlapped (by at least one base pair) the A interval.
+bases_non_zero= The number of bases in A that had non-zero coverage from features in B.
+lengthA= The length of the entry in A.
+frac_A_non_zero= The fraction of bases in A that had non-zero coverage from features in B.
+
+I want the number of genes that do not have an overlap of zero:  
 
 ## Session information
 
