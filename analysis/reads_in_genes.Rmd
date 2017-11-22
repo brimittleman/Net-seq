@@ -220,6 +220,17 @@ boxplot(-log(gene_coverage_all$st_18486), -log(gene_coverage_all$st_18508_dep), 
 
 ```
 
+Scatter plots:  
+
+```{r}
+
+par(mfrow = c(1,2))
+plot(gene_coverage_all$st_18486 ~ gene_coverage_all$st_18508_dep, xlab="18486", ylab = "18508")
+abline(lm(gene_coverage_all$st_18486 ~ gene_coverage_all$st_18508_dep))
+plot(gene_coverage_all$st_18486 ~ gene_coverage_all$st_mayer, xlab= "18486", ylab="Mayer")
+abline(lm(gene_coverage_all$st_18486 ~ gene_coverage_all$st_mayer))
+title("Standard Count Correlatation") 
+```
 
 
 
@@ -270,23 +281,23 @@ colnames(prom_coverage_18486_count)=  c("chr", "start", "end", "name", "score", 
 ###Exon coverage  
 
 ```{r}
-exon_coverage_18486_count= read.csv("../data/exon_cov/exon_coverage_18486_count.txt", header=FALSE, sep="\t")
-
-exon_coverage_18508_dep_count= read.csv("../data/exon_cov/exon_coverage_18508_dep_count.txt", header=FALSE, sep="\t")
-
-exon_coverage_18508_nondep_count= read.csv("../data/exon_cov/exon_coverage_18508_nondep_count.txt", header=FALSE, sep="\t")
-
-exon_coverage_19238_dep_count= read.csv("../data/exon_cov/exon_coverage_19238_dep_count.txt", header=FALSE, sep="\t")
-
-exon_coverage_mayer_dep_count = read.csv("../data/exon_cov/exon_coverage_mayer_SRR1575922_count.txt", header=FALSE, sep="\t")
+# exon_coverage_18486_count= read.csv("../data/exon_cov/exon_coverage_18486_count.txt", header=FALSE, sep="\t")
+# 
+# exon_coverage_18508_dep_count= read.csv("../data/exon_cov/exon_coverage_18508_dep_count.txt", header=FALSE, sep="\t")
+# 
+# exon_coverage_18508_nondep_count= read.csv("../data/exon_cov/exon_coverage_18508_nondep_count.txt", header=FALSE, sep="\t")
+# 
+# exon_coverage_19238_dep_count= read.csv("../data/exon_cov/exon_coverage_19238_dep_count.txt", header=FALSE, sep="\t")
+# 
+# exon_coverage_mayer_dep_count = read.csv("../data/exon_cov/exon_coverage_mayer_SRR1575922_count.txt", header=FALSE, sep="\t")
 ```
 
 ```{r}
-colnames(exon_coverage_mayer_dep_count)=c("chr", "start", "end", "name", "score", "strand", "counts")
-colnames(exon_coverage_19238_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
-colnames(exon_coverage_18508_nondep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
-colnames(exon_coverage_18508_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
-colnames(exon_coverage_18486_count)= c("chr", "start", "end", "name", "score", "strand", "counts")  
+# colnames(exon_coverage_mayer_dep_count)=c("chr", "start", "end", "name", "score", "strand", "counts")
+# colnames(exon_coverage_19238_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+# colnames(exon_coverage_18508_nondep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+# colnames(exon_coverage_18508_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+# colnames(exon_coverage_18486_count)= c("chr", "start", "end", "name", "score", "strand", "counts")  
 ```
 
 
