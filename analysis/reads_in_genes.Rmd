@@ -248,15 +248,17 @@ standard_counts=cbind(gene_names, standard_counts)
 
 ```{r}
 
-ggplot(standard_counts, aes(x=-log(st_18486))) + geom_density()
-ggplot(standard_counts, aes(x=-log(st_18508_dep))) + geom_density()
-ggplot(standard_counts, aes(x=-log(st_18508_nondep))) + geom_density()
-ggplot(standard_counts, aes(x=-log(st_19238))) + geom_density()
-ggplot(standard_counts, aes(x=-log(st_mayer))) + geom_density()
+ggplot(standard_counts, aes(x=log(st_18486 + .1))) + geom_density()
+ggplot(standard_counts, aes(x=log(st_18508_dep + .1))) + geom_density()
+ggplot(standard_counts, aes(x=log(st_18508_nondep + .1))) + geom_density()
+ggplot(standard_counts, aes(x=log(st_19238 +.1))) + geom_density()
+ggplot(standard_counts, aes(x=log(st_mayer + .1))) + geom_density()
+
 
 ```
 
 
+Next step: subset the overexpressed genes to see distribution. This is probably the snoRNA and rRNAs.  
 
 
 ###Gene and promoter coverage  
