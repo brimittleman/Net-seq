@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8465e92</p>
+<p><strong>Code version:</strong> 4adebb2</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -462,6 +462,14 @@ $group == : Outlier (Inf) in boxplot 4 is not drawn</code></pre>
 <pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
 $group == : Outlier (Inf) in boxplot 5 is not drawn</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Scatter plots:</p>
+<pre class="r"><code>par(mfrow = c(1,2))
+plot(gene_coverage_all$st_18486 ~ gene_coverage_all$st_18508_dep, xlab=&quot;18486&quot;, ylab = &quot;18508&quot;)
+abline(lm(gene_coverage_all$st_18486 ~ gene_coverage_all$st_18508_dep))
+plot(gene_coverage_all$st_18486 ~ gene_coverage_all$st_mayer, xlab= &quot;18486&quot;, ylab=&quot;Mayer&quot;)
+abline(lm(gene_coverage_all$st_18486 ~ gene_coverage_all$st_mayer))
+title(&quot;Standard Count Correlatation&quot;) </code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>To use ggplot I need to reformat the dataframe to gene by sample.</p>
 <pre class="r"><code>gene_names= gene_coverage_all$name
 standard_counts= gene_coverage_all[, 13:17]
@@ -486,20 +494,20 @@ colnames(prom_coverage_18486_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quo
 </div>
 <div id="exon-coverage" class="section level3">
 <h3>Exon coverage</h3>
-<pre class="r"><code>exon_coverage_18486_count= read.csv(&quot;../data/exon_cov/exon_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
-
-exon_coverage_18508_dep_count= read.csv(&quot;../data/exon_cov/exon_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
-
-exon_coverage_18508_nondep_count= read.csv(&quot;../data/exon_cov/exon_coverage_18508_nondep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
-
-exon_coverage_19238_dep_count= read.csv(&quot;../data/exon_cov/exon_coverage_19238_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
-
-exon_coverage_mayer_dep_count = read.csv(&quot;../data/exon_cov/exon_coverage_mayer_SRR1575922_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
-<pre class="r"><code>colnames(exon_coverage_mayer_dep_count)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
-colnames(exon_coverage_19238_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
-colnames(exon_coverage_18508_nondep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
-colnames(exon_coverage_18508_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
-colnames(exon_coverage_18486_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)  </code></pre>
+<pre class="r"><code># exon_coverage_18486_count= read.csv(&quot;../data/exon_cov/exon_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+# 
+# exon_coverage_18508_dep_count= read.csv(&quot;../data/exon_cov/exon_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+# 
+# exon_coverage_18508_nondep_count= read.csv(&quot;../data/exon_cov/exon_coverage_18508_nondep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+# 
+# exon_coverage_19238_dep_count= read.csv(&quot;../data/exon_cov/exon_coverage_19238_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+# 
+# exon_coverage_mayer_dep_count = read.csv(&quot;../data/exon_cov/exon_coverage_mayer_SRR1575922_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
+<pre class="r"><code># colnames(exon_coverage_mayer_dep_count)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+# colnames(exon_coverage_19238_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+# colnames(exon_coverage_18508_nondep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+# colnames(exon_coverage_18508_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
+# colnames(exon_coverage_18486_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)  </code></pre>
 </div>
 <div id="coverage-with-histograms" class="section level3">
 <h3>Coverage with histograms</h3>
