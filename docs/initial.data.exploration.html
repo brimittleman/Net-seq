@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-16</p>
+<p><strong>Last updated:</strong> 2017-11-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 199a255</p>
+<p><strong>Code version:</strong> ce97048</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -325,13 +325,13 @@ shared across the workflowr files. -->
 <p>Mayer data: fastq: 137281933<br />
 sorted: 120124203 dedup: 2262387<br />
 dedup/sorted: 0.01883373</p>
-<pre class="r"><code>library= c( &quot;18486-dep&quot;, &quot;18486-tot&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;19238-dep&quot;, &quot;mayer&quot;)
+<pre class="r"><code>library= c( &quot;18486-dep&quot;, &quot;18508-dep&quot;, &quot;18508-nondep&quot;, &quot;19238-dep&quot;, &quot;mayer&quot;)
 
-fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 137281933)  
+fastq= c( 45803834, 70776230, 77223987, 113160855, 137281933)  
 
-sorted= c(17336796, 1258, 43247747, 50189574, 40420633, 17157730 )
+sorted= c(17336796,  43247747, 50189574, 40420633, 17157730 )
 
-dedup= c(1533069, 1105, 1776330,1919904,
+dedup= c(1533069,  1776330,1919904,
 1870359,2262387)
 
 perc= dedup/sorted
@@ -339,22 +339,42 @@ perc= dedup/sorted
 reads_mapped_dedup= data.frame(rbind(library, fastq, sorted, dedup, perc))
 
 reads_mapped_dedup</code></pre>
-<pre><code>                        X1                X2                 X3
-library          18486-dep         18486-tot          18508-dep
-fastq             45803834              4006           70776230
-sorted            17336796              1258           43247747
-dedup              1533069              1105            1776330
-perc    0.0884286231435151 0.878378378378378 0.0410733534859053
-                        X4                 X5                X6
-library       18508-nondep          19238-dep             mayer
-fastq             77223987          113160855         137281933
-sorted            50189574           40420633          17157730
-dedup              1919904            1870359           2262387
-perc    0.0382530443474177 0.0462723827209732 0.131858177043234</code></pre>
+<pre><code>                        X1                 X2                 X3
+library          18486-dep          18508-dep       18508-nondep
+fastq             45803834           70776230           77223987
+sorted            17336796           43247747           50189574
+dedup              1533069            1776330            1919904
+perc    0.0884286231435151 0.0410733534859053 0.0382530443474177
+                        X4                X5
+library          19238-dep             mayer
+fastq            113160855         137281933
+sorted            40420633          17157730
+dedup              1870359           2262387
+perc    0.0462723827209732 0.131858177043234</code></pre>
 <pre class="r"><code>total_reads= sum(fastq)
 
 sorted/fastq</code></pre>
-<pre><code>[1] 0.3785010 0.3140290 0.6110490 0.6499221 0.3571962 0.1249817</code></pre>
+<pre><code>[1] 0.3785010 0.6110490 0.6499221 0.3571962 0.1249817</code></pre>
+<p>Make a stacked bar plot to show complexity and coverage.<br />
+library, fastq, mapped, dedup</p>
+<pre class="r"><code>counts= rbind(fastq, sorted, dedup)
+colnames(counts)= library
+count_plot=barplot(as.matrix(counts), main=&quot;Counts for coverage and complexity&quot;,
+  xlab=&quot;Library&quot;, col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;),
+    ylab=&quot;Read counts&quot;)
+legend(&quot;topleft&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = .75)</code></pre>
+<p><img src="figure/initial.data.exploration.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>percent_mapped= sorted/fastq
+percent_UMI= dedup/fastq
+percent_not_mapped= 1- percent_mapped - percent_UMI
+
+prop=rbind(percent_not_mapped, percent_mapped, percent_UMI)
+colnames(prop)= library
+prop_plot=barplot(as.matrix(prop), main=&quot;Proportions for coverage and complexity&quot;,
+  xlab=&quot;Library&quot;, col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;),
+    ylab=&quot;Proportion of sequenced reads&quot;)
+legend(&quot;bottomright&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = 0.75)</code></pre>
+<p><img src="figure/initial.data.exploration.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Undetermined is nothing: it corresponds to random reads</p>
 <p>From meeting:</p>
 <ul>
