@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 4adebb2</p>
+<p><strong>Code version:</strong> 7b49817</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -407,7 +407,8 @@ Attaching package: &#39;dplyr&#39;</code></pre>
 <pre><code>The following objects are masked from &#39;package:base&#39;:
 
     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(ggplot2)</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(lattice)</code></pre>
 <pre class="r"><code>gene_coverage_18486_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
 
 gene_coverage_18508_dep_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
@@ -473,7 +474,23 @@ title(&quot;Standard Count Correlatation&quot;) </code></pre>
 <p>To use ggplot I need to reformat the dataframe to gene by sample.</p>
 <pre class="r"><code>gene_names= gene_coverage_all$name
 standard_counts= gene_coverage_all[, 13:17]
-#row.names(standard_counts)=gene_names</code></pre>
+standard_counts=cbind(gene_names, standard_counts)
+#standard_counts_t=as.data.frame(standard_counts %&gt;% t)</code></pre>
+<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_18486))) + geom_density()</code></pre>
+<pre><code>Warning: Removed 11756 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_18508_dep))) + geom_density()</code></pre>
+<pre><code>Warning: Removed 12556 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_18508_nondep))) + geom_density()</code></pre>
+<pre><code>Warning: Removed 12265 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_19238))) + geom_density()</code></pre>
+<pre><code>Warning: Removed 12906 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_mayer))) + geom_density()</code></pre>
+<pre><code>Warning: Removed 15830 rows containing non-finite values (stat_density).</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-5.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="gene-and-promoter-coverage" class="section level3">
 <h3>Gene and promoter coverage</h3>
@@ -556,7 +573,8 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4   vioplot_0.2   sm_2.2-5.4   
+[1] bindrcpp_0.2    lattice_0.20-35 ggplot2_2.2.1   dplyr_0.7.4    
+[5] vioplot_0.2     sm_2.2-5.4     
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.13     knitr_1.17       bindr_0.1        magrittr_1.5    
@@ -565,8 +583,8 @@ loaded via a namespace (and not attached):
 [13] gtable_0.2.0     git2r_0.19.0     htmltools_0.3.6  lazyeval_0.2.1  
 [17] yaml_2.1.14      rprojroot_1.2    digest_0.6.12    assertthat_0.2.0
 [21] tibble_1.3.4     glue_1.2.0       evaluate_0.10.1  rmarkdown_1.6   
-[25] stringi_1.1.5    compiler_3.4.2   scales_0.5.0     backports_1.1.1 
-[29] pkgconfig_2.0.1 </code></pre>
+[25] labeling_0.3     stringi_1.1.5    compiler_3.4.2   scales_0.5.0    
+[29] backports_1.1.1  pkgconfig_2.0.1 </code></pre>
 </div>
 
 <hr>
