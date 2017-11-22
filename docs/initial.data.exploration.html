@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> ce97048</p>
+<p><strong>Code version:</strong> c327340</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -373,7 +373,7 @@ colnames(prop)= library
 prop_plot=barplot(as.matrix(prop), main=&quot;Proportions for coverage and complexity&quot;,
   xlab=&quot;Library&quot;, col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;),
     ylab=&quot;Proportion of sequenced reads&quot;)
-legend(&quot;bottomright&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = 0.75)</code></pre>
+legend(&quot;bottomright&quot;, legend = c(&quot;Un-mapped&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = 0.75)</code></pre>
 <p><img src="figure/initial.data.exploration.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Undetermined is nothing: it corresponds to random reads</p>
 <p>From meeting:</p>
