@@ -44,13 +44,13 @@ dedup/sorted: 0.01883373
 
 
 ```{r}
-library= c( "18486-dep", "18486-tot", "18508-dep", "18508-nondep", "19238-dep", "mayer")
+library= c( "18486-dep", "18508-dep", "18508-nondep", "19238-dep", "mayer")
 
-fastq= c( 45803834, 4006, 70776230, 77223987, 113160855, 137281933)  
+fastq= c( 45803834, 70776230, 77223987, 113160855, 137281933)  
 
-sorted= c(17336796, 1258, 43247747, 50189574, 40420633, 17157730 )
+sorted= c(17336796,  43247747, 50189574, 40420633, 17157730 )
 
-dedup= c(1533069, 1105, 1776330,1919904,
+dedup= c(1533069,  1776330,1919904,
 1870359,2262387)
 
 perc= dedup/sorted
@@ -63,6 +63,36 @@ total_reads= sum(fastq)
 
 sorted/fastq
 ```
+
+Make a stacked bar plot to show complexity and coverage.  
+library, fastq, mapped, dedup
+
+
+```{r}
+counts= rbind(fastq, sorted, dedup)
+colnames(counts)= library
+count_plot=barplot(as.matrix(counts), main="Counts for coverage and complexity",
+  xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
+ 	ylab="Read counts")
+legend("topleft", legend = c("total", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = .75)
+
+```
+
+```{r}
+percent_mapped= sorted/fastq
+percent_UMI= dedup/fastq
+percent_not_mapped= 1- percent_mapped - percent_UMI
+
+prop=rbind(percent_not_mapped, percent_mapped, percent_UMI)
+colnames(prop)= library
+prop_plot=barplot(as.matrix(prop), main="Proportions for coverage and complexity",
+  xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
+ 	ylab="Proportion of sequenced reads")
+legend("bottomright", legend = c("total", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = 0.75)
+```
+
+
+
 
 
 
