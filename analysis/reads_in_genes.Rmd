@@ -145,6 +145,7 @@ Install packages:
 library(vioplot)
 library(dplyr)
 library(ggplot2)
+library(lattice)
 ```
 
 
@@ -240,11 +241,18 @@ To use ggplot I need to reformat the dataframe to gene by sample.
 ```{r}
 gene_names= gene_coverage_all$name
 standard_counts= gene_coverage_all[, 13:17]
-#row.names(standard_counts)=gene_names
+standard_counts=cbind(gene_names, standard_counts)
+#standard_counts_t=as.data.frame(standard_counts %>% t)
+
 ```
 
 ```{r}
 
+ggplot(standard_counts, aes(x=-log(st_18486))) + geom_density()
+ggplot(standard_counts, aes(x=-log(st_18508_dep))) + geom_density()
+ggplot(standard_counts, aes(x=-log(st_18508_nondep))) + geom_density()
+ggplot(standard_counts, aes(x=-log(st_19238))) + geom_density()
+ggplot(standard_counts, aes(x=-log(st_mayer))) + geom_density()
 
 ```
 
