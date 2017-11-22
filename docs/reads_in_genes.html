@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-21</p>
+<p><strong>Last updated:</strong> 2017-11-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 46a9e5e</p>
+<p><strong>Code version:</strong> 8465e92</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -394,6 +394,20 @@ bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/bri
 <h2>Data input (non-depuplicated)</h2>
 <div id="gene-coverage" class="section level3">
 <h3>Gene Coverage</h3>
+<p>Install packages:</p>
+<pre class="r"><code>library(vioplot)</code></pre>
+<pre><code>Loading required package: sm</code></pre>
+<pre><code>Package &#39;sm&#39;, version 2.2-5.4: type help(sm) for summary information</code></pre>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(ggplot2)</code></pre>
 <pre class="r"><code>gene_coverage_18486_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18486_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
 
 gene_coverage_18508_dep_count= read.csv(&quot;../data/gene_cov_count/gene_coverage_18508_dep_count.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
@@ -408,6 +422,50 @@ colnames(gene_coverage_18508_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &
 colnames(gene_coverage_18508_nondep_count)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
 colnames(gene_coverage_19238_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
 colnames(gene_coverage_mayer_dep_count)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)</code></pre>
+<p>Next I will merge theses files to create 1 file with all of the data.</p>
+<pre class="r"><code>gene_coverage_all= cbind(gene_coverage_18486_count, gene_coverage_18508_dep_count$counts, gene_coverage_18508_nondep_count$counts, gene_coverage_19238_dep_count$counts, gene_coverage_mayer_dep_count$counts)
+colnames(gene_coverage_all)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;c_18486&quot;, &quot;c_18508_dep&quot;, &quot;c_18508_nondep&quot;, &quot;c_19238_dep&quot;, &quot;c_mayer&quot;)</code></pre>
+<p>Add a column for length of A:</p>
+<pre class="r"><code>#add length column  
+gene_coverage_all= mutate(gene_coverage_all, length=end-start)
+#add columns for standard count 
+gene_coverage_all= mutate(gene_coverage_all,st_18486=c_18486/length)
+gene_coverage_all= mutate(gene_coverage_all,st_18508_dep= c_18508_dep /length)
+gene_coverage_all= mutate(gene_coverage_all,st_18508_nondep=c_18508_nondep/length)
+gene_coverage_all= mutate(gene_coverage_all,st_19238=c_19238_dep/length)
+gene_coverage_all= mutate(gene_coverage_all,st_mayer=c_mayer/length)</code></pre>
+<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_18486), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18486&quot;)
+abline(a=-log(mean(gene_coverage_all$st_18486)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_18508_dep), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18505 dep&quot;)
+abline(a=-log(mean(gene_coverage_all$st_18508_dep)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_18508_nondep), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18505 nondep&quot;)
+abline(a=-log(mean(gene_coverage_all$st_18508_nondep)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_19238), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;19238&quot;)
+abline(a=-log(mean(gene_coverage_all$st_19238)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_mayer), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;Mayer&quot;)
+abline(a=-log(mean(gene_coverage_all$st_mayer)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>#boxplot- violin plot is better but you get infinities  
+boxplot(-log(gene_coverage_all$st_18486), -log(gene_coverage_all$st_18508_dep), -log(gene_coverage_all$st_18508_nondep), -log(gene_coverage_all$st_19238), -log(gene_coverage_all$st_mayer), names=c(&quot;18486&quot;, &quot;18508_dep&quot;, &quot;18508_nondep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab=&quot;-log of standard expression&quot;)</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (Inf) in boxplot 1 is not drawn</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (Inf) in boxplot 2 is not drawn</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (Inf) in boxplot 3 is not drawn</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (Inf) in boxplot 4 is not drawn</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (Inf) in boxplot 5 is not drawn</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>To use ggplot I need to reformat the dataframe to gene by sample.</p>
+<pre class="r"><code>gene_names= gene_coverage_all$name
+standard_counts= gene_coverage_all[, 13:17]
+#row.names(standard_counts)=gene_names</code></pre>
 </div>
 <div id="gene-and-promoter-coverage" class="section level3">
 <h3>Gene and promoter coverage</h3>
@@ -489,11 +547,18 @@ locale:
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
+other attached packages:
+[1] bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4   vioplot_0.2   sm_2.2-5.4   
+
 loaded via a namespace (and not attached):
- [1] compiler_3.4.2  backports_1.1.1 magrittr_1.5    rprojroot_1.2  
- [5] tools_3.4.2     htmltools_0.3.6 yaml_2.1.14     Rcpp_0.12.13   
- [9] stringi_1.1.5   rmarkdown_1.6   knitr_1.17      git2r_0.19.0   
-[13] stringr_1.2.0   digest_0.6.12   evaluate_0.10.1</code></pre>
+ [1] Rcpp_0.12.13     knitr_1.17       bindr_0.1        magrittr_1.5    
+ [5] munsell_0.4.3    colorspace_1.3-2 R6_2.2.2         rlang_0.1.4     
+ [9] plyr_1.8.4       stringr_1.2.0    tools_3.4.2      grid_3.4.2      
+[13] gtable_0.2.0     git2r_0.19.0     htmltools_0.3.6  lazyeval_0.2.1  
+[17] yaml_2.1.14      rprojroot_1.2    digest_0.6.12    assertthat_0.2.0
+[21] tibble_1.3.4     glue_1.2.0       evaluate_0.10.1  rmarkdown_1.6   
+[25] stringi_1.1.5    compiler_3.4.2   scales_0.5.0     backports_1.1.1 
+[29] pkgconfig_2.0.1 </code></pre>
 </div>
 
 <hr>
