@@ -88,7 +88,7 @@ colnames(prop)= library
 prop_plot=barplot(as.matrix(prop), main="Proportions for coverage and complexity",
   xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
  	ylab="Proportion of sequenced reads")
-legend("bottomright", legend = c("total", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = 0.75)
+legend("bottomright", legend = c("Un-mapped", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = 0.75)
 ```
 
 
