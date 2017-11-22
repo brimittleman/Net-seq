@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 7b49817</p>
+<p><strong>Code version:</strong> 756b94a</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -476,21 +476,17 @@ title(&quot;Standard Count Correlatation&quot;) </code></pre>
 standard_counts= gene_coverage_all[, 13:17]
 standard_counts=cbind(gene_names, standard_counts)
 #standard_counts_t=as.data.frame(standard_counts %&gt;% t)</code></pre>
-<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_18486))) + geom_density()</code></pre>
-<pre><code>Warning: Removed 11756 rows containing non-finite values (stat_density).</code></pre>
+<pre class="r"><code>ggplot(standard_counts, aes(x=log(st_18486 + .1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_18508_dep))) + geom_density()</code></pre>
-<pre><code>Warning: Removed 12556 rows containing non-finite values (stat_density).</code></pre>
+<pre class="r"><code>ggplot(standard_counts, aes(x=log(st_18508_dep + .1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_18508_nondep))) + geom_density()</code></pre>
-<pre><code>Warning: Removed 12265 rows containing non-finite values (stat_density).</code></pre>
+<pre class="r"><code>ggplot(standard_counts, aes(x=log(st_18508_nondep + .1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_19238))) + geom_density()</code></pre>
-<pre><code>Warning: Removed 12906 rows containing non-finite values (stat_density).</code></pre>
+<pre class="r"><code>ggplot(standard_counts, aes(x=log(st_19238 +.1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>ggplot(standard_counts, aes(x=-log(st_mayer))) + geom_density()</code></pre>
-<pre><code>Warning: Removed 15830 rows containing non-finite values (stat_density).</code></pre>
+<pre class="r"><code>ggplot(standard_counts, aes(x=log(st_mayer + .1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-16-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Next step: subset the overexpressed genes to see distribution. This is probably the snoRNA and rRNAs.</p>
 </div>
 <div id="gene-and-promoter-coverage" class="section level3">
 <h3>Gene and promoter coverage</h3>
