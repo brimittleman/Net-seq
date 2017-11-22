@@ -140,6 +140,14 @@ bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/bri
 
 ###Gene Coverage 
 
+Install packages:  
+```{r}
+library(vioplot)
+library(dplyr)
+library(ggplot2)
+```
+
+
 
 ```{r}
 gene_coverage_18486_count= read.csv("../data/gene_cov_count/gene_coverage_18486_count.txt", header=FALSE, sep="\t")
@@ -161,6 +169,74 @@ colnames(gene_coverage_18508_nondep_count)=c("chr", "start", "end", "name", "sco
 colnames(gene_coverage_19238_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
 colnames(gene_coverage_mayer_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
 ```
+
+
+Next I will merge theses files to create 1 file with all of the data.  
+
+```{r}
+gene_coverage_all= cbind(gene_coverage_18486_count, gene_coverage_18508_dep_count$counts, gene_coverage_18508_nondep_count$counts, gene_coverage_19238_dep_count$counts, gene_coverage_mayer_dep_count$counts)
+colnames(gene_coverage_all)= c("chr", "start", "end", "name", "score", "strand", "c_18486", "c_18508_dep", "c_18508_nondep", "c_19238_dep", "c_mayer")
+```
+
+
+Add a column for length of A:  
+
+```{r}
+
+#add length column  
+gene_coverage_all= mutate(gene_coverage_all, length=end-start)
+#add columns for standard count 
+gene_coverage_all= mutate(gene_coverage_all,st_18486=c_18486/length)
+gene_coverage_all= mutate(gene_coverage_all,st_18508_dep= c_18508_dep /length)
+gene_coverage_all= mutate(gene_coverage_all,st_18508_nondep=c_18508_nondep/length)
+gene_coverage_all= mutate(gene_coverage_all,st_19238=c_19238_dep/length)
+gene_coverage_all= mutate(gene_coverage_all,st_mayer=c_mayer/length)
+```
+
+
+
+
+```{r}
+
+plot(sort(-log(gene_coverage_all$st_18486), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18486")
+abline(a=-log(mean(gene_coverage_all$st_18486)),b=0)
+plot(sort(-log(gene_coverage_all$st_18508_dep), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 dep")
+abline(a=-log(mean(gene_coverage_all$st_18508_dep)),b=0)
+plot(sort(-log(gene_coverage_all$st_18508_nondep), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 nondep")
+abline(a=-log(mean(gene_coverage_all$st_18508_nondep)),b=0)
+plot(sort(-log(gene_coverage_all$st_19238), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="19238")
+abline(a=-log(mean(gene_coverage_all$st_19238)),b=0)
+plot(sort(-log(gene_coverage_all$st_mayer), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="Mayer")
+abline(a=-log(mean(gene_coverage_all$st_mayer)),b=0)
+
+
+```
+
+```{r}
+
+#boxplot- violin plot is better but you get infinities  
+boxplot(-log(gene_coverage_all$st_18486), -log(gene_coverage_all$st_18508_dep), -log(gene_coverage_all$st_18508_nondep), -log(gene_coverage_all$st_19238), -log(gene_coverage_all$st_mayer), names=c("18486", "18508_dep", "18508_nondep", "19238", "Mayer"), ylab="-log of standard expression")
+
+
+```
+
+
+
+
+
+To use ggplot I need to reformat the dataframe to gene by sample.   
+
+```{r}
+gene_names= gene_coverage_all$name
+standard_counts= gene_coverage_all[, 13:17]
+#row.names(standard_counts)=gene_names
+```
+
+```{r}
+
+
+```
+
 
 
 
