@@ -258,8 +258,34 @@ ggplot(standard_counts, aes(x=log(st_mayer + .1))) + geom_density()
 ```
 
 
-Next step: subset the overexpressed genes to see distribution. This is probably the snoRNA and rRNAs.  
+Next step: subset the overexpressed genes to see distribution. First I just cut the top 5000. 
 
+This is probably the snoRNA and rRNAs.  
+
+
+```{r}
+sorted_18486=sort(log(standard_counts$st_18486 + .1), decreasing=TRUE)
+sorted_18508_dep=sort(log(standard_counts$st_18508_dep + .1), decreasing=TRUE)
+sorted_18508_nondep=sort(log(standard_counts$st_18508_nondep + .1), decreasing=TRUE)
+sorted_19238=sort(log(standard_counts$st_19238 + .1), decreasing=TRUE)
+sorted_mayer=sort(log(standard_counts$st_mayer + .1), decreasing=TRUE)
+
+sorted_18486_cut= sorted_18486[5000:length(sorted_18486)]
+sorted_18508_dep_cut= sorted_18508_dep[5000:length(sorted_18508_dep)]
+sorted_184508_nondep_cut= sorted_18508_nondep[5000:length(sorted_18508_nondep)]
+sorted_19238_cut= sorted_19238[5000:length(sorted_19238)]
+sorted_mayer_cut= sorted_mayer[5000:length(sorted_mayer)]
+
+dat=cbind.data.frame(sorted_18486_cut,sorted_18508_dep_cut, sorted_184508_nondep_cut, sorted_19238_cut,sorted_mayer_cut )
+
+ggplot(dat, aes(x=sorted_18486_cut)) + geom_density()
+ggplot(dat, aes(x=sorted_18508_dep_cut)) + geom_density()
+ggplot(dat, aes(x=sorted_184508_nondep_cut)) + geom_density()
+ggplot(dat, aes(x=sorted_19238_cut)) + geom_density()
+ggplot(dat, aes(x=sorted_mayer_cut)) + geom_density()
+```
+
+Zeros are represented as -2.3
 
 ###Gene and promoter coverage  
 
