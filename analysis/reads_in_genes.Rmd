@@ -262,6 +262,24 @@ Next step: subset the overexpressed genes to see distribution. First I just cut 
 
 This is probably the snoRNA and rRNAs.  
 
+Next: 
+NR	ncRNA
+
+
+```{r}
+coding_genes= standard_counts[ grepl("NR", standard_counts$gene_names)==FALSE,]
+
+
+ggplot(coding_genes, aes(x=log(st_18486 + .1))) + geom_density()
+ggplot(coding_genes, aes(x=log(st_18508_dep + .1))) + geom_density()
+ggplot(coding_genes, aes(x=log(st_18508_nondep + .1))) + geom_density()
+ggplot(coding_genes, aes(x=log(st_19238 +.1))) + geom_density()
+ggplot(coding_genes, aes(x=log(st_mayer + .1))) + geom_density()
+
+```
+
+
+
 
 ```{r}
 sorted_18486=sort(log(standard_counts$st_18486 + .1), decreasing=TRUE)
