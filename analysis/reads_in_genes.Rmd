@@ -278,6 +278,12 @@ ggplot(coding_genes, aes(x=log(st_mayer + .1))) + geom_density()
 
 ```
 
+Remove zeros:  
+
+```{r}
+#ggplot(coding_genes, aes(x= log(st_18486[coding_genes$st_18486 > 0]))) + geom_density()
+```
+
 
 
 
@@ -304,6 +310,9 @@ ggplot(dat, aes(x=sorted_mayer_cut)) + geom_density()
 ```
 
 Zeros are represented as -2.3
+
+
+
 
 ###Gene and promoter coverage  
 
