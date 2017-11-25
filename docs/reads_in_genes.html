@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-24</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> a38a769</p>
+<p><strong>Code version:</strong> 2abc108</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -502,6 +502,8 @@ ggplot(coding_genes, aes(x=log(st_18486 + .1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-17-4.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(coding_genes, aes(x=log(st_mayer + .1))) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-17-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Remove zeros:</p>
+<pre class="r"><code>#ggplot(coding_genes, aes(x= log(st_18486[coding_genes$st_18486 &gt; 0]))) + geom_density()</code></pre>
 <pre class="r"><code>sorted_18486=sort(log(standard_counts$st_18486 + .1), decreasing=TRUE)
 sorted_18508_dep=sort(log(standard_counts$st_18508_dep + .1), decreasing=TRUE)
 sorted_18508_nondep=sort(log(standard_counts$st_18508_nondep + .1), decreasing=TRUE)
@@ -517,15 +519,15 @@ sorted_mayer_cut= sorted_mayer[5000:length(sorted_mayer)]
 dat=cbind.data.frame(sorted_18486_cut,sorted_18508_dep_cut, sorted_184508_nondep_cut, sorted_19238_cut,sorted_mayer_cut )
 
 ggplot(dat, aes(x=sorted_18486_cut)) + geom_density()</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(dat, aes(x=sorted_18508_dep_cut)) + geom_density()</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-18-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-19-2.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(dat, aes(x=sorted_184508_nondep_cut)) + geom_density()</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-18-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-19-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(dat, aes(x=sorted_19238_cut)) + geom_density()</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-18-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-19-4.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>ggplot(dat, aes(x=sorted_mayer_cut)) + geom_density()</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-18-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-19-5.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Zeros are represented as -2.3</p>
 </div>
 <div id="gene-and-promoter-coverage" class="section level3">
