@@ -281,6 +281,7 @@ ggplot(coding_genes, aes(x=log(st_mayer + .1))) + geom_density()
 Remove zeros:  
 
 ```{r}
+
 #ggplot(coding_genes, aes(x= log(st_18486[coding_genes$st_18486 > 0]))) + geom_density()
 ```
 
@@ -310,6 +311,34 @@ ggplot(dat, aes(x=sorted_mayer_cut)) + geom_density()
 ```
 
 Zeros are represented as -2.3
+
+
+
+####Propotion of detected genes  
+
+Take the sum of the genes that do not equal zero for each set. Make a histogram.  
+
+```{r}
+prop_gene_non0_18486= sum(gene_coverage_all$c_18486 !=0) /length(gene_coverage_all$c_18486)
+
+prop_gene_non0_18508dep= sum(gene_coverage_all$c_18508_dep !=0) /length(gene_coverage_all$c_18508_dep)
+
+prop_gene_non0_18508_nondep= sum(gene_coverage_all$c_18508_nondep !=0) /length(gene_coverage_all$c_18508_nondep)
+
+prop_gene_non0_19238= sum(gene_coverage_all$c_19238_dep !=0) /length(gene_coverage_all$c_19238_dep)
+
+
+prop_gene_non0_mayer= sum(gene_coverage_all$c_mayer !=0) /length(gene_coverage_all$c_mayer)
+
+prop_non0_all= c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer)
+
+barplot(prop_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes", ylim=0:1, xlab= "Library")
+
+
+```
+
+
+
 
 
 
@@ -363,6 +392,9 @@ prom_coverage_all= mutate(prom_coverage_all,st_mayer=c_mayer/length)
 ```
 
 ```{r}
+
+
+par(mfrow = c(3,2))
 plot(sort(log(prom_coverage_all$st_18486 + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + Prom", main="18486")
 abline(a=log(mean(prom_coverage_all$st_18486 + .1)),b=0)
 plot(sort(log(prom_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + Prom", main="18505 dep")
@@ -374,6 +406,93 @@ abline(a=log(mean(prom_coverage_all$st_19238 + .1)),b=0)
 plot(sort(log(prom_coverage_all$st_mayer + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + prom", main="Mayer")
 abline(a=log(mean(prom_coverage_all$st_mayer + .1)),b=0)
 ```
+
+I beleive this shows that the promoters do not hold a majority of the reads. We find them in gene bodies.  
+
+
+```{r}
+
+par(mfrow = c(1,2))
+plot(prom_coverage_all$st_18486 ~ prom_coverage_all$st_18508_dep, xlab="18486", ylab = "18508")
+abline(lm(prom_coverage_all$st_18486 ~ prom_coverage_all$st_18508_dep))
+plot(prom_coverage_all$st_18486 ~ prom_coverage_all$st_mayer, xlab= "18486", ylab="Mayer")
+abline(lm(prom_coverage_all$st_18486 ~ prom_coverage_all$st_mayer))
+title("Standard Count Correlatation") 
+```
+
+
+Compare inclusion and exclusion of promoters 
+```{r}
+
+
+plot(gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486, xlab="gene", ylab = "w/ promoter", main= "Inclusion and exclusion of promoter in counts")
+abline(lm(gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486))
+lm(gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486)
+
+plot(gene_coverage_all$st_18508_dep ~ gene_coverage_all$c_18508_nondep, xlab="dep", ylab = "non_dep", main= "Effect of depletion on gene counts ")
+abline(lm(gene_coverage_all$st_18508_dep ~ gene_coverage_all$st_18508_nondep))
+lm(gene_coverage_all$st_18508_dep ~ gene_coverage_all$st_18508_nondep)
+```
+
+Exclude zeros:  
+
+```{r}
+par(mfrow = c(1,2))
+
+prom_no0_18486=prom_coverage_all$st_18486[prom_coverage_all$st_18486!=0]
+plot(sort(log(prom_no0_18486), decreasing = TRUE), main="18486 genes and promoters \n without zeros", ylab="log of st. counts")
+abline(a= mean(log(prom_no0_18486)), b=0)
+
+
+gene_no0_18486=gene_coverage_all$st_18486[gene_coverage_all$st_18486 !=0]
+plot(sort(log(gene_no0_18486), decreasing = TRUE), main="18486 genes without zeros", ylab="log of st. counts")
+abline(a =mean(log(gene_no0_18486)), b=0)
+
+```
+Do the same with Mayer
+```{r}
+par(mfrow = c(1,2))
+
+prom_no0_m=prom_coverage_all$st_mayer[prom_coverage_all$st_mayer!=0]
+plot(sort(log(prom_no0_m), decreasing = TRUE), main="Mayer genes and promoters \n without zeros", ylab="log of st. counts")
+abline(a= mean(log(prom_no0_m)), b=0)
+
+
+gene_no0_m=gene_coverage_all$st_mayer[gene_coverage_all$st_mayer !=0]
+plot(sort(log(gene_no0_m), decreasing = TRUE), main="Mayer genes without zeros", ylab="log of st. counts")
+abline(a =mean(log(gene_no0_m)), b=0)
+
+```
+
+
+####Propotion of detected genes including promoters   
+
+Take the sum of the genes that do not equal zero for each set. Make a histogram.  
+
+```{r}
+prop_prom_non0_18486= sum(prom_coverage_all$c_18486 !=0) /length(prom_coverage_all$c_18486)
+
+prop_prom_non0_18508dep= sum(prom_coverage_all$c_18508_dep !=0) /length(prom_coverage_all$c_18508_dep)
+
+prop_prom_non0_18508_nondep= sum(prom_coverage_all$c_18508_nondep !=0) /length(prom_coverage_all$c_18508_nondep)
+
+prop_prom_non0_19238= sum(prom_coverage_all$c_19238_dep !=0) /length(prom_coverage_all$c_19238_dep)
+
+
+prop_prom_non0_mayer= sum(prom_coverage_all$c_mayer !=0) /length(prom_coverage_all$c_mayer)
+
+prop_prom_non0_all= c(prop_prom_non0_18486,prop_prom_non0_18508dep, prop_prom_non0_18508_nondep, prop_prom_non0_19238, prop_prom_non0_mayer)
+
+barplot(prop_prom_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes w/ promoters", ylim=0:1, xlab= "Library")
+
+
+
+
+```
+
+Including the promoters greatly decrease the proportion of non-zero genes. From this is looks like we captured more in the promoter regions than Mayer.  
+
+
 
 
 
