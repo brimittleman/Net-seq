@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-09</p>
+<p><strong>Last updated:</strong> 2017-11-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 5fb86b2</p>
+<p><strong>Code version:</strong> d30f051</p>
 <p>I will look at genome feature overlap with the Netseq1 libary. I will start with one sample then move to more once the code is working. I will look specifically at overlap with CTCF sites.</p>
 <p>Load libraries:</p>
 <pre class="r"><code>library(genomation)</code></pre>
@@ -412,6 +412,49 @@ head(genes)</code></pre>
 <pre><code>[1] 60.91</code></pre>
 <pre><code></code></pre>
 <p>The genes file has a lot of random chr tags at the end.</p>
+<pre class="r"><code>sm = ScoreMatrixBin(target = dedup.18486.dep, windows = CTCF_gen, bin.num = 50)</code></pre>
+<pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 32
+windows fall off the target</code></pre>
+<pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): supplied
+GRanges object contains ranges of width &lt; number of bins</code></pre>
+<pre class="r"><code>heat.matrix= heatMatrix(sm, xcoords = c(-1000, 1000))</code></pre>
+<p><img src="figure/visualize_genomefeatures.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>heat.matrix</code></pre>
+<pre><code>NULL</code></pre>
+<pre class="r"><code>plotMeta(sm, xcoords = c(-1000, 1000))</code></pre>
+<p><img src="figure/visualize_genomefeatures.Rmd/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="metaplot-for-tss" class="section level3">
+<h3>Metaplot for TSS</h3>
+<pre class="r"><code>TSS= readGeneric(file = &quot;../data/SwitchGear_TSS.bed&quot;, header=FALSE, keep.all.metadata = TRUE)
+
+
+dedup.18486.dep= readGeneric(file= &quot;../data/net1_18486_dep_dedup_chr.bed&quot;, header = FALSE, keep.all.metadata = TRUE)
+
+
+
+ annotateWithFeature(TSS, dedup.18486.dep, intersect.chr = TRUE)</code></pre>
+<pre><code>intersecting chromosomes...</code></pre>
+<pre><code>Warning in .Seqinfo.mergexy(x, y): Each of the 2 combined objects has sequence levels not in the other:
+  - in &#39;x&#39;: chrM
+  - in &#39;y&#39;: chrMT
+  Make sure to always combine/compare objects based on the same reference
+  genome (use suppressWarnings() to suppress this warning).</code></pre>
+<pre><code>Warning in .Seqinfo.mergexy(x, y): Each of the 2 combined objects has sequence levels not in the other:
+  - in &#39;x&#39;: chrMT
+  - in &#39;y&#39;: chrM
+  Make sure to always combine/compare objects based on the same reference
+  genome (use suppressWarnings() to suppress this warning).</code></pre>
+<pre><code>summary of target set annotation with feature annotation:</code></pre>
+<pre><code>Rows in target set: 131746</code></pre>
+<pre><code>----------------------------</code></pre>
+<pre><code>percentage of target elements overlapping with features:</code></pre>
+<pre><code>dedup.18486.dep           other 
+           6.61           93.39 </code></pre>
+<pre><code></code></pre>
+<pre><code>percentage of feature elements overlapping with target:</code></pre>
+<pre><code>[1] 4.53</code></pre>
+<pre><code></code></pre>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
