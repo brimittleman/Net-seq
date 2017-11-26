@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-24</p>
+<p><strong>Last updated:</strong> 2017-11-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 2abc108</p>
+<p><strong>Code version:</strong> cc3902e</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -435,20 +435,20 @@ gene_coverage_all= mutate(gene_coverage_all,st_18508_dep= c_18508_dep /length)
 gene_coverage_all= mutate(gene_coverage_all,st_18508_nondep=c_18508_nondep/length)
 gene_coverage_all= mutate(gene_coverage_all,st_19238=c_19238_dep/length)
 gene_coverage_all= mutate(gene_coverage_all,st_mayer=c_mayer/length)</code></pre>
-<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_18486), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18486&quot;)
-abline(a=-log(mean(gene_coverage_all$st_18486)),b=0)</code></pre>
+<pre class="r"><code>plot(sort(log(gene_coverage_all$st_18486 + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18486&quot;)
+abline(a=log(mean(gene_coverage_all$st_18486 + .1)),b=0)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_18508_dep), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18505 dep&quot;)
-abline(a=-log(mean(gene_coverage_all$st_18508_dep)),b=0)</code></pre>
+<pre class="r"><code>plot(sort(log(gene_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18505 dep&quot;)
+abline(a=log(mean(gene_coverage_all$st_18508_dep + .1)),b=0)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_18508_nondep), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18505 nondep&quot;)
-abline(a=-log(mean(gene_coverage_all$st_18508_nondep)),b=0)</code></pre>
+<pre class="r"><code>plot(sort(log(gene_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;18505 nondep&quot;)
+abline(a=log(mean(gene_coverage_all$st_18508_nondep +.1)),b=0)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_19238), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;19238&quot;)
-abline(a=-log(mean(gene_coverage_all$st_19238)),b=0)</code></pre>
+<pre class="r"><code>plot(sort(log(gene_coverage_all$st_19238 + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;19238&quot;)
+abline(a=log(mean(gene_coverage_all$st_19238 + .1)),b=0)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(-log(gene_coverage_all$st_mayer), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;Mayer&quot;)
-abline(a=-log(mean(gene_coverage_all$st_mayer)),b=0)</code></pre>
+<pre class="r"><code>plot(sort(log(gene_coverage_all$st_mayer + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes&quot;, main=&quot;Mayer&quot;)
+abline(a=log(mean(gene_coverage_all$st_mayer + .1)),b=0)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-12-5.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>#boxplot- violin plot is better but you get infinities  
 boxplot(-log(gene_coverage_all$st_18486), -log(gene_coverage_all$st_18508_dep), -log(gene_coverage_all$st_18508_nondep), -log(gene_coverage_all$st_19238), -log(gene_coverage_all$st_mayer), names=c(&quot;18486&quot;, &quot;18508_dep&quot;, &quot;18508_nondep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab=&quot;-log of standard expression&quot;)</code></pre>
@@ -546,6 +546,33 @@ colnames(prom_coverage_19238_dep_count)=  c(&quot;chr&quot;, &quot;start&quot;, 
 colnames(prom_coverage_18508_nondep_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)
 colnames(prom_coverage_18508_dep_count) =  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)  
 colnames(prom_coverage_18486_count)=  c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;counts&quot;)</code></pre>
+<p>Next I will merge theses files to create 1 file with all of the data.</p>
+<pre class="r"><code>prom_coverage_all= cbind(prom_coverage_18486_count, prom_coverage_18508_dep_count$counts, prom_coverage_18508_nondep_count$counts, prom_coverage_19238_dep_count$counts, prom_coverage_mayer_dep_count$counts)
+colnames(prom_coverage_all)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;c_18486&quot;, &quot;c_18508_dep&quot;, &quot;c_18508_nondep&quot;, &quot;c_19238_dep&quot;, &quot;c_mayer&quot;)</code></pre>
+<p>Add a column for length of A and standardize the counts. <strong>NOTE</strong> would it be better to standardize by the gene and the promoter or just the gene length?</p>
+<pre class="r"><code>#add length column  
+prom_coverage_all= mutate(prom_coverage_all, length=end-start)
+#add columns for standard count 
+prom_coverage_all= mutate(prom_coverage_all,st_18486=c_18486/length)
+prom_coverage_all= mutate(prom_coverage_all,st_18508_dep= c_18508_dep /length)
+prom_coverage_all= mutate(prom_coverage_all,st_18508_nondep=c_18508_nondep/length)
+prom_coverage_all= mutate(prom_coverage_all,st_19238=c_19238_dep/length)
+prom_coverage_all= mutate(prom_coverage_all,st_mayer=c_mayer/length)</code></pre>
+<pre class="r"><code>plot(sort(log(prom_coverage_all$st_18486 + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + Prom&quot;, main=&quot;18486&quot;)
+abline(a=log(mean(prom_coverage_all$st_18486 + .1)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(log(prom_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + Prom&quot;, main=&quot;18505 dep&quot;)
+abline(a=log(mean(prom_coverage_all$st_18508_dep + .1)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(log(prom_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;18505 nondep&quot;)
+abline(a=log(mean(prom_coverage_all$st_18508_nondep + .1)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(log(prom_coverage_all$st_19238 + .1) , decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;19238&quot;)
+abline(a=log(mean(prom_coverage_all$st_19238 + .1)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(sort(log(prom_coverage_all$st_mayer + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;Mayer&quot;)
+abline(a=log(mean(prom_coverage_all$st_mayer + .1)),b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-5.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="exon-coverage" class="section level3">
 <h3>Exon coverage</h3>
