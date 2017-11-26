@@ -199,16 +199,16 @@ gene_coverage_all= mutate(gene_coverage_all,st_mayer=c_mayer/length)
 
 ```{r}
 
-plot(sort(-log(gene_coverage_all$st_18486), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18486")
-abline(a=-log(mean(gene_coverage_all$st_18486)),b=0)
-plot(sort(-log(gene_coverage_all$st_18508_dep), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 dep")
-abline(a=-log(mean(gene_coverage_all$st_18508_dep)),b=0)
-plot(sort(-log(gene_coverage_all$st_18508_nondep), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 nondep")
-abline(a=-log(mean(gene_coverage_all$st_18508_nondep)),b=0)
-plot(sort(-log(gene_coverage_all$st_19238), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="19238")
-abline(a=-log(mean(gene_coverage_all$st_19238)),b=0)
-plot(sort(-log(gene_coverage_all$st_mayer), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="Mayer")
-abline(a=-log(mean(gene_coverage_all$st_mayer)),b=0)
+plot(sort(log(gene_coverage_all$st_18486 + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18486")
+abline(a=log(mean(gene_coverage_all$st_18486 + .1)),b=0)
+plot(sort(log(gene_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 dep")
+abline(a=log(mean(gene_coverage_all$st_18508_dep + .1)),b=0)
+plot(sort(log(gene_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 nondep")
+abline(a=log(mean(gene_coverage_all$st_18508_nondep +.1)),b=0)
+plot(sort(log(gene_coverage_all$st_19238 + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="19238")
+abline(a=log(mean(gene_coverage_all$st_19238 + .1)),b=0)
+plot(sort(log(gene_coverage_all$st_mayer + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="Mayer")
+abline(a=log(mean(gene_coverage_all$st_mayer + .1)),b=0)
 
 
 ```
@@ -338,6 +338,42 @@ colnames(prom_coverage_18486_count)=  c("chr", "start", "end", "name", "score", 
 
 ```
 
+
+
+Next I will merge theses files to create 1 file with all of the data.  
+
+```{r}
+prom_coverage_all= cbind(prom_coverage_18486_count, prom_coverage_18508_dep_count$counts, prom_coverage_18508_nondep_count$counts, prom_coverage_19238_dep_count$counts, prom_coverage_mayer_dep_count$counts)
+colnames(prom_coverage_all)= c("chr", "start", "end", "name", "score", "strand", "c_18486", "c_18508_dep", "c_18508_nondep", "c_19238_dep", "c_mayer")
+```
+
+
+Add a column for length of A and standardize the counts. **NOTE** would it be better to standardize by the gene and the promoter or just the gene length?   
+
+```{r}
+
+#add length column  
+prom_coverage_all= mutate(prom_coverage_all, length=end-start)
+#add columns for standard count 
+prom_coverage_all= mutate(prom_coverage_all,st_18486=c_18486/length)
+prom_coverage_all= mutate(prom_coverage_all,st_18508_dep= c_18508_dep /length)
+prom_coverage_all= mutate(prom_coverage_all,st_18508_nondep=c_18508_nondep/length)
+prom_coverage_all= mutate(prom_coverage_all,st_19238=c_19238_dep/length)
+prom_coverage_all= mutate(prom_coverage_all,st_mayer=c_mayer/length)
+```
+
+```{r}
+plot(sort(log(prom_coverage_all$st_18486 + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + Prom", main="18486")
+abline(a=log(mean(prom_coverage_all$st_18486 + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + Prom", main="18505 dep")
+abline(a=log(mean(prom_coverage_all$st_18508_dep + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + prom", main="18505 nondep")
+abline(a=log(mean(prom_coverage_all$st_18508_nondep + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_19238 + .1) , decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + prom", main="19238")
+abline(a=log(mean(prom_coverage_all$st_19238 + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_mayer + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes + prom", main="Mayer")
+abline(a=log(mean(prom_coverage_all$st_mayer + .1)),b=0)
+```
 
 
 
