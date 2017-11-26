@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> cc3902e</p>
+<p><strong>Code version:</strong> ab24036</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -529,6 +529,25 @@ ggplot(dat, aes(x=sorted_18486_cut)) + geom_density()</code></pre>
 <pre class="r"><code>ggplot(dat, aes(x=sorted_mayer_cut)) + geom_density()</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-19-5.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Zeros are represented as -2.3</p>
+<div id="propotion-of-detected-genes" class="section level4">
+<h4>Propotion of detected genes</h4>
+<p>Take the sum of the genes that do not equal zero for each set. Make a histogram.</p>
+<pre class="r"><code>prop_gene_non0_18486= sum(gene_coverage_all$c_18486 !=0) /length(gene_coverage_all$c_18486)
+
+prop_gene_non0_18508dep= sum(gene_coverage_all$c_18508_dep !=0) /length(gene_coverage_all$c_18508_dep)
+
+prop_gene_non0_18508_nondep= sum(gene_coverage_all$c_18508_nondep !=0) /length(gene_coverage_all$c_18508_nondep)
+
+prop_gene_non0_19238= sum(gene_coverage_all$c_19238_dep !=0) /length(gene_coverage_all$c_19238_dep)
+
+
+prop_gene_non0_mayer= sum(gene_coverage_all$c_mayer !=0) /length(gene_coverage_all$c_mayer)
+
+prop_non0_all= c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer)
+
+barplot(prop_non0_all, names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes&quot;, ylim=0:1, xlab= &quot;Library&quot;)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 </div>
 <div id="gene-and-promoter-coverage" class="section level3">
 <h3>Gene and promoter coverage</h3>
@@ -558,21 +577,92 @@ prom_coverage_all= mutate(prom_coverage_all,st_18508_dep= c_18508_dep /length)
 prom_coverage_all= mutate(prom_coverage_all,st_18508_nondep=c_18508_nondep/length)
 prom_coverage_all= mutate(prom_coverage_all,st_19238=c_19238_dep/length)
 prom_coverage_all= mutate(prom_coverage_all,st_mayer=c_mayer/length)</code></pre>
-<pre class="r"><code>plot(sort(log(prom_coverage_all$st_18486 + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + Prom&quot;, main=&quot;18486&quot;)
-abline(a=log(mean(prom_coverage_all$st_18486 + .1)),b=0)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(log(prom_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + Prom&quot;, main=&quot;18505 dep&quot;)
-abline(a=log(mean(prom_coverage_all$st_18508_dep + .1)),b=0)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(log(prom_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;18505 nondep&quot;)
-abline(a=log(mean(prom_coverage_all$st_18508_nondep + .1)),b=0)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(log(prom_coverage_all$st_19238 + .1) , decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;19238&quot;)
-abline(a=log(mean(prom_coverage_all$st_19238 + .1)),b=0)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(sort(log(prom_coverage_all$st_mayer + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;Mayer&quot;)
+<pre class="r"><code>par(mfrow = c(3,2))
+plot(sort(log(prom_coverage_all$st_18486 + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + Prom&quot;, main=&quot;18486&quot;)
+abline(a=log(mean(prom_coverage_all$st_18486 + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + Prom&quot;, main=&quot;18505 dep&quot;)
+abline(a=log(mean(prom_coverage_all$st_18508_dep + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;18505 nondep&quot;)
+abline(a=log(mean(prom_coverage_all$st_18508_nondep + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_19238 + .1) , decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;19238&quot;)
+abline(a=log(mean(prom_coverage_all$st_19238 + .1)),b=0)
+plot(sort(log(prom_coverage_all$st_mayer + .1), decreasing=TRUE), ylab=&quot;-log of gene count standardized by length&quot;, xlab=&quot;Genes + prom&quot;, main=&quot;Mayer&quot;)
 abline(a=log(mean(prom_coverage_all$st_mayer + .1)),b=0)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-24-5.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>I beleive this shows that the promoters do not hold a majority of the reads. We find them in gene bodies.</p>
+<pre class="r"><code>par(mfrow = c(1,2))
+plot(prom_coverage_all$st_18486 ~ prom_coverage_all$st_18508_dep, xlab=&quot;18486&quot;, ylab = &quot;18508&quot;)
+abline(lm(prom_coverage_all$st_18486 ~ prom_coverage_all$st_18508_dep))
+plot(prom_coverage_all$st_18486 ~ prom_coverage_all$st_mayer, xlab= &quot;18486&quot;, ylab=&quot;Mayer&quot;)
+abline(lm(prom_coverage_all$st_18486 ~ prom_coverage_all$st_mayer))
+title(&quot;Standard Count Correlatation&quot;) </code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-26-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Compare inclusion and exclusion of promoters</p>
+<pre class="r"><code>plot(gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486, xlab=&quot;gene&quot;, ylab = &quot;w/ promoter&quot;, main= &quot;Inclusion and exclusion of promoter in counts&quot;)
+abline(lm(gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486))</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>lm(gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486)</code></pre>
+<pre><code>
+Call:
+lm(formula = gene_coverage_all$st_18486 ~ prom_coverage_all$st_18486)
+
+Coefficients:
+               (Intercept)  prom_coverage_all$st_18486  
+                    0.3291                      0.8501  </code></pre>
+<pre class="r"><code>plot(gene_coverage_all$st_18508_dep ~ gene_coverage_all$c_18508_nondep, xlab=&quot;dep&quot;, ylab = &quot;non_dep&quot;, main= &quot;Effect of depletion on gene counts &quot;)
+abline(lm(gene_coverage_all$st_18508_dep ~ gene_coverage_all$st_18508_nondep))</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-27-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>lm(gene_coverage_all$st_18508_dep ~ gene_coverage_all$st_18508_nondep)</code></pre>
+<pre><code>
+Call:
+lm(formula = gene_coverage_all$st_18508_dep ~ gene_coverage_all$st_18508_nondep)
+
+Coefficients:
+                      (Intercept)  gene_coverage_all$st_18508_nondep  
+                          0.01254                            0.98365  </code></pre>
+<p>Exclude zeros:</p>
+<pre class="r"><code>par(mfrow = c(1,2))
+
+prom_no0_18486=prom_coverage_all$st_18486[prom_coverage_all$st_18486!=0]
+plot(sort(log(prom_no0_18486), decreasing = TRUE), main=&quot;18486 genes and promoters \n without zeros&quot;, ylab=&quot;log of st. counts&quot;)
+abline(a= mean(log(prom_no0_18486)), b=0)
+
+
+gene_no0_18486=gene_coverage_all$st_18486[gene_coverage_all$st_18486 !=0]
+plot(sort(log(gene_no0_18486), decreasing = TRUE), main=&quot;18486 genes without zeros&quot;, ylab=&quot;log of st. counts&quot;)
+abline(a =mean(log(gene_no0_18486)), b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /> Do the same with Mayer</p>
+<pre class="r"><code>par(mfrow = c(1,2))
+
+prom_no0_m=prom_coverage_all$st_mayer[prom_coverage_all$st_mayer!=0]
+plot(sort(log(prom_no0_m), decreasing = TRUE), main=&quot;Mayer genes and promoters \n without zeros&quot;, ylab=&quot;log of st. counts&quot;)
+abline(a= mean(log(prom_no0_m)), b=0)
+
+
+gene_no0_m=gene_coverage_all$st_mayer[gene_coverage_all$st_mayer !=0]
+plot(sort(log(gene_no0_m), decreasing = TRUE), main=&quot;Mayer genes without zeros&quot;, ylab=&quot;log of st. counts&quot;)
+abline(a =mean(log(gene_no0_m)), b=0)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="propotion-of-detected-genes-including-promoters" class="section level4">
+<h4>Propotion of detected genes including promoters</h4>
+<p>Take the sum of the genes that do not equal zero for each set. Make a histogram.</p>
+<pre class="r"><code>prop_prom_non0_18486= sum(prom_coverage_all$c_18486 !=0) /length(prom_coverage_all$c_18486)
+
+prop_prom_non0_18508dep= sum(prom_coverage_all$c_18508_dep !=0) /length(prom_coverage_all$c_18508_dep)
+
+prop_prom_non0_18508_nondep= sum(prom_coverage_all$c_18508_nondep !=0) /length(prom_coverage_all$c_18508_nondep)
+
+prop_prom_non0_19238= sum(prom_coverage_all$c_19238_dep !=0) /length(prom_coverage_all$c_19238_dep)
+
+
+prop_prom_non0_mayer= sum(prom_coverage_all$c_mayer !=0) /length(prom_coverage_all$c_mayer)
+
+prop_prom_non0_all= c(prop_prom_non0_18486,prop_prom_non0_18508dep, prop_prom_non0_18508_nondep, prop_prom_non0_19238, prop_prom_non0_mayer)
+
+barplot(prop_prom_non0_all, names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes w/ promoters&quot;, ylim=0:1, xlab= &quot;Library&quot;)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Including the promoters greatly decrease the proportion of non-zero genes. From this is looks like we captured more in the promoter regions than Mayer.</p>
+</div>
 </div>
 <div id="exon-coverage" class="section level3">
 <h3>Exon coverage</h3>
