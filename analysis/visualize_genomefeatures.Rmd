@@ -79,6 +79,34 @@ peak.annot_genes
 ```
 The genes file has a lot of random chr tags at the end.  
 
+
+```{r}
+
+sm = ScoreMatrixBin(target = dedup.18486.dep, windows = CTCF_gen, bin.num = 50)
+heat.matrix= heatMatrix(sm, xcoords = c(-1000, 1000))
+heat.matrix
+
+plotMeta(sm, xcoords = c(-1000, 1000))
+```
+
+
+###Metaplot for TSS  
+
+```{r}
+TSS= readGeneric(file = "../data/SwitchGear_TSS.bed", header=FALSE, keep.all.metadata = TRUE)
+
+
+dedup.18486.dep= readGeneric(file= "../data/net1_18486_dep_dedup_chr.bed", header = FALSE, keep.all.metadata = TRUE)
+
+
+
+ annotateWithFeature(TSS, dedup.18486.dep, intersect.chr = TRUE)
+
+
+```
+
+
+
 ## Session information
 
 <!-- Insert the session information into the document -->
