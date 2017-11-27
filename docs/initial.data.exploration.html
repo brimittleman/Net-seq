@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-22</p>
+<p><strong>Last updated:</strong> 2017-11-27</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> c327340</p>
+<p><strong>Code version:</strong> c9cf54b</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to look at inital data QC and points of interests.</p>
 <p>First I looked at the number of reads that mapp to the genome before and after deduplication UMI steps.</p>
@@ -602,6 +602,44 @@ mapped: 54088856</p>
 samtools index {input}
 umi_tools dedup -I {input.bam} -S {output}</code></pre>
 </div>
+</div>
+<div id="extend-mayer-data-exploration" class="section level3">
+<h3>Extend Mayer data exploration</h3>
+<p>I downloaded HeLa S3 Rep1 and the other run for HEK293T Rep1. I ran the snake file in the mayer.data directory as Mayer_hek and Mayer_hela.</p>
+<p>mayer_hek</p>
+<ul>
+<li><p>reads: 358754064</p></li>
+<li><p>mapped: 128152521</p></li>
+<li><p>deduplication: 4392741</p></li>
+</ul>
+<p>mayer_hela</p>
+<ul>
+<li><p>reads: 175303176</p></li>
+<li><p>mapped: 51362897</p></li>
+<li><p>deduplication: 6314281</p></li>
+</ul>
+<pre class="r"><code>m_fastq= c(358754064,175303176)
+m_sort= c(128152521 , 51362897)
+m_dedup= c(4392741, 6314281 )
+mayer= c(&quot;Hek&quot;, &quot;Hela&quot;)
+counts_m= rbind(m_fastq, m_sort, m_dedup)
+colnames(counts_m)= mayer
+count_plot_m=barplot(as.matrix(counts_m), main=&quot;Counts for coverage and complexity&quot;,
+  xlab=&quot;Library&quot;, col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;),
+    ylab=&quot;Read counts&quot;)
+legend(&quot;topright&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = .75)</code></pre>
+<p><img src="figure/initial.data.exploration.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>percent_mapped_m= m_sort/m_fastq
+percent_UMI_m= m_dedup/m_fastq
+percent_not_mapped_m= 1- percent_mapped_m - percent_UMI_m
+
+prop_m=rbind(percent_not_mapped_m, percent_mapped_m, percent_UMI_m)
+colnames(prop_m)= mayer
+prop_plot_m=barplot(as.matrix(prop_m), main=&quot;Proportions for coverage and complexity&quot;,
+  xlab=&quot;Library&quot;, col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;),
+    ylab=&quot;Proportion of sequenced reads&quot;)
+legend(&quot;bottomright&quot;, legend = c(&quot;Un-mapped&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = 0.75)</code></pre>
+<p><img src="figure/initial.data.exploration.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
