@@ -420,6 +420,61 @@ samtools index {input}
 umi_tools dedup -I {input.bam} -S {output}
 ```
 
+
+
+
+###Extend Mayer data exploration  
+
+I downloaded HeLa S3 Rep1 and the other run for HEK293T Rep1. I ran the snake file in the mayer.data directory as Mayer_hek and Mayer_hela.  
+
+mayer_hek  
+
+* reads: 358754064   
+
+* mapped: 128152521  
+
+* deduplication: 4392741  
+
+
+mayer_hela  
+
+* reads: 175303176  
+
+* mapped: 51362897  
+
+* deduplication: 6314281  
+
+
+
+```{r}
+
+m_fastq= c(358754064,175303176)
+m_sort= c(128152521 , 51362897)
+m_dedup= c(4392741, 6314281 )
+mayer= c("Hek", "Hela")
+counts_m= rbind(m_fastq, m_sort, m_dedup)
+colnames(counts_m)= mayer
+count_plot_m=barplot(as.matrix(counts_m), main="Counts for coverage and complexity",
+  xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
+ 	ylab="Read counts")
+legend("topright", legend = c("total", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = .75)
+```
+
+
+```{r}
+percent_mapped_m= m_sort/m_fastq
+percent_UMI_m= m_dedup/m_fastq
+percent_not_mapped_m= 1- percent_mapped_m - percent_UMI_m
+
+prop_m=rbind(percent_not_mapped_m, percent_mapped_m, percent_UMI_m)
+colnames(prop_m)= mayer
+prop_plot_m=barplot(as.matrix(prop_m), main="Proportions for coverage and complexity",
+  xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
+ 	ylab="Proportion of sequenced reads")
+legend("bottomright", legend = c("Un-mapped", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = 0.75)
+```
+
+
 ## Session information
 
 <!-- Insert the session information into the document -->
