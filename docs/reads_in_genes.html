@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-26</p>
+<p><strong>Last updated:</strong> 2017-11-27</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> ab24036</p>
+<p><strong>Code version:</strong> f3f2889</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -661,8 +661,13 @@ prop_prom_non0_all= c(prop_prom_non0_18486,prop_prom_non0_18508dep, prop_prom_no
 
 barplot(prop_prom_non0_all, names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes w/ promoters&quot;, ylim=0:1, xlab= &quot;Library&quot;)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Including the promoters greatly decrease the proportion of non-zero genes. From this is looks like we captured more in the promoter regions than Mayer.</p>
 </div>
+</div>
+<div id="do-this-with-deduplicated-files" class="section level3">
+<h3>Do this with deduplicated files</h3>
+<p>The bed files are:<br />
+/project2/gilad/briana/Net-seq/Net-seq1/data/bed_dedup/chr<br />
+/project2/gilad/briana/Net-seq/data/bed_dedup/chr</p>
 </div>
 <div id="exon-coverage" class="section level3">
 <h3>Exon coverage</h3>
