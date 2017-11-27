@@ -490,7 +490,17 @@ barplot(prop_prom_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep",
 
 ```
 
-Including the promoters greatly decrease the proportion of non-zero genes. From this is looks like we captured more in the promoter regions than Mayer.  
+
+###Do this with deduplicated files  
+
+
+The bed files are:  
+/project2/gilad/briana/Net-seq/Net-seq1/data/bed_dedup/chr  
+/project2/gilad/briana/Net-seq/data/bed_dedup/chr  
+
+
+
+
 
 
 
