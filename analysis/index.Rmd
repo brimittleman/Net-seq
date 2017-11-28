@@ -7,12 +7,16 @@ output:
 
 This is the workflowr site for my Net-seq project. I will have all of the data, code, and analysis here.  
 
-####Getting Started  
 
-* [Setting up conda environment](conda.environment.html) 
+Set-up for mappping my libraries:  
+* [Setting up conda environment](conda.environment.html)  
 * [Setting up config and snake files](config.snake.setup.html)  
-* [Initial data exploration for NetSeq1 libary](initial.data.exploration.html)
-* [Explore read lengths that are mapping](map_stats_from_bam.html)
-* [Explore the UMI usage in the NetSeq1 library](explore_umi_usage.html)
-* [Use the genomation package to vizualize genome features and see overlap with Net-seq1](visualize_genomefeatures.html)
-* [Look at the reads in different gene regions](explore_umi_usage.html)
+
+
+Initials data exploration:  
+* [Initial data exploration for NetSeq1 libary](initial.data.exploration.html)  
+* [Explore read lengths that are mapping](map_stats_from_bam.html)  
+* [Explore the UMI usage in the NetSeq1 library](explore_umi_usage.html)  
+* [Use the genomation package to vizualize genome features and see overlap with Net-seq1](visualize_genomefeatures.html)  
+* [Look at the reads in different gene regions](explore_umi_usage.html)  
+* [Exploration of read counts per gene](reads_in_genes.html)
