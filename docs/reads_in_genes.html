@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-28</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 6b5f371</p>
+<p><strong>Code version:</strong> ecbc5b9</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -747,7 +747,8 @@ abline(a=log(mean(dedup_gene_coverage_all$st_de_19238 + .1)),b=0)</code></pre>
 abline(a=log(mean(dedup_gene_coverage_all$st_de_mayer + .1)),b=0)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-36-5.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Summaries for gene coverage and deduplicated gene coverage:</p>
-<pre class="r"><code>summary(gene_coverage_all$st_18486)</code></pre>
+<pre class="r"><code>#total 
+summary(gene_coverage_all$st_18486)</code></pre>
 <pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
    0.0000    0.0002    0.0007    0.3581    0.0018 1433.9625 </code></pre>
 <pre class="r"><code>summary(gene_coverage_all$st_18508_dep)</code></pre>
@@ -778,9 +779,22 @@ summary(dedup_gene_coverage_all$st_de_18486)</code></pre>
 <pre class="r"><code>summary(dedup_gene_coverage_all$st_de_mayer)</code></pre>
 <pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
  0.00000  0.00002  0.00065  0.09038  0.00198 80.70492 </code></pre>
+<p>Look at this with a barplot:</p>
+<pre class="r"><code>med_18486= c(median(gene_coverage_all$st_18486), median(dedup_gene_coverage_all$st_de_18486))
+med_18508_dep=c(median(gene_coverage_all$st_18508_dep), median(dedup_gene_coverage_all$st_de_18508_dep))
+med_18508_nondep= c(median(gene_coverage_all$st_18508_nondep), median(dedup_gene_coverage_all$st_de_18508_nondep))
+med_19238= c(median(gene_coverage_all$st_19238), median(dedup_gene_coverage_all$st_de_19238))
+med_mayer= c(median(gene_coverage_all$st_mayer), median(dedup_gene_coverage_all$st_de_mayer))
+median_all=rbind(med_18486, med_18508_dep, med_18508_nondep, med_19238, med_mayer)
+colnames(median_all)= c(&quot;total&quot;, &quot;deduplicated&quot;)
+
+#make a barplot
+barplot(c(med_18486[1],med_18486[2], med_18508_dep[1], med_18508_dep[2], med_18508_nondep[1], med_18508_nondep[2], med_19238[1], med_19238[2], med_mayer[1], med_mayer[2]), main=&quot;Median of standard read counts&quot;, col=c(&quot;red&quot;, &quot;blue&quot;,&quot;red&quot;, &quot;blue&quot;,&quot;red&quot;, &quot;blue&quot;,&quot;red&quot;, &quot;blue&quot;,&quot;red&quot;, &quot;blue&quot;), names= c(&quot;18486&quot;, &quot;18486&quot;, &quot;18508 \ndep&quot;, &quot;18508 \ndep&quot;, &quot;18508\n nondep&quot;, &quot;18508\n nondep&quot;, &quot;19238&quot;, &quot;19238&quot;, &quot;Mayer&quot;, &quot;Mayer&quot;), las=2, ylab=&quot;Standardized read count&quot;, ylim=c(0, .002))
+legend(&quot;topright&quot;,c(&quot;reads&quot;, &quot;UMI molecules&quot;), col=c(&quot;red&quot;,&quot;blue&quot;), pch=20)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Boxplots:</p>
 <pre class="r"><code>boxplot(log(dedup_gene_coverage_all$st_de_18486 + .1),log(gene_coverage_all$st_18486 + .1), log(dedup_gene_coverage_all$st_de_18508_dep + .1), log(gene_coverage_all$st_18508_dep + .1), log(dedup_gene_coverage_all$st_de_18508_nondep + .1),log(gene_coverage_all$st_18508_nondep + .1) , log(dedup_gene_coverage_all$st_de_19238 + .1), log(gene_coverage_all$st_19238 + .1), log(dedup_gene_coverage_all$st_de_mayer + .1),log(gene_coverage_all$st_mayer + .1),las = 2, main= &quot;Log of gene counts + .1&quot;, names=c(&quot;dedup \n18486&quot;,&quot;18486&quot;, &quot;dedup \n 18508 \n dep&quot;, &quot; 18508 \n dep&quot;,&quot;dedup \n 18508 \n nondep&quot;,&quot;18508 \n nondep&quot;,&quot;dedup \n 19238&quot;, &quot;19238&quot;,&quot;dedup\n mayer&quot;, &quot;mayer&quot;), at =c(1,2,4,5,7,8,10,11,13,14), ylab=&quot;log count +.1&quot;)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-38-1.png" width="672" style="display: block; margin: auto;" /> Maybe I should make this same plot but remover the zeros:</p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /> Maybe I should make this same plot but remover the zeros:</p>
 <pre class="r"><code>non_zero_dedup_18486= dedup_gene_coverage_all$st_de_18486[dedup_gene_coverage_all$st_de_18486!=0]
 
 
@@ -803,7 +817,7 @@ non_zero_dedup_mayer= dedup_gene_coverage_all$st_de_mayer[dedup_gene_coverage_al
 non_zero_mayer= gene_coverage_all$st_mayer[gene_coverage_all$st_mayer!=0]
 
 boxplot(log(non_zero_dedup_18486), log(non_zero_18486), log(non_zero_dedup_18508_dep), log(non_zero_18508_dep), log(non_zero_dedup_18508_nondep), log(non_zero_18508_nondep), log(non_zero_dedup_19238), log(non_zero_19238), log(non_zero_dedup_mayer), log(non_zero_mayer), las = 2, main= &quot;Log of non zero gene counts&quot;, names=c(&quot;dedup \n18486&quot;,&quot;18486&quot;, &quot;dedup \n 18508 \n dep&quot;, &quot; 18508 \n dep&quot;,&quot;dedup \n 18508 \n nondep&quot;,&quot;18508 \n nondep&quot;,&quot;dedup \n 19238&quot;, &quot;19238&quot;,&quot;dedup\n mayer&quot;, &quot;mayer&quot;), at =c(1,2,4,5,7,8,10,11,13,14), ylab=&quot;log count&quot;)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-39-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Look at the number of detected genes. This should be the same as the detected genes. The numbers are just smaller per gene:</p>
 <pre class="r"><code>prop_dedup_gene_non0_18486= sum(dedup_gene_coverage_all$de_18486 != 0) /length(dedup_gene_coverage_all$de_18486)
 
@@ -816,10 +830,9 @@ prop_dedup_gene_non0_19238= sum(dedup_gene_coverage_all$de_19238_dep != 0) /leng
 
 prop_dedup_gene_non0_mayer= sum(dedup_gene_coverage_all$de_mayer != 0) /length(dedup_gene_coverage_all$de_mayer)
 
-prop_dedup_non0_all= c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer)
 
-barplot(prop_dedup_non0_all, names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes&quot;, ylim=0:1, xlab= &quot;Library&quot;, main = &quot;Genes detected in deduplicated libraries&quot;)</code></pre>
-<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+barplot( c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer) , names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes&quot;, ylim=0:1, xlab= &quot;Library&quot;, main = &quot;Genes detected in deduplicated libraries&quot;)</code></pre>
+<p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="exon-coverage" class="section level3">
 <h3>Exon coverage</h3>
