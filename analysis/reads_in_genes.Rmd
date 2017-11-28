@@ -86,6 +86,8 @@ Should probably do this for the deduplicated files as well.
 ```{bash, eval=FALSE}
 bedtools bamtobed [OPTIONS] -i <BAM>
 awk '$0="chr"$0' file > new_file 
+
+bedtools bamtobed -i file.bam | awk '$0="chr"$0'  > newfile.bed
 ```
 
 
@@ -199,15 +201,15 @@ gene_coverage_all= mutate(gene_coverage_all,st_mayer=c_mayer/length)
 
 ```{r}
 
-plot(sort(log(gene_coverage_all$st_18486 + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18486")
+plot(sort(log(gene_coverage_all$st_18486 + .1), decreasing=TRUE), ylab="log of gene count standardized by length", xlab="Genes", main="18486")
 abline(a=log(mean(gene_coverage_all$st_18486 + .1)),b=0)
-plot(sort(log(gene_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 dep")
+plot(sort(log(gene_coverage_all$st_18508_dep + .1), decreasing=TRUE), ylab="log of gene count standardized by length", xlab="Genes", main="18505 dep")
 abline(a=log(mean(gene_coverage_all$st_18508_dep + .1)),b=0)
-plot(sort(log(gene_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="18505 nondep")
+plot(sort(log(gene_coverage_all$st_18508_nondep + .1), decreasing=TRUE), ylab="log of gene count standardized by length", xlab="Genes", main="18505 nondep")
 abline(a=log(mean(gene_coverage_all$st_18508_nondep +.1)),b=0)
-plot(sort(log(gene_coverage_all$st_19238 + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="19238")
+plot(sort(log(gene_coverage_all$st_19238 + .1), decreasing=TRUE), ylab="log of gene count standardized by length", xlab="Genes", main="19238")
 abline(a=log(mean(gene_coverage_all$st_19238 + .1)),b=0)
-plot(sort(log(gene_coverage_all$st_mayer + .1), decreasing=TRUE), ylab="-log of gene count standardized by length", xlab="Genes", main="Mayer")
+plot(sort(log(gene_coverage_all$st_mayer + .1), decreasing=TRUE), ylab="log of gene count standardized by length", xlab="Genes", main="Mayer")
 abline(a=log(mean(gene_coverage_all$st_mayer + .1)),b=0)
 
 
@@ -316,7 +318,7 @@ Zeros are represented as -2.3
 
 ####Propotion of detected genes  
 
-Take the sum of the genes that do not equal zero for each set. Make a histogram.  
+Take the sum of the genes that do not equal zero for each set.  
 
 ```{r}
 prop_gene_non0_18486= sum(gene_coverage_all$c_18486 !=0) /length(gene_coverage_all$c_18486)
@@ -483,7 +485,7 @@ prop_prom_non0_mayer= sum(prom_coverage_all$c_mayer !=0) /length(prom_coverage_a
 
 prop_prom_non0_all= c(prop_prom_non0_18486,prop_prom_non0_18508dep, prop_prom_non0_18508_nondep, prop_prom_non0_19238, prop_prom_non0_mayer)
 
-barplot(prop_prom_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes w/ promoters", ylim=0:1, xlab= "Library")
+barplot(prop_prom_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes w/ promoters", ylim=0:1, xlab= "Library", main = "Proportion of detected genes including the promoter")
 
 
 
@@ -499,7 +501,191 @@ The bed files are:
 /project2/gilad/briana/Net-seq/data/bed_dedup/chr  
 
 
+This makes the count coverage files for each deduplicated files. gene_dedup_cov.sh    
 
+```{bash eval=FALSE}
+
+
+#!/bin/bash
+
+
+#SBATCH --job-name=gene_dedup_cov
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=50G
+#SBATCH --mail-type=END
+
+
+cd /project2/gilad/briana/Net-seq/ref_genes
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_dedup/chr/YG-SP-NET1-18486-dep-2017-10-13_S4_R1_001-sort.dedup.chr.bed  > gene_cov_dedup_count/gene_coverage_18486_dedup_count.txt
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_dedup/chr/YG-SP-NET1-18508-dep-2017-10-13_S2_R1_001-sort.dedup.chr.bed  > gene_cov_dedup_count/gene_coverage_18508_dep_dedup_count.txt
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_dedup/chr/YG-SP-NET1-18508-nondep-2017-10-13_S3_R1_001-sort.dedup.chr.bed > gene_cov_dedup_count/gene_coverage_18508_nondep_dedup_count.txt
+
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_dedup/chr/YG-SP-NET1-19238-2017-10-13-S6-R1-001.sort.dedup.chr.bed > gene_cov_dedup_count/gene_coverage_19238_dep_dedup_count.txt
+
+
+bedtools coverage -counts -a ref_seq_gene_hg19_small_cut  -b /project2/gilad/briana/Net-seq/data/bed_dedup/chr/SRR1575922-sort.dedup.chr.bed > gene_cov_dedup_count/gene_coverage_mayer_SRR1575922_dedup_count.txt
+
+
+
+```
+
+The txt files are in /project2/gilad/briana/Net-seq/ref_genes/gene_cov_dedup_count  
+
+
+Input the data:  
+```{r}
+dedup_gene_cov_18486_count= read.csv("../data/gene_dedup_cov_count/gene_coverage_18486_dedup_count.txt", header=FALSE, sep="\t")
+dedup_gene_cov_18508_dep_count= read.csv("../data/gene_dedup_cov_count/gene_coverage_18508_dep_dedup_count.txt", header=FALSE, sep="\t")
+
+dedup_gene_cov_18508_nondep_count= read.csv("../data/gene_dedup_cov_count/gene_coverage_18508_nondep_dedup_count.txt", header=FALSE, sep="\t")
+
+
+dedup_gene_cov_19238_count= read.csv("../data/gene_dedup_cov_count/gene_coverage_19238_dep_dedup_count.txt", header=FALSE, sep="\t")
+
+
+dedup_gene_cov_mayer_count= read.csv("../data/gene_dedup_cov_count/gene_coverage_mayer_SRR1575922_dedup_count.txt", header=FALSE, sep="\t")
+```
+
+Add col names:  
+
+```{r}
+colnames(dedup_gene_cov_18486_count) = c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(dedup_gene_cov_18508_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(dedup_gene_cov_18508_nondep_count)=c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(dedup_gene_cov_19238_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(dedup_gene_cov_mayer_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+```
+
+
+Make dedup all file:  
+
+
+```{r}
+dedup_gene_coverage_all= cbind(dedup_gene_cov_18486_count, dedup_gene_cov_18508_dep_count$counts, dedup_gene_cov_18508_nondep_count$counts, dedup_gene_cov_19238_count$counts, dedup_gene_cov_mayer_count$counts)
+colnames(dedup_gene_coverage_all)= c("chr", "start", "end", "name", "score", "strand", "de_18486", "de_18508_dep", "de_18508_nondep", "de_19238_dep", "de_mayer")
+```
+
+
+Standardize by gene length:  
+
+```{r}
+
+#add length column  
+dedup_gene_coverage_all= mutate(dedup_gene_coverage_all, length=end-start)
+#add columns for standard count 
+dedup_gene_coverage_all= mutate(dedup_gene_coverage_all, st_de_18486=de_18486/length)
+dedup_gene_coverage_all= mutate(dedup_gene_coverage_all, st_de_18508_dep= de_18508_dep /length)
+dedup_gene_coverage_all= mutate(dedup_gene_coverage_all, st_de_18508_nondep=de_18508_nondep/length)
+dedup_gene_coverage_all= mutate(dedup_gene_coverage_all, st_de_19238=de_19238_dep/length)
+dedup_gene_coverage_all= mutate(dedup_gene_coverage_all, st_de_mayer=de_mayer/length)
+```
+
+
+Plot these:  
+
+```{r}
+
+plot(sort(log(dedup_gene_coverage_all$st_de_18486 + .1), decreasing=TRUE), ylab="log of dedup gene count standardized by length", xlab="Genes", main="18486")
+abline(a=log(mean(dedup_gene_coverage_all$st_de_18486 + .1)),b=0)
+plot(sort(log(dedup_gene_coverage_all$st_de_18508_dep + .1), decreasing=TRUE), ylab="log of dedup gene count standardized by length", xlab="Genes", main="18505 dep")
+abline(a=log(mean(dedup_gene_coverage_all$st_de_18508_dep + .1)),b=0)
+plot(sort(log(dedup_gene_coverage_all$st_de_18508_nondep + .1), decreasing=TRUE), ylab="log of dedup gene count standardized by length", xlab="Genes", main="18505 nondep")
+abline(a=log(mean(dedup_gene_coverage_all$st_de_18508_nondep +.1)),b=0)
+plot(sort(log(dedup_gene_coverage_all$st_de_19238 + .1), decreasing=TRUE), ylab="log of dedup gene count standardized by length", xlab="Genes", main="19238")
+abline(a=log(mean(dedup_gene_coverage_all$st_de_19238 + .1)),b=0)
+plot(sort(log(dedup_gene_coverage_all$st_de_mayer + .1), decreasing=TRUE), ylab="log of dedup gene count standardized by length", xlab="Genes", main="Mayer")
+abline(a=log(mean(dedup_gene_coverage_all$st_de_mayer + .1)),b=0)
+
+
+```
+
+Summaries for gene coverage and deduplicated gene coverage:  
+
+```{r}
+summary(gene_coverage_all$st_18486)
+summary(gene_coverage_all$st_18508_dep)
+summary(gene_coverage_all$st_18508_nondep)
+summary(gene_coverage_all$st_19238)
+summary(gene_coverage_all$st_mayer)
+
+
+
+
+#dedup
+summary(dedup_gene_coverage_all$st_de_18486)
+summary(dedup_gene_coverage_all$st_de_18508_dep)
+summary(dedup_gene_coverage_all$st_de_18508_nondep)
+summary(dedup_gene_coverage_all$st_de_19238)
+summary(dedup_gene_coverage_all$st_de_mayer)
+```
+
+Boxplots:  
+```{r}
+
+boxplot(log(dedup_gene_coverage_all$st_de_18486 + .1),log(gene_coverage_all$st_18486 + .1), log(dedup_gene_coverage_all$st_de_18508_dep + .1), log(gene_coverage_all$st_18508_dep + .1), log(dedup_gene_coverage_all$st_de_18508_nondep + .1),log(gene_coverage_all$st_18508_nondep + .1) , log(dedup_gene_coverage_all$st_de_19238 + .1), log(gene_coverage_all$st_19238 + .1), log(dedup_gene_coverage_all$st_de_mayer + .1),log(gene_coverage_all$st_mayer + .1),las = 2, main= "Log of gene counts + .1", names=c("dedup \n18486","18486", "dedup \n 18508 \n dep", " 18508 \n dep","dedup \n 18508 \n nondep","18508 \n nondep","dedup \n 19238", "19238","dedup\n mayer", "mayer"), at =c(1,2,4,5,7,8,10,11,13,14), ylab="log count +.1")
+```
+Maybe I should make this same plot but remover the zeros:  
+
+```{r}
+non_zero_dedup_18486= dedup_gene_coverage_all$st_de_18486[dedup_gene_coverage_all$st_de_18486!=0]
+
+
+non_zero_18486= gene_coverage_all$st_18486[gene_coverage_all$st_18486!=0]
+
+non_zero_dedup_18508_dep= dedup_gene_coverage_all$st_de_18508_dep[dedup_gene_coverage_all$st_de_18508_dep!=0]
+
+non_zero_18508_dep= gene_coverage_all$st_18508_dep[gene_coverage_all$st_18508_dep!=0]
+
+non_zero_dedup_18508_nondep=dedup_gene_coverage_all$st_de_18508_nondep[dedup_gene_coverage_all$st_de_18508_nondep!=0]
+
+non_zero_18508_nondep=gene_coverage_all$st_18508_nondep[gene_coverage_all$st_18508_nondep!=0]
+
+non_zero_dedup_19238=dedup_gene_coverage_all$st_de_19238[dedup_gene_coverage_all$st_de_19238!=0]
+
+non_zero_19238= gene_coverage_all$st_19238[gene_coverage_all$st_19238!=0]
+
+non_zero_dedup_mayer= dedup_gene_coverage_all$st_de_mayer[dedup_gene_coverage_all$st_de_mayer!=0]
+
+non_zero_mayer= gene_coverage_all$st_mayer[gene_coverage_all$st_mayer!=0]
+
+boxplot(log(non_zero_dedup_18486), log(non_zero_18486), log(non_zero_dedup_18508_dep), log(non_zero_18508_dep), log(non_zero_dedup_18508_nondep), log(non_zero_18508_nondep), log(non_zero_dedup_19238), log(non_zero_19238), log(non_zero_dedup_mayer), log(non_zero_mayer), las = 2, main= "Log of non zero gene counts", names=c("dedup \n18486","18486", "dedup \n 18508 \n dep", " 18508 \n dep","dedup \n 18508 \n nondep","18508 \n nondep","dedup \n 19238", "19238","dedup\n mayer", "mayer"), at =c(1,2,4,5,7,8,10,11,13,14), ylab="log count")
+
+
+    
+```
+
+
+
+
+
+Look at the number of detected genes. This should be the same as the detected genes. The numbers are just smaller per gene:  
+
+```{r}
+prop_dedup_gene_non0_18486= sum(dedup_gene_coverage_all$de_18486 != 0) /length(dedup_gene_coverage_all$de_18486)
+
+prop_dedup_gene_non0_18508dep= sum(dedup_gene_coverage_all$de_18508_dep != 0) /length(dedup_gene_coverage_all$de_18508_dep)
+
+prop_dedup_gene_non0_18508_nondep= sum(dedup_gene_coverage_all$de_18508_nondep != 0) /length(dedup_gene_coverage_all$de_18508_nondep)
+
+prop_dedup_gene_non0_19238= sum(dedup_gene_coverage_all$de_19238_dep != 0) /length(dedup_gene_coverage_all$de_19238_dep)
+
+
+prop_dedup_gene_non0_mayer= sum(dedup_gene_coverage_all$de_mayer != 0) /length(dedup_gene_coverage_all$de_mayer)
+
+prop_dedup_non0_all= c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer)
+
+barplot(prop_dedup_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes", ylim=0:1, xlab= "Library", main = "Genes detected in deduplicated libraries")
+
+
+```
 
 
 
