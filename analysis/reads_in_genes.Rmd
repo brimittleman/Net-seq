@@ -610,6 +610,8 @@ abline(a=log(mean(dedup_gene_coverage_all$st_de_mayer + .1)),b=0)
 Summaries for gene coverage and deduplicated gene coverage:  
 
 ```{r}
+
+#total 
 summary(gene_coverage_all$st_18486)
 summary(gene_coverage_all$st_18508_dep)
 summary(gene_coverage_all$st_18508_nondep)
@@ -626,6 +628,27 @@ summary(dedup_gene_coverage_all$st_de_18508_nondep)
 summary(dedup_gene_coverage_all$st_de_19238)
 summary(dedup_gene_coverage_all$st_de_mayer)
 ```
+
+Look at this with a barplot:  
+
+```{r}
+med_18486= c(median(gene_coverage_all$st_18486), median(dedup_gene_coverage_all$st_de_18486))
+med_18508_dep=c(median(gene_coverage_all$st_18508_dep), median(dedup_gene_coverage_all$st_de_18508_dep))
+med_18508_nondep= c(median(gene_coverage_all$st_18508_nondep), median(dedup_gene_coverage_all$st_de_18508_nondep))
+med_19238= c(median(gene_coverage_all$st_19238), median(dedup_gene_coverage_all$st_de_19238))
+med_mayer= c(median(gene_coverage_all$st_mayer), median(dedup_gene_coverage_all$st_de_mayer))
+median_all=rbind(med_18486, med_18508_dep, med_18508_nondep, med_19238, med_mayer)
+colnames(median_all)= c("total", "deduplicated")
+
+#make a barplot
+barplot(c(med_18486[1],med_18486[2], med_18508_dep[1], med_18508_dep[2], med_18508_nondep[1], med_18508_nondep[2], med_19238[1], med_19238[2], med_mayer[1], med_mayer[2]), main="Median of standard read counts", col=c("red", "blue","red", "blue","red", "blue","red", "blue","red", "blue"), names= c("18486", "18486", "18508 \ndep", "18508 \ndep", "18508\n nondep", "18508\n nondep", "19238", "19238", "Mayer", "Mayer"), las=2, ylab="Standardized read count", ylim=c(0, .002))
+legend("topright",c("reads", "UMI molecules"), col=c("red","blue"), pch=20)
+```
+
+
+
+
+
 
 Boxplots:  
 ```{r}
@@ -680,9 +703,8 @@ prop_dedup_gene_non0_19238= sum(dedup_gene_coverage_all$de_19238_dep != 0) /leng
 
 prop_dedup_gene_non0_mayer= sum(dedup_gene_coverage_all$de_mayer != 0) /length(dedup_gene_coverage_all$de_mayer)
 
-prop_dedup_non0_all= c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer)
 
-barplot(prop_dedup_non0_all, names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes", ylim=0:1, xlab= "Library", main = "Genes detected in deduplicated libraries")
+barplot( c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer) , names=c("18486", "18505 \n dep", "18505 \n non dep", "19238", "Mayer"), ylab= "Proportion of detected genes", ylim=0:1, xlab= "Library", main = "Genes detected in deduplicated libraries")
 
 
 ```
