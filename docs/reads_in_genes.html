@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-28</p>
+<p><strong>Last updated:</strong> 2017-11-30</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> ecbc5b9</p>
+<p><strong>Code version:</strong> eaac018</p>
 <div id="initial-exploration-for-data-format" class="section level2">
 <h2>Initial exploration for data format</h2>
 <p>The goal of this analysis is too look at read coverage in genes/exons/and in genes + promoter regions for my Net-seq data and the Mayer data. This will help me understand if the problem with this data is coverage.</p>
@@ -661,7 +661,7 @@ prop_prom_non0_mayer= sum(prom_coverage_all$c_mayer !=0) /length(prom_coverage_a
 
 prop_prom_non0_all= c(prop_prom_non0_18486,prop_prom_non0_18508dep, prop_prom_non0_18508_nondep, prop_prom_non0_19238, prop_prom_non0_mayer)
 
-barplot(prop_prom_non0_all, names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes w/ promoters&quot;, ylim=0:1, xlab= &quot;Library&quot;, main = &quot;Proportion of detected genes including the promoter&quot;)</code></pre>
+barplot(prop_prom_non0_all, names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected promoters&quot;, ylim=0:1, xlab= &quot;Library&quot;, main = &quot;Proportion of detected promoters&quot;)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
@@ -833,6 +833,38 @@ prop_dedup_gene_non0_mayer= sum(dedup_gene_coverage_all$de_mayer != 0) /length(d
 
 barplot( c(prop_gene_non0_18486,prop_gene_non0_18508dep, prop_gene_non0_18508_nondep, prop_gene_non0_19238, prop_gene_non0_mayer) , names=c(&quot;18486&quot;, &quot;18505 \n dep&quot;, &quot;18505 \n non dep&quot;, &quot;19238&quot;, &quot;Mayer&quot;), ylab= &quot;Proportion of detected genes&quot;, ylim=0:1, xlab= &quot;Library&quot;, main = &quot;Genes detected in deduplicated libraries&quot;)</code></pre>
 <p><img src="figure/reads_in_genes.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="bp-windows" class="section level3">
+<h3>200 bp windows:</h3>
+<p>Split genome into 200bp windows and run the coverage command:</p>
+<p>/project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed</p>
+<p>/project2/gilad/briana/Net-seq/ref_genes/windows_200</p>
+<p>make window_200_cov.sh</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=window_200_cov
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed 
+-b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18486_dep_chr_sort.bed  &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_18486.txt
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_dep_chr_sort.bed  &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_18508_dep.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_nondep_chr_sort.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_18508_nondep.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_19238_dep_chr_sort.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/wondow_200_cov_19238.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_mayer.txt 
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_/merged_Net1.chr.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_merged.txt</code></pre>
 </div>
 <div id="exon-coverage" class="section level3">
 <h3>Exon coverage</h3>
