@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-26</p>
+<p><strong>Last updated:</strong> 2017-11-29</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d30f051</p>
+<p><strong>Code version:</strong> ff2076f</p>
 <p>I will look at genome feature overlap with the Netseq1 libary. I will start with one sample then move to more once the code is working. I will look specifically at overlap with CTCF sites.</p>
 <p>Load libraries:</p>
 <pre class="r"><code>library(genomation)</code></pre>
@@ -432,8 +432,7 @@ GRanges object contains ranges of width &lt; number of bins</code></pre>
 dedup.18486.dep= readGeneric(file= &quot;../data/net1_18486_dep_dedup_chr.bed&quot;, header = FALSE, keep.all.metadata = TRUE)
 
 
-
- annotateWithFeature(TSS, dedup.18486.dep, intersect.chr = TRUE)</code></pre>
+annotateWithFeature(TSS, dedup.18486.dep, intersect.chr = TRUE)</code></pre>
 <pre><code>intersecting chromosomes...</code></pre>
 <pre><code>Warning in .Seqinfo.mergexy(x, y): Each of the 2 combined objects has sequence levels not in the other:
   - in &#39;x&#39;: chrM
@@ -455,6 +454,20 @@ dedup.18486.dep= readGeneric(file= &quot;../data/net1_18486_dep_dedup_chr.bed&qu
 <pre><code>percentage of feature elements overlapping with target:</code></pre>
 <pre><code>[1] 4.53</code></pre>
 <pre><code></code></pre>
+<pre class="r"><code>#sm2 = ScoreMatrixBin(target = dedup.18486.dep, windows = TSS)
+#plotMeta(sm2, xcoords = c(-1000, 1000))</code></pre>
+<p>Problem: This TSS file just has the 1bp site. I need to make a file that is 200 up and downstream of this site. Maybe first try the promoter file that was 250bp upstream of the gene.</p>
+<pre class="r"><code>ref_250up= readGeneric(file = &quot;../data/refseq_250up.bed&quot;, header=FALSE, keep.all.metadata = TRUE)
+
+
+dedup.18486.dep= readGeneric(file= &quot;../data/net1_18486_dep_dedup_chr.bed&quot;, header = FALSE, keep.all.metadata = TRUE)
+
+
+sm2 = ScoreMatrixBin(target = dedup.18486.dep, windows = ref_250up)</code></pre>
+<pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 3100
+windows fall off the target</code></pre>
+<pre class="r"><code>plotMeta(sm2, xcoords = c(-1000, 1000), main=&quot;Windows are 250bp upstream&quot;)</code></pre>
+<p><img src="figure/visualize_genomefeatures.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
