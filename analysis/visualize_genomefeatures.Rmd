@@ -99,8 +99,27 @@ TSS= readGeneric(file = "../data/SwitchGear_TSS.bed", header=FALSE, keep.all.met
 dedup.18486.dep= readGeneric(file= "../data/net1_18486_dep_dedup_chr.bed", header = FALSE, keep.all.metadata = TRUE)
 
 
+annotateWithFeature(TSS, dedup.18486.dep, intersect.chr = TRUE)
 
- annotateWithFeature(TSS, dedup.18486.dep, intersect.chr = TRUE)
+
+#sm2 = ScoreMatrixBin(target = dedup.18486.dep, windows = TSS)
+#plotMeta(sm2, xcoords = c(-1000, 1000))
+
+
+
+```
+Problem: This TSS file just has the 1bp site. I need to make a file that is 200 up and downstream of this site. Maybe first try the promoter file that was 250bp upstream of the gene.  
+
+
+```{r}
+ref_250up= readGeneric(file = "../data/refseq_250up.bed", header=FALSE, keep.all.metadata = TRUE)
+
+
+dedup.18486.dep= readGeneric(file= "../data/net1_18486_dep_dedup_chr.bed", header = FALSE, keep.all.metadata = TRUE)
+
+
+sm2 = ScoreMatrixBin(target = dedup.18486.dep, windows = ref_250up)
+plotMeta(sm2, xcoords = c(-1000, 1000), main="Windows are 250bp upstream")
 
 
 ```
