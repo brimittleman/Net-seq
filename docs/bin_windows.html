@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-11-30</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 35b1aa1</p>
+<p><strong>Code version:</strong> ab9d530</p>
 <!-- Add your analysis here -->
 <div id="bash-script" class="section level3">
 <h3>Bash script</h3>
@@ -347,13 +347,80 @@ bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200b
 bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed  -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_mayer.txt 
 
 
-bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/merged_Net1.chr.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_merged.txt</code></pre>
+#bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/merged_Net1.chr.bed   &gt; /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_merged.txt
+#step memory exceeded!</code></pre>
 </div>
 <div id="import-data" class="section level3">
 <h3>Import data</h3>
+<pre class="r"><code>window_200_18486=read.csv(&quot;../data/windows_200/window_200_cov_18486.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+window_200_18508_dep=read.csv(&quot;../data/windows_200/window_200_cov_18508_dep.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+window_200_18508_nondep=read.csv(&quot;../data/windows_200/window_200_cov_18508_nondep.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+window_200_19238=read.csv(&quot;../data/windows_200/window_200_cov_19238.txt&quot;, header=FALSE, sep=&quot;\t&quot;)
+window_200_mayer= read.csv(&quot;../data/windows_200/window_200_cov_mayer.txt&quot;, header=FALSE, sep=&quot;\t&quot;)</code></pre>
+<p>Add col labels to each file:</p>
+<pre class="r"><code>colnames(window_200_18486) = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;count&quot;)
+colnames(window_200_18508_dep) = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;count&quot;)
+colnames(window_200_18508_nondep) = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;count&quot;)
+colnames(window_200_19238) = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;count&quot;)
+colnames(window_200_mayer) = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;count&quot;)</code></pre>
 </div>
 <div id="plot-data" class="section level3">
 <h3>Plot data</h3>
+<p>Data I want to look at:</p>
+<ul>
+<li>summary per library</li>
+</ul>
+<pre class="r"><code>summary(window_200_18486$count)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      0       0       0       1       0 4076520 </code></pre>
+<pre class="r"><code>summary(window_200_18508_dep$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       0        0        0       21        0 27069584 </code></pre>
+<pre class="r"><code>summary(window_200_18508_nondep$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       0        0        0       23        0 30571781 </code></pre>
+<pre class="r"><code>summary(window_200_19238$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       0        0        0        4        0 13033253 </code></pre>
+<pre class="r"><code>summary(window_200_mayer$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+     0.0      0.0      0.0    113.3      0.0 701170.0 </code></pre>
+<p>Use a plot to see the distribution:</p>
+<ul>
+<li>summaries not including zero</li>
+</ul>
+<p>Make dataframe excluding the zeros:</p>
+<pre class="r"><code>window_200_18486_non0= window_200_18486[window_200_18486$count!=0,]
+window_200_18508_dep_non0= window_200_18508_dep[window_200_18508_dep$count!=0,]
+window_200_18508_nondep_non0= window_200_18508_nondep[window_200_18508_nondep$count!=0,]
+window_200_19238_non0= window_200_19238[window_200_19238$count!=0,]
+window_200_mayer_non0= window_200_mayer[window_200_mayer$count!=0,]</code></pre>
+<p>summarise</p>
+<pre class="r"><code>summary(window_200_18486_non0$count)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1      45       3 4076520 </code></pre>
+<pre class="r"><code>summary(window_200_18508_dep_non0$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       1        1        1      624        3 27069584 </code></pre>
+<pre class="r"><code>summary(window_200_18508_nondep_non0$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       1        1        1      633        3 30571781 </code></pre>
+<pre class="r"><code>summary(window_200_19238_non0$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       1        1        1      149        3 13033253 </code></pre>
+<pre class="r"><code>summary(window_200_mayer_non0$count)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1       1       1    2200       2  701170 </code></pre>
+<pre class="r"><code>plot(sort(log(window_200_19238_non0$count), decreasing=TRUE))</code></pre>
+<p><img src="figure/bin_windows.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<ul>
+<li>number of entries that are non zero</li>
+</ul>
+<pre class="r"><code>x= nrow(window_200_18486)
+barplot(c(nrow(window_200_18486_non0)/x,nrow(window_200_18508_dep_non0)/x,nrow(window_200_18508_nondep_non0)/x, nrow(window_200_19238_non0)/x), main=&quot;Proportion of detected bins&quot;, names=c(&quot;18486&quot;, &quot;18508 \n dep&quot;, &quot;18508 \n nondep&quot;, &quot;19238&quot;))</code></pre>
+<p><img src="figure/bin_windows.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>nrow(window_200_mayer_non0)/x</code></pre>
+<pre><code>[1] 0.05149546</code></pre>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
