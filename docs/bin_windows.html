@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-11-30</p>
+<p><strong>Last updated:</strong> 2017-12-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> ab9d530</p>
+<p><strong>Code version:</strong> b760321</p>
 <!-- Add your analysis here -->
 <div id="bash-script" class="section level3">
 <h3>Bash script</h3>
@@ -422,8 +422,38 @@ barplot(c(nrow(window_200_18486_non0)/x,nrow(window_200_18508_dep_non0)/x,nrow(w
 <pre class="r"><code>nrow(window_200_mayer_non0)/x</code></pre>
 <pre><code>[1] 0.05149546</code></pre>
 </div>
-<div id="session-information" class="section level2">
-<h2>Session information</h2>
+<div id="integrate-sets" class="section level3">
+<h3>Integrate sets:</h3>
+<pre class="r"><code>window_non_0_all= nrow(window_200_18486[window_200_18486$count!=0 | window_200_18508_dep$count!=0 | window_200_18486$count!=0,] )
+prop_window_non0= window_non_0_all/x
+prop_window_non0</code></pre>
+<pre><code>[1] 0.05416194</code></pre>
+<pre class="r"><code>window_non_0_2= nrow(window_200_18486[window_200_18486$count!=0 | window_200_18508_dep$count!=0,] )
+prop_window_non0_2= window_non_0_2/x
+prop_window_non0_2</code></pre>
+<pre><code>[1] 0.05416194</code></pre>
+<pre class="r"><code>window_non_0_2b= nrow(window_200_18486[window_200_18486$count!=0 |window_200_18486$count!=0,] )
+prop_window_non0_2b= window_non_0_2b/x
+prop_window_non0_2b</code></pre>
+<pre><code>[1] 0.03282309</code></pre>
+</div>
+<div id="perform-on-mayer-data-or-multiple-lanes" class="section level3">
+<h3>Perform on mayer data or multiple lanes</h3>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=window_200_cov_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+module load bedtools
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/mayer.data/mayer_hek/data/bed/mayer_hek-sort.chr.bed &gt; /project2/gilad/briana/mayer.data/mayer_hek/data/window_200_cov_mayer_hek.txt</code></pre>
+</div>
+<div id="session-information" class="section level3">
+<h3>Session information</h3>
 <!-- Insert the session information into the document -->
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.4.2 (2017-09-28)
