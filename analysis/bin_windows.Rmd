@@ -146,10 +146,45 @@ nrow(window_200_mayer_non0)/x
 
 ```
 
+###Integrate sets:
+
+```{r}
+window_non_0_all= nrow(window_200_18486[window_200_18486$count!=0 | window_200_18508_dep$count!=0 | window_200_18486$count!=0,] )
+prop_window_non0= window_non_0_all/x
+prop_window_non0
+```
+
+```{r}
+window_non_0_2= nrow(window_200_18486[window_200_18486$count!=0 | window_200_18508_dep$count!=0,] )
+prop_window_non0_2= window_non_0_2/x
+prop_window_non0_2
+```
 
 
+```{r}
+window_non_0_2b= nrow(window_200_18486[window_200_18486$count!=0 |window_200_18486$count!=0,] )
+prop_window_non0_2b= window_non_0_2b/x
+prop_window_non0_2b
+```
 
-## Session information
+### Perform on mayer data or multiple lanes  
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=window_200_cov_mayer
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+module load bedtools
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/mayer.data/mayer_hek/data/bed/mayer_hek-sort.chr.bed > /project2/gilad/briana/mayer.data/mayer_hek/data/window_200_cov_mayer_hek.txt
+```
+
+
+### Session information
 
 <!-- Insert the session information into the document -->
 ```{r session-info}
