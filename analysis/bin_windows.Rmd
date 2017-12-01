@@ -65,14 +65,87 @@ bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200b
 bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed  -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_mayer.txt 
 
 
-bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/merged_Net1.chr.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_merged.txt
+#bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/merged_Net1.chr.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_merged.txt
+#step memory exceeded!
 ```
 
 
-###Import data
+###Import data  
+```{r}
+window_200_18486=read.csv("../data/windows_200/window_200_cov_18486.txt", header=FALSE, sep="\t")
+window_200_18508_dep=read.csv("../data/windows_200/window_200_cov_18508_dep.txt", header=FALSE, sep="\t")
+window_200_18508_nondep=read.csv("../data/windows_200/window_200_cov_18508_nondep.txt", header=FALSE, sep="\t")
+window_200_19238=read.csv("../data/windows_200/window_200_cov_19238.txt", header=FALSE, sep="\t")
+window_200_mayer= read.csv("../data/windows_200/window_200_cov_mayer.txt", header=FALSE, sep="\t")
+```
+
+Add col labels to each file:  
+```{r}
+colnames(window_200_18486) = c("chr", "start", "end", "count")
+colnames(window_200_18508_dep) = c("chr", "start", "end", "count")
+colnames(window_200_18508_nondep) = c("chr", "start", "end", "count")
+colnames(window_200_19238) = c("chr", "start", "end", "count")
+colnames(window_200_mayer) = c("chr", "start", "end", "count")
+```
 
 
 ###Plot data 
+
+Data I want to look at: 
+
+* summary per library  
+
+
+```{r}
+summary(window_200_18486$count)
+summary(window_200_18508_dep$count)
+summary(window_200_18508_nondep$count)
+summary(window_200_19238$count)
+summary(window_200_mayer$count)
+```
+
+Use a plot to see the distribution:  
+
+
+* summaries not including zero 
+
+
+Make dataframe excluding the zeros: 
+```{r}
+window_200_18486_non0= window_200_18486[window_200_18486$count!=0,]
+window_200_18508_dep_non0= window_200_18508_dep[window_200_18508_dep$count!=0,]
+window_200_18508_nondep_non0= window_200_18508_nondep[window_200_18508_nondep$count!=0,]
+window_200_19238_non0= window_200_19238[window_200_19238$count!=0,]
+window_200_mayer_non0= window_200_mayer[window_200_mayer$count!=0,]
+```
+
+summarise
+
+```{r}
+summary(window_200_18486_non0$count)
+summary(window_200_18508_dep_non0$count)
+summary(window_200_18508_nondep_non0$count)
+summary(window_200_19238_non0$count)
+summary(window_200_mayer_non0$count)
+```
+
+
+
+```{r}
+plot(sort(log(window_200_19238_non0$count), decreasing=TRUE))
+```
+
+
+* number of entries that are non zero  
+
+```{r}
+x= nrow(window_200_18486)
+barplot(c(nrow(window_200_18486_non0)/x,nrow(window_200_18508_dep_non0)/x,nrow(window_200_18508_nondep_non0)/x, nrow(window_200_19238_non0)/x), main="Proportion of detected bins", names=c("18486", "18508 \n dep", "18508 \n nondep", "19238"))
+
+nrow(window_200_mayer_non0)/x
+
+```
+
 
 
 
