@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-12-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> b760321</p>
+<p><strong>Code version:</strong> 7005af4</p>
 <!-- Add your analysis here -->
 <div id="bash-script" class="section level3">
 <h3>Bash script</h3>
@@ -437,6 +437,39 @@ prop_window_non0_2b= window_non_0_2b/x
 prop_window_non0_2b</code></pre>
 <pre><code>[1] 0.03282309</code></pre>
 </div>
+<div id="explore-bin-overlap" class="section level3">
+<h3>Explore bin overlap</h3>
+<p>I will combine the depleted samples counts in one data frame:</p>
+<pre class="r"><code>window_200_3lib= cbind(window_200_18486, window_200_18508_dep$count, window_200_19238$count)
+colnames(window_200_3lib)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;18486&quot;, &quot;18508&quot;, &quot;19238&quot;)</code></pre>
+<p>Make a vector with how many of the libraries have coverage for each bin</p>
+<pre class="r"><code>sum_vec= apply(window_200_3lib[,4:6],1,function(x)sum(x&gt;=1))
+window_200_3lib= cbind(window_200_3lib, sum_vec)</code></pre>
+<p>Explore the results:</p>
+<pre class="r"><code>bin_0= sum(sum_vec==0)
+bin_1= sum(sum_vec==1)
+bin_2= sum(sum_vec==2)
+bin_3= sum(sum_vec==3)
+
+prop0=bin_0/x
+prop1=bin_1/x
+prop2=bin_2/x
+prop3=bin_3/x
+
+barplot_prop=(barplot(c(prop1, prop2, prop3),names = c(&quot;1 bin&quot;, &quot;2 bins&quot;, &quot;3 bins&quot;), main=&quot;Proportion of bins with coverage in 3 libaries&quot;, ylab=&quot;proportion&quot;, xlab=&quot;library&quot; ))</code></pre>
+<p><img src="figure/bin_windows.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>prop_vec=c(prop0,prop1, prop2, prop3)
+names_vec= c(&quot;0 bins&quot;,&quot;1 bin&quot;, &quot;2 bins&quot;, &quot;3 bins&quot;)
+
+prop_table=rbind(names_vec,prop_vec)
+prop_table</code></pre>
+<pre><code>          [,1]                [,2]                 [,3]                
+names_vec &quot;0 bins&quot;            &quot;1 bin&quot;              &quot;2 bins&quot;            
+prop_vec  &quot;0.934702546224945&quot; &quot;0.0453430987382321&quot; &quot;0.0115298190107529&quot;
+          [,4]                 
+names_vec &quot;3 bins&quot;             
+prop_vec  &quot;0.00842453602607038&quot;</code></pre>
+</div>
 <div id="perform-on-mayer-data-or-multiple-lanes" class="section level3">
 <h3>Perform on mayer data or multiple lanes</h3>
 <pre class="bash"><code>#!/bin/bash
@@ -451,6 +484,7 @@ prop_window_non0_2b</code></pre>
 module load bedtools
 
 bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/mayer.data/mayer_hek/data/bed/mayer_hek-sort.chr.bed &gt; /project2/gilad/briana/mayer.data/mayer_hek/data/window_200_cov_mayer_hek.txt</code></pre>
+<p>Not enough memory</p>
 </div>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
