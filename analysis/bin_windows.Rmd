@@ -1,0 +1,83 @@
+---
+title: "Check read counts in binned genome"
+author: "Briana Mittleman"
+date: 2017-11-30
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+###Bash script
+
+
+Split genome into 200bp windows and run the coverage command: 
+
+/project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed 
+
+/project2/gilad/briana/Net-seq/ref_genes/windows_200
+
+
+make window_200_cov.sh  
+
+
+
+```{bash,eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=window_200_cov
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18486_dep_chr_sort.bed  > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_18486.txt
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_dep_chr_sort.bed  > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_18508_dep.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_nondep_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_18508_nondep.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_19238_dep_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_19238.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed  -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_mayer.txt 
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200bp_window.bed   -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed/merged_Net1.chr.bed   > /project2/gilad/briana/Net-seq/ref_genes/windows_200/window_200_cov_merged.txt
+```
+
+
+###Import data
+
+
+###Plot data 
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
