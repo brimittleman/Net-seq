@@ -228,6 +228,197 @@ bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_200b
 
 Not enough memory  
 
+
+###Bin the gene file:  
+
+```{bash, eval=FALSE}
+bedtools makewindows -b ref_seq_gene_hg19 -w 200 >  ref_seq_gene_hg16_bins.bed
+```
+
+
+
+Make a bash script to get coverage in these bins. This is in /project2/gilad/briana/Net-seq/ref_genes/gene_windows_200/gene_window_200.sh  
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=gene_window_200_cov
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg16_bins.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18486_dep_chr_sort.bed  > /project2/gilad/briana/Net-seq/ref_genes/gene_windows_200/gene_window_cov_18486.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg16_bins.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_dep_chr_sort.bed  > /project2/gilad/briana/Net-seq/ref_genes/gene_windows_200/gene_window_cov_18508_dep.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg16_bins.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_19238_dep_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/gene_windows_200/gene_window_cov_19238.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg16_bins.bed  -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/gene_windows_200/gene_window_cov_mayer.txt 
+
+```
+
+**This file has 22071951 bins. This is not a good representation because some locations in the genome are in multiple genes. I need to think about this more. Maybe I can only keep unique windows.**  
+
+``ref_seq_gene_hg16_bins.bed  | uniq -u | wc -l```  
+
+**This leaves 5023160 lines. Still not right because the genes start at different positions but overlap then the lines wouldnt be unique.**   
+
+
+Use bedtools intersect -a genome -b genes -wa:
+
+* a is the genome windows  
+
+* b is the gene file  
+
+This should keep the windows of a that intersect b. This means I will only have windows that contain a gene.  
+
+```{bash, eval=FALSE}
+
+bedtools intersect -a /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_sort_2.bed -b /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg19_small.bed -wa > /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_with_gene.bed 
+
+
+
+```
+
+ERROR:  
+
+ERROR: Received illegal bin number 262143 from getBin call.  
+ERROR: Unable to add record to tree  
+
+Potential problem: hg19 file starts with chrom 10 and the gene file starts with chr1. Maybe try sorting the gene file the way I sorted the hg19 file.  
+
+Get the chr# list from the genes file using:  
+
+`cut -f 1 | uniq /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg19_small.bed > names.txt`   
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=sortgene
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+module load bedtools
+
+cd /project2/gilad/briana/Net-seq/genome_bed
+ 
+bedtools sort -faidx names_uniq.txt  -i  hg19_200bp_window.bed -o hg19_windows_sort.bed
+```
+
+ERROR: Chromosome "chr1" undefined in names_uniq.txt  
+
+Try:
+
+`sort -k 1,1 -k2,2n hg19_200bp_window.bed > hg19_windows_sort_2.bed`  
+
+Cut the gene file to only have the first 3 columns with:  
+
+`cut -f 1,2,3 ref_seq_gene_hg19 > ref_seq_gene_hg19_3col.bed`
+
+Run intersect: 
+
+```{bash, eval=FALSE}
+bedtools intersect -a /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_sort_2.bed -b /project2/gilad/briana/Net-seq/ref_genes/ref_seq_gene_hg19_3col.bed -wa > /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_with_gene.bed 
+```
+
+This worked but you still have multiples. I will take the unique lines of this with:  
+
+
+`cat hg19_windows_with_gene.bed | uniq  > hg19_windows_with_gene_uniq.bed`  
+
+Now I can run the coverage counts on this file to see the how many of the genome bins that had at least one gene have coverage.  
+
+Call this script. uniq_gene_window.sh  in /project2/gilad/briana/Net-seq/ref_genes/uniq_gene_windows_200
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=uniq_gene_window
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_with_gene_uniq.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18486_dep_chr_sort.bed  > /project2/gilad/briana/Net-seq/ref_genes/uniq_gene_windows_200/uniq_gene_window_cov_18486.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_with_gene_uniq.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_18508_dep_chr_sort.bed  > /project2/gilad/briana/Net-seq/ref_genes/uniq_gene_windows_200/uniq_gene_window_cov_18508_dep.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_with_gene_uniq.bed -b /project2/gilad/briana/Net-seq/Net-seq1/data/bed_sort/net1_19238_dep_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/uniq_gene_windows_200/uniq_gene_window_cov_19238.txt
+
+bedtools coverage -counts -a /project2/gilad/briana/Net-seq/genome_bed/hg19_windows_with_gene_uniq.bed -b /project2/gilad/briana/Net-seq/data/bed_sort/mayer_SRR1575922_chr_sort.bed   > /project2/gilad/briana/Net-seq/ref_genes/uniq_gene_windows_200/uniq_gene_window_cov_mayer.txt 
+
+```
+
+####Load uniq gene files:  
+
+
+These are the uniq bind in the genome 200bp window file that include a gene.  
+
+```{r}
+uniq_gene_window_18486=read.csv("../data/uniq_genes/uniq_gene_window_cov_18486.txt", header=FALSE, sep="\t")
+uniq_gene_window_18508=read.csv("../data/uniq_genes/uniq_gene_window_cov_18508_dep.txt", header=FALSE, sep="\t")
+uniq_gene_window_19238=read.csv("../data/uniq_genes/uniq_gene_window_cov_19238.txt", header=FALSE, sep="\t")
+uniq_gene_window_mayer=read.csv("../data/uniq_genes/uniq_gene_window_cov_mayer.txt", header=FALSE, sep="\t")
+```
+
+
+```{r}
+colnames(uniq_gene_window_mayer)= c("chr", "start", "end", "count")
+colnames(uniq_gene_window_19238)= c("chr", "start", "end", "count")
+colnames(uniq_gene_window_18486)= c("chr", "start", "end", "count")
+colnames(uniq_gene_window_18508)= c("chr", "start", "end", "count")
+
+```
+
+Look at the number of windows with coverage:  
+
+```{r}
+uniq_gene_window_18486_no0= uniq_gene_window_18486[uniq_gene_window_18486$count!=0,]
+uniq_gene_window_18508_no0= uniq_gene_window_18508[uniq_gene_window_18508$count!=0,]
+uniq_gene_window_19238_no0= uniq_gene_window_19238[uniq_gene_window_19238$count!=0,]
+uniq_gene_window_mayer_no0= uniq_gene_window_mayer[uniq_gene_window_mayer$count!=0,]
+
+
+
+
+```
+
+
+Bar plot for coverage:  
+
+```{r}
+gene_windows= nrow(uniq_gene_window_mayer)
+
+barplot(c(nrow(uniq_gene_window_18486_no0)/gene_windows, nrow(uniq_gene_window_18508_no0)/gene_windows, nrow(uniq_gene_window_19238_no0)/gene_windows, nrow(uniq_gene_window_mayer_no0)/gene_windows), main="Coverage for windows with genes", names= c("18486", "18508", "19238", "Mayer"), xlab="Library")
+
+mayer_gene_coverage=nrow(uniq_gene_window_mayer_no0)/gene_windows
+
+```
+
+Mayer has more coverage for this parameter. Their library has `r mayer_gene_coverage`.  
+
+Ours:  
+
+* 18486:  `r nrow(uniq_gene_window_18486_no0)/gene_windows`  
+
+* 18508:  `r nrow(uniq_gene_window_18508_no0)/gene_windows`
+
+* 19238:  `r nrow(uniq_gene_window_19238_no0)/gene_windows`
+
+
+
 ### Session information
 
 <!-- Insert the session information into the document -->
