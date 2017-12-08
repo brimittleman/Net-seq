@@ -78,6 +78,14 @@ gene_coverage_mayer_dep_count= mutate(gene_coverage_mayer_dep_count, library="li
 gene_cov_all_ggplot= bind_rows(gene_coverage_18486_count,gene_coverage_18508_dep_count,gene_coverage_18508_nondep_count,gene_coverage_19238_dep_count, gene_coverage_mayer_dep_count )
 ```
 
+##Make plots 
+Make a violin plot:
+
+```{r}
+violin_plot_gene_counts= ggplot(gene_cov_all_ggplot, aes(library, counts/(end-start))) + geom_violin() + labs(x="Library", y="Gene count standardized by length", title="Standard gene count violin plots") 
+violin_plot_gene_counts
+```
+
 
 
 
