@@ -1,0 +1,88 @@
+---
+title: "Reformat data for ggplot 2"
+author: "First Last"
+date: 2017-12-08
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+##Import Data and packages:
+
+Packages:  
+
+```{r}
+library(ggplot2)
+library(dplyr)
+```
+
+Data:  
+
+```{r}
+gene_coverage_18486_count= read.csv("../data/gene_cov_count/gene_coverage_18486_count.txt", header=FALSE, sep="\t")
+
+gene_coverage_18508_dep_count= read.csv("../data/gene_cov_count/gene_coverage_18508_dep_count.txt", header=FALSE, sep="\t")
+
+gene_coverage_18508_nondep_count= read.csv("../data/gene_cov_count/gene_coverage_18508_nondep_count.txt", header=FALSE, sep="\t")
+
+gene_coverage_19238_dep_count= read.csv("../data/gene_cov_count/gene_coverage_19238_dep_count.txt", header=FALSE, sep="\t")
+
+gene_coverage_mayer_dep_count = read.csv("../data/gene_cov_count/gene_coverage_mayer_SRR1575922_count.txt", header=FALSE, sep="\t")
+```
+
+Add col names:  
+
+```{r}
+colnames(gene_coverage_18486_count) = c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_18508_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_18508_nondep_count)=c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_19238_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+colnames(gene_coverage_mayer_dep_count)= c("chr", "start", "end", "name", "score", "strand", "counts")
+```
+
+##Reformat each file  
+
+Add a column to each file with the library using dplyr.  
+
+
+```{r}
+gene_coverage_18486_count= mutate(gene_coverage_18486_count, library="lib_18486")
+gene_coverage_18508_dep_count= mutate(gene_coverage_18508_dep_count, library="lib_18508_dep")
+gene_coverage_18508_nondep_count= mutate(gene_coverage_18508_nondep_count, library="lib_18508_nondep")
+gene_coverage_19238_dep_count= mutate(gene_coverage_19238_dep_count, library="lib_19238")
+gene_coverage_mayer_dep_count= mutate(gene_coverage_mayer_dep_count, library="lib_mayer")
+```
+
+##Combine files  
+```{r}
+gene_cov_all_ggplot= bind_rows(gene_coverage_18486_count,gene_coverage_18508_dep_count,gene_coverage_18508_nondep_count,gene_coverage_19238_dep_count, gene_coverage_mayer_dep_count )
+```
+
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```

@@ -27,5 +27,8 @@ Initials data exploration:
 
 * [Exploration of read counts per gene](reads_in_genes.html)  
 
+* [Reformat gene counts for ggplot2 data analysis](data_for_ggplot.html)  
+
 * [Explore read counts per genome bin](bin_windows.html)  
+
 
