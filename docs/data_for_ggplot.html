@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-12-08</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> fab79ca</p>
+<p><strong>Code version:</strong> eeeae88</p>
 <!-- Add your analysis here -->
 <div id="import-data-and-packages" class="section level2">
 <h2>Import Data and packages:</h2>
@@ -361,6 +361,13 @@ gene_coverage_mayer_dep_count= mutate(gene_coverage_mayer_dep_count, library=&qu
 <h2>Combine files</h2>
 <pre class="r"><code>gene_cov_all_ggplot= bind_rows(gene_coverage_18486_count,gene_coverage_18508_dep_count,gene_coverage_18508_nondep_count,gene_coverage_19238_dep_count, gene_coverage_mayer_dep_count )</code></pre>
 </div>
+<div id="make-plots" class="section level2">
+<h2>Make plots</h2>
+<p>Make a violin plot:</p>
+<pre class="r"><code>violin_plot_gene_counts= ggplot(gene_cov_all_ggplot, aes(library, counts/(end-start))) + geom_violin() + labs(x=&quot;Library&quot;, y=&quot;Gene count standardized by length&quot;, title=&quot;Standard gene count violin plots&quot;) 
+violin_plot_gene_counts</code></pre>
+<p><img src="figure/data_for_ggplot.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
@@ -389,8 +396,8 @@ loaded via a namespace (and not attached):
 [13] gtable_0.2.0     git2r_0.19.0     htmltools_0.3.6  yaml_2.1.14     
 [17] lazyeval_0.2.1   rprojroot_1.2    digest_0.6.12    assertthat_0.2.0
 [21] tibble_1.3.4     bindrcpp_0.2     glue_1.2.0       evaluate_0.10.1 
-[25] rmarkdown_1.6    stringi_1.1.5    compiler_3.4.2   scales_0.5.0    
-[29] backports_1.1.1  pkgconfig_2.0.1 </code></pre>
+[25] rmarkdown_1.6    labeling_0.3     stringi_1.1.5    compiler_3.4.2  
+[29] scales_0.5.0     backports_1.1.1  pkgconfig_2.0.1 </code></pre>
 </div>
 
 <hr>
