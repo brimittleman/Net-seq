@@ -1,0 +1,56 @@
+---
+title: "Create Gviz genome track plots"
+author: "Briana Mittleman"
+date: 2017-12-13
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+
+The goal of this analysis is to create nice plots showing that we are getting as much information as the 1 lane from the Mayer sample.
+
+Genes from IGV that I want to use: 
+
+* HERPUD1 chr16:56,964,002-56,979,793  
+
+* ACTB chr7:5,564,779-5,572,232  
+
+* CCNB2 chr15:59,396,707-59,401,006  
+
+
+* chr11:234,336-239,997 
+
+* KIAA0100 chr17:26,968,078-26,974,887  
+
+* HECTD1 chr14:31,672,040-31,681,043  
+
+
+* STAG1 chr3:136,469,421-136,472,771  
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
