@@ -31,4 +31,6 @@ Initials data exploration:
 
 * [Explore read counts per genome bin](bin_windows.html)  
 
+* [Create IGV browser style plots](gviz_plots.html)
+
 

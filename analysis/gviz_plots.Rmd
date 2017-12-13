@@ -28,7 +28,7 @@ knitr::read_chunk("chunks.R")
 
 
 
-The goal of this analysis is to create nice plots showing that we are getting as much information as the 1 lane from the Mayer sample.
+The goal of this analysis is to create nice plots showing that we are getting as much information as the 1 lane from the Mayer sample. I will do this with our merged data vs. their 1 lane.  
 
 Genes from IGV that I want to use: 
 
@@ -47,6 +47,44 @@ Genes from IGV that I want to use:
 
 
 * STAG1 chr3:136,469,421-136,472,771  
+
+
+Load Packages:  
+```{r}
+library(Gviz)
+library(GenomicRanges)
+library(biomaRt)
+```
+
+
+Upload data:  
+```{r}
+
+chr= "chr7"
+gen= "hg19"
+
+options(ucscChromosomeNames=FALSE)
+merged_data_7= DataTrack(range = "../data/merged_Net1.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = "7")
+mayer_data_7= DataTrack(range = "../data/SRR1575922-sort.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = "7")
+
+
+
+data("geneModels")
+grtrack= GeneRegionTrack(geneModels, genome = gen, chromosome = chr, name = "Gene Model")
+itrack= IdeogramTrack(genome = gen, chromosome = chr)
+gtrack = GenomeAxisTrack()
+
+#plots
+plotTracks(list(gtrack,merged_data_7, mayer_data_7), from = 5564779, to = 5572232,  background.title="darkblue",  background.panel = "#FFFEDB")
+plotTracks(list(itrack, grtrack), transcriptAnnotation= "symbol", background.title="blue")
+```
+
+```{r}
+merged_anno_7= AnnotationTrack(range = "../data/merged_Net1.bam", genome = gen, name = "Merged", window = -1, chromosome = "7")
+mayer_anno_7= AnnotationTrack(range = "../data/SRR1575922-sort.bam", genome = gen, name = "Mayer", window = -1, chromosome = "7")
+plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, to = 5572232)
+plotTracks(list(mayer_data_7,mayer_anno_7), from = 5564779, to = 5572232)
+```
 
 
 ## Session information
