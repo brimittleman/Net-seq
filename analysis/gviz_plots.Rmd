@@ -54,8 +54,6 @@ Load Packages:
 library(Gviz)
 library(GenomicRanges)
 library(biomaRt)
-source("https://bioconductor.org/biocLite.R")
-biocLite("TxDb.Hsapiens.UCSC.hg19.knownGene")
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library("IRanges")
 library("dplyr")
@@ -71,30 +69,36 @@ chr= "chr7"
 gen= "hg19"
 
 options(ucscChromosomeNames=FALSE)
-merged_data_7= DataTrack(range = "../data/merged_Net1.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = "chr7")
-mayer_data_7= DataTrack(range = "../data/SRR1575922-sort.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = "chr7")
+merged_data_7= DataTrack(range = "../data/bam_files_chr/merged_Net1_chr.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = "chr7")
+mayer_data_7= DataTrack(range = "../data/bam_files_chr/mayer_chr.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = "chr7")
 
 
 
-data("geneModels")
-grtrack= GeneRegionTrack(geneModels, genome = gen, chromosome = chr, name = "Gene Model")
-itrack= IdeogramTrack(genome = gen, chromosome = chr)
+refGenes <- UcscTrack(genome= gen, chromosome=chr, 
+     track="RefSeq Genes", from = 5555158, to = 5581854, 
+     trackType="GeneRegionTrack", rstarts="exonStarts", 
+     rends="exonEnds", gene="name", symbol="name2", 
+     transcript="name", strand="strand", fill="#800000", name="RefSeq Genes", showId=TRUE)
 gtrack = GenomeAxisTrack()
 
+
+itrack= IdeogramTrack(genome = gen, chromosome = chr)
+
+
 #plots
-plotTracks(list(gtrack, merged_data_7, mayer_data_7), from = 5564779, to = 5572232,  background.title="darkblue",  background.panel = "#FFFEDB")
-plotTracks(list(itrack, grtrack), transcriptAnnotation= "symbol", background.title="blue")
+plotTracks(list(itrack,gtrack, merged_data_7, mayer_data_7, refGenes), from = 5555158, to = 5581854,  background.title="darkblue",  background.panel = "#FFFEDB")
+
 ```
 
 ```{r}
-merged_anno_7= AnnotationTrack(range = "../data/merged_Net1.bam", genome = gen, name = "Merged", window = -1, chromosome = "7")
-mayer_anno_7= AnnotationTrack(range = "../data/SRR1575922-sort.bam", genome = gen, name = "Mayer", window = -1, chromosome = "7")
+merged_anno_7= AnnotationTrack(range = "../data/bam_files_chr/merged_Net1_chr.bam", genome = gen, name = "Merged", window = -1, chromosome = chr)
+mayer_anno_7= AnnotationTrack(range = "../data/bam_files_chr/mayer_chr.bam", genome = gen, name = "Mayer", window = -1, chromosome = chr)
 plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, to = 5572232)
 plotTracks(list(mayer_data_7,mayer_anno_7), from = 5564779, to = 5572232)
 ```
 
 Read in files with readGAlignments  
-```{r}
+```{r, eval=FALSE}
 reads <- readGAlignments(file="../data/merged_Net1.bam", index="../data/merged_Net1.bam.bai")
 reads.GR <-  granges(reads)
 reads.GR <- renameSeqlevels(reads.GR, paste("chr",seqlevels(reads.GR), sep= ""))
