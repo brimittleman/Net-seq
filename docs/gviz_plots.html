@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-12-13</p>
+<p><strong>Last updated:</strong> 2017-12-14</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 2c1cd8c</p>
+<p><strong>Code version:</strong> 134e4cb</p>
 <!-- Add your analysis here -->
 <p>The goal of this analysis is to create nice plots showing that we are getting as much information as the 1 lane from the Mayer sample. I will do this with our merged data vs. their 1 lane.</p>
 <p>Genes from IGV that I want to use:</p>
@@ -367,14 +367,7 @@ Attaching package: &#39;S4Vectors&#39;</code></pre>
 <pre><code>Loading required package: grid</code></pre>
 <pre class="r"><code>library(GenomicRanges)
 library(biomaRt)
-source(&quot;https://bioconductor.org/biocLite.R&quot;)</code></pre>
-<pre><code>Bioconductor version 3.6 (BiocInstaller 1.28.0), ?biocLite for help</code></pre>
-<pre class="r"><code>biocLite(&quot;TxDb.Hsapiens.UCSC.hg19.knownGene&quot;)</code></pre>
-<pre><code>BioC_mirror: https://bioconductor.org</code></pre>
-<pre><code>Using Bioconductor 3.6 (BiocInstaller 1.28.0), R 3.4.2 (2017-09-28).</code></pre>
-<pre><code>Installing package(s) &#39;TxDb.Hsapiens.UCSC.hg19.knownGene&#39;</code></pre>
-<pre><code>installing the source package &#39;TxDb.Hsapiens.UCSC.hg19.knownGene&#39;</code></pre>
-<pre class="r"><code>library(TxDb.Hsapiens.UCSC.hg19.knownGene)</code></pre>
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)</code></pre>
 <pre><code>Loading required package: GenomicFeatures</code></pre>
 <pre><code>Loading required package: AnnotationDbi</code></pre>
 <pre><code>Loading required package: Biobase</code></pre>
@@ -476,32 +469,30 @@ Attaching package: &#39;GenomicAlignments&#39;</code></pre>
 gen= &quot;hg19&quot;
 
 options(ucscChromosomeNames=FALSE)
-merged_data_7= DataTrack(range = &quot;../data/merged_Net1.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Merged&quot;, window = -1, chromosome = &quot;chr7&quot;)
-mayer_data_7= DataTrack(range = &quot;../data/SRR1575922-sort.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Mayer&quot;, window = -1, chromosome = &quot;chr7&quot;)
+merged_data_7= DataTrack(range = &quot;../data/bam_files_chr/merged_Net1_chr.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Merged&quot;, window = -1, chromosome = &quot;chr7&quot;)
+mayer_data_7= DataTrack(range = &quot;../data/bam_files_chr/mayer_chr.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Mayer&quot;, window = -1, chromosome = &quot;chr7&quot;)
 
 
 
-data(&quot;geneModels&quot;)
-grtrack= GeneRegionTrack(geneModels, genome = gen, chromosome = chr, name = &quot;Gene Model&quot;)
-itrack= IdeogramTrack(genome = gen, chromosome = chr)
+refGenes &lt;- UcscTrack(genome= gen, chromosome=chr, 
+     track=&quot;RefSeq Genes&quot;, from = 5555158, to = 5581854, 
+     trackType=&quot;GeneRegionTrack&quot;, rstarts=&quot;exonStarts&quot;, 
+     rends=&quot;exonEnds&quot;, gene=&quot;name&quot;, symbol=&quot;name2&quot;, 
+     transcript=&quot;name&quot;, strand=&quot;strand&quot;, fill=&quot;#800000&quot;, name=&quot;RefSeq Genes&quot;, showId=TRUE)
 gtrack = GenomeAxisTrack()
 
+
+itrack= IdeogramTrack(genome = gen, chromosome = chr)
+
+
 #plots
-plotTracks(list(gtrack, merged_data_7, mayer_data_7), from = 5564779, to = 5572232,  background.title=&quot;darkblue&quot;,  background.panel = &quot;#FFFEDB&quot;)</code></pre>
+plotTracks(list(itrack,gtrack, merged_data_7, mayer_data_7, refGenes), from = 5555158, to = 5581854,  background.title=&quot;darkblue&quot;,  background.panel = &quot;#FFFEDB&quot;)</code></pre>
 <p><img src="figure/gviz_plots.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plotTracks(list(itrack, grtrack), transcriptAnnotation= &quot;symbol&quot;, background.title=&quot;blue&quot;)</code></pre>
-<p><img src="figure/gviz_plots.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>merged_anno_7= AnnotationTrack(range = &quot;../data/merged_Net1.bam&quot;, genome = gen, name = &quot;Merged&quot;, window = -1, chromosome = &quot;7&quot;)
-mayer_anno_7= AnnotationTrack(range = &quot;../data/SRR1575922-sort.bam&quot;, genome = gen, name = &quot;Mayer&quot;, window = -1, chromosome = &quot;7&quot;)
+<pre class="r"><code>merged_anno_7= AnnotationTrack(range = &quot;../data/bam_files_chr/merged_Net1_chr.bam&quot;, genome = gen, name = &quot;Merged&quot;, window = -1, chromosome = chr)
+mayer_anno_7= AnnotationTrack(range = &quot;../data/bam_files_chr/mayer_chr.bam&quot;, genome = gen, name = &quot;Mayer&quot;, window = -1, chromosome = chr)
 plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, to = 5572232)</code></pre>
-<pre><code>Warning in plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, :
-The track chromosomes in &#39;trackList&#39; differ. Setting all tracks to
-chromosome &#39;chr7&#39;</code></pre>
 <p><img src="figure/gviz_plots.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plotTracks(list(mayer_data_7,mayer_anno_7), from = 5564779, to = 5572232)</code></pre>
-<pre><code>Warning in plotTracks(list(mayer_data_7, mayer_anno_7), from = 5564779, :
-The track chromosomes in &#39;trackList&#39; differ. Setting all tracks to
-chromosome &#39;chr7&#39;</code></pre>
 <p><img src="figure/gviz_plots.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Read in files with readGAlignments</p>
 <pre class="r"><code>reads &lt;- readGAlignments(file=&quot;../data/merged_Net1.bam&quot;, index=&quot;../data/merged_Net1.bam.bai&quot;)
@@ -550,14 +541,13 @@ other attached packages:
 [11] GenomicFeatures_1.30.0                 
 [12] AnnotationDbi_1.40.0                   
 [13] Biobase_2.38.0                         
-[14] BiocInstaller_1.28.0                   
-[15] biomaRt_2.34.0                         
-[16] Gviz_1.22.2                            
-[17] GenomicRanges_1.30.0                   
-[18] GenomeInfoDb_1.14.0                    
-[19] IRanges_2.12.0                         
-[20] S4Vectors_0.16.0                       
-[21] BiocGenerics_0.24.0                    
+[14] biomaRt_2.34.0                         
+[15] Gviz_1.22.2                            
+[16] GenomicRanges_1.30.0                   
+[17] GenomeInfoDb_1.14.0                    
+[18] IRanges_2.12.0                         
+[19] S4Vectors_0.16.0                       
+[20] BiocGenerics_0.24.0                    
 
 loaded via a namespace (and not attached):
  [1] ProtGenerics_1.10.0           bitops_1.0-6                 
@@ -574,33 +564,34 @@ loaded via a namespace (and not attached):
 [23] git2r_0.19.0                  htmlTable_1.11.0             
 [25] rtracklayer_1.38.2            scales_0.5.0                 
 [27] checkmate_1.8.5               stringr_1.2.0                
-[29] digest_0.6.12                 foreign_0.8-69               
+[29] digest_0.6.13                 foreign_0.8-69               
 [31] rmarkdown_1.8                 base64enc_0.1-3              
 [33] dichromat_2.0-0               pkgconfig_2.0.1              
 [35] htmltools_0.3.6               ensembldb_2.2.0              
 [37] BSgenome_1.46.0               htmlwidgets_0.9              
 [39] rlang_0.1.4                   rstudioapi_0.7               
-[41] RSQLite_2.0                   shiny_1.0.5                  
-[43] bindr_0.1                     BiocParallel_1.12.0          
-[45] acepack_1.4.1                 VariantAnnotation_1.24.2     
-[47] RCurl_1.95-4.8                magrittr_1.5                 
-[49] GenomeInfoDbData_0.99.1       Formula_1.2-2                
-[51] Matrix_1.2-12                 Rcpp_0.12.14                 
-[53] munsell_0.4.3                 stringi_1.1.6                
-[55] yaml_2.1.16                   zlibbioc_1.24.0              
-[57] plyr_1.8.4                    AnnotationHub_2.10.1         
-[59] blob_1.1.0                    lattice_0.20-35              
-[61] splines_3.4.2                 knitr_1.17                   
-[63] XML_3.98-1.9                  glue_1.2.0                   
-[65] evaluate_0.10.1               biovizBase_1.26.0            
-[67] latticeExtra_0.6-28           httpuv_1.3.5                 
-[69] gtable_0.2.0                  purrr_0.2.4                  
-[71] tidyr_0.7.2                   assertthat_0.2.0             
-[73] ggplot2_2.2.1                 mime_0.5                     
-[75] xtable_1.8-2                  AnnotationFilter_1.2.0       
-[77] survival_2.41-3               tibble_1.3.4                 
-[79] memoise_1.1.0                 bindrcpp_0.2                 
-[81] cluster_2.0.6                 interactiveDisplayBase_1.16.0</code></pre>
+[41] RSQLite_2.0                   BiocInstaller_1.28.0         
+[43] shiny_1.0.5                   bindr_0.1                    
+[45] BiocParallel_1.12.0           acepack_1.4.1                
+[47] VariantAnnotation_1.24.2      RCurl_1.95-4.8               
+[49] magrittr_1.5                  GenomeInfoDbData_0.99.1      
+[51] Formula_1.2-2                 Matrix_1.2-12                
+[53] Rcpp_0.12.14                  munsell_0.4.3                
+[55] stringi_1.1.6                 yaml_2.1.16                  
+[57] zlibbioc_1.24.0               plyr_1.8.4                   
+[59] AnnotationHub_2.10.1          blob_1.1.0                   
+[61] lattice_0.20-35               splines_3.4.2                
+[63] knitr_1.17                    XML_3.98-1.9                 
+[65] glue_1.2.0                    evaluate_0.10.1              
+[67] biovizBase_1.26.0             latticeExtra_0.6-28          
+[69] httpuv_1.3.5                  gtable_0.2.0                 
+[71] purrr_0.2.4                   tidyr_0.7.2                  
+[73] assertthat_0.2.0              ggplot2_2.2.1                
+[75] mime_0.5                      xtable_1.8-2                 
+[77] AnnotationFilter_1.2.0        survival_2.41-3              
+[79] tibble_1.3.4                  memoise_1.1.0                
+[81] bindrcpp_0.2                  cluster_2.0.6                
+[83] interactiveDisplayBase_1.16.0</code></pre>
 </div>
 
 <hr>
