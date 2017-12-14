@@ -54,6 +54,13 @@ Load Packages:
 library(Gviz)
 library(GenomicRanges)
 library(biomaRt)
+source("https://bioconductor.org/biocLite.R")
+biocLite("TxDb.Hsapiens.UCSC.hg19.knownGene")
+library(TxDb.Hsapiens.UCSC.hg19.knownGene)
+library("IRanges")
+library("dplyr")
+library("data.table")
+library("GenomicAlignments")
 ```
 
 
@@ -64,8 +71,8 @@ chr= "chr7"
 gen= "hg19"
 
 options(ucscChromosomeNames=FALSE)
-merged_data_7= DataTrack(range = "../data/merged_Net1.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = "7")
-mayer_data_7= DataTrack(range = "../data/SRR1575922-sort.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = "7")
+merged_data_7= DataTrack(range = "../data/merged_Net1.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = "chr7")
+mayer_data_7= DataTrack(range = "../data/SRR1575922-sort.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = "chr7")
 
 
 
@@ -75,7 +82,7 @@ itrack= IdeogramTrack(genome = gen, chromosome = chr)
 gtrack = GenomeAxisTrack()
 
 #plots
-plotTracks(list(gtrack,merged_data_7, mayer_data_7), from = 5564779, to = 5572232,  background.title="darkblue",  background.panel = "#FFFEDB")
+plotTracks(list(gtrack, merged_data_7, mayer_data_7), from = 5564779, to = 5572232,  background.title="darkblue",  background.panel = "#FFFEDB")
 plotTracks(list(itrack, grtrack), transcriptAnnotation= "symbol", background.title="blue")
 ```
 
@@ -84,6 +91,30 @@ merged_anno_7= AnnotationTrack(range = "../data/merged_Net1.bam", genome = gen, 
 mayer_anno_7= AnnotationTrack(range = "../data/SRR1575922-sort.bam", genome = gen, name = "Mayer", window = -1, chromosome = "7")
 plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, to = 5572232)
 plotTracks(list(mayer_data_7,mayer_anno_7), from = 5564779, to = 5572232)
+```
+
+Read in files with readGAlignments  
+```{r}
+reads <- readGAlignments(file="../data/merged_Net1.bam", index="../data/merged_Net1.bam.bai")
+reads.GR <-  granges(reads)
+reads.GR <- renameSeqlevels(reads.GR, paste("chr",seqlevels(reads.GR), sep= ""))
+```
+
+
+####Fix in terminal  
+Add the chr tag to the bam files.  
+
+```{bash, eval=FALSE}
+samtools view -h SRR1575922-sort.bam | awk 'BEGIN{FS=OFS="\t"} (/^@/ && !/@SQ/){print $0} $2~/^SN:[1-9]|^SN:X|^SN:Y|^SN:MT/{print $0}  $3~/^[1-9]|X|Y|MT/{$3="chr"$3; print $0} ' | sed 's/SN:/SN:chr/g' | sed 's/chrMT/chrM/g' | samtools view -bS - > mayer_chr.bam
+
+samtools view -h merged_Net1.bam | awk 'BEGIN{FS=OFS="\t"} (/^@/ && !/@SQ/){print $0} $2~/^SN:[1-9]|^SN:X|^SN:Y|^SN:MT/{print $0}  $3~/^[1-9]|X|Y|MT/{$3="chr"$3; print $0} ' | sed 's/SN:/SN:chr/g' | sed 's/chrMT/chrM/g' | samtools view -bS - > merged_Net1_chr.bam
+```
+
+index the bam files:  
+
+```{bash, eval=FALSE}
+samtools index mayer_chr.bam
+samtools index merged_Net1_chr.bam
 ```
 
 
