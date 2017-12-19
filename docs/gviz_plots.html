@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-12-14</p>
+<p><strong>Last updated:</strong> 2017-12-19</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 134e4cb</p>
+<p><strong>Code version:</strong> 1d63e1d</p>
 <!-- Add your analysis here -->
 <p>The goal of this analysis is to create nice plots showing that we are getting as much information as the 1 lane from the Mayer sample. I will do this with our merged data vs. their 1 lane.</p>
 <p>Genes from IGV that I want to use:</p>
@@ -330,6 +330,8 @@ shared across the workflowr files. -->
 <li><p>KIAA0100 chr17:26,968,078-26,974,887</p></li>
 <li><p>HECTD1 chr14:31,672,040-31,681,043</p></li>
 <li><p>STAG1 chr3:136,469,421-136,472,771</p></li>
+<li><p>SRSF3</p></li>
+<li><p>ENO1</p></li>
 </ul>
 <p>Load Packages:</p>
 <pre class="r"><code>library(Gviz)</code></pre>
@@ -468,7 +470,6 @@ Attaching package: &#39;GenomicAlignments&#39;</code></pre>
 <pre class="r"><code>chr= &quot;chr7&quot;
 gen= &quot;hg19&quot;
 
-options(ucscChromosomeNames=FALSE)
 merged_data_7= DataTrack(range = &quot;../data/bam_files_chr/merged_Net1_chr.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Merged&quot;, window = -1, chromosome = &quot;chr7&quot;)
 mayer_data_7= DataTrack(range = &quot;../data/bam_files_chr/mayer_chr.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Mayer&quot;, window = -1, chromosome = &quot;chr7&quot;)
 
@@ -494,10 +495,33 @@ plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, to = 5572232)</co
 <p><img src="figure/gviz_plots.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plotTracks(list(mayer_data_7,mayer_anno_7), from = 5564779, to = 5572232)</code></pre>
 <p><img src="figure/gviz_plots.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Read in files with readGAlignments</p>
-<pre class="r"><code>reads &lt;- readGAlignments(file=&quot;../data/merged_Net1.bam&quot;, index=&quot;../data/merged_Net1.bam.bai&quot;)
-reads.GR &lt;-  granges(reads)
-reads.GR &lt;- renameSeqlevels(reads.GR, paste(&quot;chr&quot;,seqlevels(reads.GR), sep= &quot;&quot;))</code></pre>
+<div id="create-a-function-for-the-plots" class="section level3">
+<h3>Create a function for the plots</h3>
+<pre class="r"><code>track_plot=function(chrom, from, to){
+  gen= &quot;hg19&quot;
+  chr= chrom
+  merged_data= DataTrack(range = &quot;../data/bam_files_chr/merged_Net1_chr.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Merged&quot;, window = -1, chromosome = chr)
+  mayer_data= DataTrack(range = &quot;../data/bam_files_chr/mayer_chr.bam&quot;, genome = gen, type = &quot;h&quot;, name = &quot;Mayer&quot;, window = -1, chromosome = chr)
+  refGenes &lt;- UcscTrack(genome= gen, chromosome=chr, 
+     track=&quot;RefSeq Genes&quot;, from = from, to = to, 
+     trackType=&quot;GeneRegionTrack&quot;, rstarts=&quot;exonStarts&quot;, 
+     rends=&quot;exonEnds&quot;, gene=&quot;name&quot;, symbol=&quot;name2&quot;, 
+     transcript=&quot;name&quot;, strand=&quot;strand&quot;, fill=&quot;#800000&quot;, name=&quot;RefSeq Genes&quot;, showId=TRUE)
+  gtrack = GenomeAxisTrack()
+  itrack= IdeogramTrack(genome = gen, chromosome = chr)
+  plot= plotTracks(list(itrack,gtrack, merged_data, mayer_data, refGenes), from = from, to = to,  background.title=&quot;darkblue&quot;,  background.panel = &quot;#FFFEDB&quot;)
+  return(plot)
+}</code></pre>
+<pre class="r"><code>#plot_SRSF3= track_plot(&quot;chr6&quot;,36564332,36571507)</code></pre>
+<pre class="r"><code>#plot_ENO1=track_plot(&quot;chr1&quot;,8919652,8940558 )</code></pre>
+<pre class="r"><code>#plot_tars=track_plot(&quot;chr5&quot;,33438802,33468000)</code></pre>
+<pre class="r"><code>#plot_CAXN= track_plot(&quot;chr5&quot;,179123129,179159838)
+#future: change track size with sizes=c(5,1,5) commpand in plot track
+#plot_ALDOA= track_plot(&quot;chr16&quot;,30080421,30082314)
+  
+#plot_XRCC5= track_plot(&quot;chr2&quot;, 216968869,217009667)
+
+#plot_TUBB= track_plot(&quot;chr6&quot;,30684274,30698626)</code></pre>
 <div id="fix-in-terminal" class="section level4">
 <h4>Fix in terminal</h4>
 <p>Add the chr tag to the bam files.</p>
@@ -507,6 +531,7 @@ samtools view -h merged_Net1.bam | awk &#39;BEGIN{FS=OFS=&quot;\t&quot;} (/^@/ &
 <p>index the bam files:</p>
 <pre class="bash"><code>samtools index mayer_chr.bam
 samtools index merged_Net1_chr.bam</code></pre>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
