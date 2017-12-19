@@ -48,6 +48,9 @@ Genes from IGV that I want to use:
 
 * STAG1 chr3:136,469,421-136,472,771  
 
+* SRSF3
+
+* ENO1  
 
 Load Packages:  
 ```{r}
@@ -68,7 +71,6 @@ Upload data:
 chr= "chr7"
 gen= "hg19"
 
-options(ucscChromosomeNames=FALSE)
 merged_data_7= DataTrack(range = "../data/bam_files_chr/merged_Net1_chr.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = "chr7")
 mayer_data_7= DataTrack(range = "../data/bam_files_chr/mayer_chr.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = "chr7")
 
@@ -97,11 +99,52 @@ plotTracks(list(merged_data_7, merged_anno_7), from = 5564779, to = 5572232)
 plotTracks(list(mayer_data_7,mayer_anno_7), from = 5564779, to = 5572232)
 ```
 
-Read in files with readGAlignments  
-```{r, eval=FALSE}
-reads <- readGAlignments(file="../data/merged_Net1.bam", index="../data/merged_Net1.bam.bai")
-reads.GR <-  granges(reads)
-reads.GR <- renameSeqlevels(reads.GR, paste("chr",seqlevels(reads.GR), sep= ""))
+
+###Create a function for the plots  
+
+```{r}
+track_plot=function(chrom, from, to){
+  gen= "hg19"
+  chr= chrom
+  merged_data= DataTrack(range = "../data/bam_files_chr/merged_Net1_chr.bam", genome = gen, type = "h", name = "Merged", window = -1, chromosome = chr)
+  mayer_data= DataTrack(range = "../data/bam_files_chr/mayer_chr.bam", genome = gen, type = "h", name = "Mayer", window = -1, chromosome = chr)
+  refGenes <- UcscTrack(genome= gen, chromosome=chr, 
+     track="RefSeq Genes", from = from, to = to, 
+     trackType="GeneRegionTrack", rstarts="exonStarts", 
+     rends="exonEnds", gene="name", symbol="name2", 
+     transcript="name", strand="strand", fill="#800000", name="RefSeq Genes", showId=TRUE)
+  gtrack = GenomeAxisTrack()
+  itrack= IdeogramTrack(genome = gen, chromosome = chr)
+  plot= plotTracks(list(itrack,gtrack, merged_data, mayer_data, refGenes), from = from, to = to,  background.title="darkblue",  background.panel = "#FFFEDB")
+  return(plot)
+}
+```
+
+
+
+
+```{r}
+plot_SRSF3= track_plot("chr6",36564332,36571507)
+```
+```{r}
+plot_ENO1=track_plot("chr1",8919652,8940558 )
+  
+
+
+```
+
+```{r}
+plot_tars=track_plot("chr5",33438802,33468000)
+```
+```{r}
+plot_CAXN= track_plot("chr5",179123129,179159838)
+#future: change track size with sizes=c(5,1,5) commpand in plot track
+plot_ALDOA= track_plot("chr16",30080421,30082314)
+  
+plot_XRCC5= track_plot("chr2", 216968869,217009667)
+
+plot_TUBB= track_plot("chr6",30684274,30698626)
+
 ```
 
 
