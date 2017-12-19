@@ -124,26 +124,26 @@ track_plot=function(chrom, from, to){
 
 
 ```{r}
-plot_SRSF3= track_plot("chr6",36564332,36571507)
+#plot_SRSF3= track_plot("chr6",36564332,36571507)
 ```
 ```{r}
-plot_ENO1=track_plot("chr1",8919652,8940558 )
+#plot_ENO1=track_plot("chr1",8919652,8940558 )
   
 
 
 ```
 
 ```{r}
-plot_tars=track_plot("chr5",33438802,33468000)
+#plot_tars=track_plot("chr5",33438802,33468000)
 ```
 ```{r}
-plot_CAXN= track_plot("chr5",179123129,179159838)
+#plot_CAXN= track_plot("chr5",179123129,179159838)
 #future: change track size with sizes=c(5,1,5) commpand in plot track
-plot_ALDOA= track_plot("chr16",30080421,30082314)
+#plot_ALDOA= track_plot("chr16",30080421,30082314)
   
-plot_XRCC5= track_plot("chr2", 216968869,217009667)
+#plot_XRCC5= track_plot("chr2", 216968869,217009667)
 
-plot_TUBB= track_plot("chr6",30684274,30698626)
+#plot_TUBB= track_plot("chr6",30684274,30698626)
 
 ```
 
