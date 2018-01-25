@@ -1,0 +1,150 @@
+---
+title: "3` UTR analysis"
+author: "Briana Mittleman"
+date: 2018-01-24
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+I have a file with the 3` UTRs and I want to extract coverage from the drop and dronc seq bam files that are in these UTR regions.
+
+I will use:  
+
+
+- bedtools coverage -d -a /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam -b /project2/gilad/briana/apa_sites/three_prime_utr.bed > drop7_cardio_3utr.txt
+
+
+
+
+Alternative anaylsis: Try to look at this similar to how I looked at the TSS enrichment. 
+
+* Step 1: Download drop and dronc seq bam/ index files to my computer in the netseq data file.  
+
+- clusters.hg38  
+
+- Day7_cardiomyocytes_drop_seq.bam  
+
+- Day7_cardiomyocytes_drop_seq.bam.bai  
+
+- three_prime_utr.bed  
+
+
+* Step 2: Pull in packages and data for analysis:  
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("IRanges")
+library("GenomicRanges")
+library("dplyr")
+library("genomation")
+library("data.table")
+library(magrittr)
+source("https://bioconductor.org/biocLite.R")
+#biocLite("GenomicAlignments")
+library("GenomicAlignments")
+```
+
+```{r}
+#get reads
+reads <- readGAlignments(file = "../data/Day7_cardiomyocytes_drop_seq.bam", index="../data/Day7_cardiomyocytes_drop_seq.bam.bai")
+reads.GR <-  granges(reads)
+
+UTR=readGeneric("../data/three_prime_utr.bed")
+pAsite= readGeneric("../data/clusters.hg38.bed")
+
+```
+
+
+
+
+```{r}
+#resize so I am looking 10,000 up and downstream of the center of the UTR
+UTR %<>% resize(., width=10000, fix="center")
+(UTR_width= summary(width(UTR)))
+sm <- ScoreMatrixBin(target = reads.GR,  windows = UTR, bin.num = 100, bin.op = "mean")  
+plotMeta(sm)
+
+
+```
+
+
+Do this against the pAsites: 
+
+```{r}
+(pAs_width= summary(width(pAsite)))
+#look 200 up and down stream of each 
+pAsite %<>% resize(., width=500, fix="center")
+(pAs_width2= summary(width(pAsite)))
+sm_pA <- ScoreMatrixBin(target = reads.GR,  windows = pAsite, bin.num = 500, bin.op = "mean")
+plotMeta(sm_pA, xcoords = c(-250,250), main="pA enrichment Day7 Drop")
+
+```
+Try with the Dronc seq data:  
+```{r}
+dronc_reads <- readGAlignments(file = "../data/Day7_cardiomyocytes_droNC_seq.bam", index="../data/Day7_cardiomyocytes_droNC_seq.bam.bai")
+dronc_reads.GR <-  granges(dronc_reads)
+
+
+dronc_sm_pA <- ScoreMatrixBin(target =dronc_reads.GR,  windows = pAsite, bin.num = 500, bin.op = "mean")
+plotMeta(dronc_sm_pA, xcoords = c(-250,250),  main="pA enrichment Day7 Dronc")
+```
+
+
+
+
+
+
+
+
+Compare this result to the 3` seq data :  
+
+
+* LCL  
+
+
+```{r}
+LCL_reads <- readGAlignments(file = "../data/blcl.hg38.sorted.bam", index="../data/blcl.hg38.sorted.bam.bai")
+LCL_reads.GR <-  granges(LCL_reads)
+
+sm_LCL_pA <- ScoreMatrixBin(target = LCL_reads.GR,  windows = pAsite, bin.num = 500, bin.op = "mean")
+plotMeta(sm_LCL_pA, xcoords = c(-250,250),  main="pA enrichment LCL")
+```
+
+* hES  
+
+```{r}
+hES_reads <- readGAlignments(file = "../data/hES.hg38.sorted.bam", index="../data/hES.hg38.sorted.bam.bai") 
+hES_reads.GR <-  granges(hES_reads)
+
+sm_hES_pA <- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite, bin.num = 500, bin.op = "mean") 
+plotMeta(sm_hES_pA, xcoords = c(-250,250),  main="pA enrichment hES") 
+``` 
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
