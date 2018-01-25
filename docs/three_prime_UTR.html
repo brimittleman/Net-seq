@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-01-25</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 4475b30</p>
+<p><strong>Code version:</strong> 52df489</p>
 <!-- Add your analysis here -->
 <p>I have a file with the 3` UTRs and I want to extract coverage from the drop and dronc seq bam files that are in these UTR regions.</p>
 <p>I will use:</p>
@@ -359,7 +359,7 @@ pAsite %&lt;&gt;% resize(., width=500, fix=&quot;center&quot;)
 (pAs_width2= summary(width(pAsite)))</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
     500     500     500     500     500     500 </code></pre>
-<pre class="r"><code>sm_pA &lt;- ScoreMatrixBin(target = reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;)</code></pre>
+<pre class="r"><code>sm_pA &lt;- ScoreMatrixBin(target = reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;,strand.aware=TRUE)</code></pre>
 <pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 10
 windows fall off the target</code></pre>
 <pre class="r"><code>plotMeta(sm_pA, xcoords = c(-250,250), main=&quot;pA enrichment Day7 Drop&quot;)</code></pre>
@@ -368,7 +368,7 @@ windows fall off the target</code></pre>
 dronc_reads.GR &lt;-  granges(dronc_reads)
 
 
-dronc_sm_pA &lt;- ScoreMatrixBin(target =dronc_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;)</code></pre>
+dronc_sm_pA &lt;- ScoreMatrixBin(target =dronc_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;, strand.aware=TRUE)</code></pre>
 <pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 10
 windows fall off the target</code></pre>
 <pre class="r"><code>plotMeta(dronc_sm_pA, xcoords = c(-250,250),  main=&quot;pA enrichment Day7 Dronc&quot;)</code></pre>
@@ -380,7 +380,7 @@ windows fall off the target</code></pre>
 <pre class="r"><code>LCL_reads &lt;- readGAlignments(file = &quot;../data/blcl.hg38.sorted.bam&quot;, index=&quot;../data/blcl.hg38.sorted.bam.bai&quot;)
 LCL_reads.GR &lt;-  granges(LCL_reads)
 
-sm_LCL_pA &lt;- ScoreMatrixBin(target = LCL_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;)
+sm_LCL_pA &lt;- ScoreMatrixBin(target = LCL_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;, strand.aware=TRUE)
 plotMeta(sm_LCL_pA, xcoords = c(-250,250),  main=&quot;pA enrichment LCL&quot;)</code></pre>
 <p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
 <ul>
@@ -389,9 +389,38 @@ plotMeta(sm_LCL_pA, xcoords = c(-250,250),  main=&quot;pA enrichment LCL&quot;)<
 <pre class="r"><code>hES_reads &lt;- readGAlignments(file = &quot;../data/hES.hg38.sorted.bam&quot;, index=&quot;../data/hES.hg38.sorted.bam.bai&quot;) 
 hES_reads.GR &lt;-  granges(hES_reads)
 
-sm_hES_pA &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;) 
+sm_hES_pA &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;, strand.aware=TRUE) 
 plotMeta(sm_hES_pA, xcoords = c(-250,250),  main=&quot;pA enrichment hES&quot;) </code></pre>
 <p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>I now want to try to look at the 3` most pAs. Start by overlapping the PaS sites with the UTRs then annotate the file with the UTR name.</p>
+<p>bedtools intersect- I want only the As (pAs) that are in B (UTR)</p>
+<ul>
+<li>bedtools intersect -a clusters.hg38.bed -b three_prime_utr.bed &gt; clusters.hg38.3utr.bed</li>
+</ul>
+<p>Alternative methed: subset the pAS in the 3’ UTRs then seperate the files by strandedness.</p>
+<pre class="r"><code>pAsite_pos= readGeneric(&quot;../data/clusters.hg38.3utr.pos.bed&quot;)
+pAsite_pos %&lt;&gt;% resize(., width=1000, fix=&quot;center&quot;)
+(pAs_pos_width= summary(width(pAsite_pos)))</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   1000    1000    1000    1000    1000    1000 </code></pre>
+<pre class="r"><code>pAsite_neg= readGeneric(&quot;../data/clusters.hg38.3utr.neg.bed&quot;)
+pAsite_neg %&lt;&gt;% resize(., width=1000, fix=&quot;center&quot;)</code></pre>
+<pre class="r"><code>#drop and pos strand
+sm_pA_pos &lt;- ScoreMatrixBin(target = reads.GR,  windows = pAsite_pos, bin.num = 1000, bin.op = &quot;mean&quot;)
+plotMeta(sm_pA_pos, xcoords = c(-500,500), main=&quot;pA enrichment Day7 Drop pos strand&quot;)</code></pre>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /> negative Graph:</p>
+<pre class="r"><code>#drop and neg strand
+sm_pA_neg &lt;- ScoreMatrixBin(target = reads.GR,  windows = pAsite_neg, bin.num = 1000, bin.op = &quot;mean&quot;)
+plotMeta(sm_pA_neg, xcoords = c(-500,500), main=&quot;pA enrichment Day7 Drop neg strand&quot;)</code></pre>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>hES with pos</p>
+<pre class="r"><code>sm_hES_pA_pos &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite_pos, bin.num = 1000, bin.op = &quot;mean&quot;) 
+plotMeta(sm_hES_pA_pos, xcoords = c(-500,500),  main=&quot;pA enrichment hES pos&quot;) </code></pre>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>hES neg</p>
+<pre class="r"><code>sm_hES_pA_neg &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite_neg, bin.num = 1000, bin.op = &quot;mean&quot;) 
+plotMeta(sm_hES_pA_neg, xcoords = c(-500,500),  main=&quot;pA enrichment hES pos&quot;) </code></pre>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
