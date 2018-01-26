@@ -34,7 +34,35 @@ I will use:
 - bedtools coverage -d -a /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam -b /project2/gilad/briana/apa_sites/three_prime_utr.bed > drop7_cardio_3utr.txt
 
 
+This is taking too much memory. I am going to convert bam to a bed file then sort it.  
+ 
+```{bash, eval=FALSE}
+bedtools bamtobed -i /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam > Day7_cardiomyocytes_drop_seq.bed  
 
+sort -k1,1 -k2,2n Day7_cardiomyocytes_drop_seq.bed >  Day7_cardiomyocytes_drop_seq_sort.bed 
+```
+
+
+
+Do this for the UTR file as well.  
+
+```{bash, eval=FALSE}
+sort -k1,1 -k2,2n three_prime_utr.bed > three_prime_utr_sort.bed  
+```
+
+
+Now add the sorted to the coverage:  Update the drop7_cardio_3UTR_cov.sh script  
+
+
+```{bash, eval=FALSE}
+bedtools coverage -d -sorted  -a /project2/gilad/briana/apa_sites/Day7_cardiomyocytes_drop_seq_sort.bed  -b /project2/gilad/briana/apa_sites/three_prime_utr_sort.bed > drop7_cardio_3utr.txt
+```
+
+Do this for one of 3' seq lines too (LCL). The scipt is called lcl_3UTR_cov.sh.  
+
+*These files are too big to move onto my computer. I need to think of anotehr way to vizualize them.*
+
+###Called ApA analysis  
 
 Alternative anaylsis: Try to look at this similar to how I looked at the TSS enrichment. 
 
@@ -190,7 +218,46 @@ sm_hES_pA_neg <- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite_neg, bi
 plotMeta(sm_hES_pA_neg, xcoords = c(-500,500),  main="pA enrichment hES pos") 
 ```
 
+###Heat maps with EnrichedHeatmap  
 
+```{r}
+library(EnrichedHeatmap)
+```
+Drop seq day7 cardiomyocytes GRanges object:  
+
+```{r}
+reads.GR[1:5]
+```
+
+pAs:  
+
+```{r}
+pAsite[1:5]
+```
+
+```{r}
+
+#mat_drop7_pAs = normalizeToMatrix(UTR , pAsite, value_column = "ranges", extend = 1000, mean_mode = "w0", w = 100)
+
+```
+
+
+
+
+```{r}
+# library(biomaRt)
+# mart = useMart(biomart = "ENSEMBL_MART_ENSEMBL",
+#                dataset = "hsapiens_gene_ensembl")
+# filterlist <- c(1:22, 'X', 'Y')
+# ds = useDataset('hsapiens_gene_ensembl', mart = mart)
+# 
+# egs = getBM(attributes = c('ensembl_gene_id', 'external_gene_name', 'chromosome_name', 'start_position', 'end_position', 'strand'), 
+#             filters = 'chromosome_name',
+#             values = filterlist,
+#             mart = ds)
+# reads.GR_chr <-  granges(reads, seqnames = Rle(paste0('chr', egs$chromosome_name )))
+# pAsite_chr= readGeneric("../data/clusters.hg38.bed", seqnames = Rle(paste0('chr', egs$chromosome_name )))
+```
 
 
 ## Session information
