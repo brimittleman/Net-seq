@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-01-29</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 450d67e</p>
+<p><strong>Code version:</strong> 26bf3e7</p>
 <!-- Add your analysis here -->
 <p>I have a file with the 3` UTRs and I want to extract coverage from the drop and dronc seq bam files that are in these UTR regions.</p>
 <p>I will use:</p>
@@ -341,6 +341,10 @@ sort -k1,1 -k2,2n Day7_cardiomyocytes_drop_seq.bed &gt;  Day7_cardiomyocytes_dro
 <li><p>drop7_cardio_3utrAB.bed</p></li>
 </ul>
 <p>I will continue this analysis on the Rstudio for midway because the coverage files are so big.</p>
+<div id="change-data-structure" class="section level3">
+<h3>Change data structure:</h3>
+<p>I am now using a python dictionary to create a file that has the UTRs as keys and the values as a list of the read count for that UTR. The script is /project2/gilad/briana/apa_sites/code/cov_per_UTR.py</p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
