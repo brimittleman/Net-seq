@@ -70,6 +70,14 @@ Now this seems correct. THe file has the UTR regions. A line for each base in th
 
 I will continue this analysis on the Rstudio for midway because the coverage files are so big.  
 
+###Change data structure: 
+
+I am now using a python dictionary to create a file that has the UTRs as keys and the values as a list of the read count for that UTR. The script is /project2/gilad/briana/apa_sites/code/cov_per_UTR.py  
+
+
+
+
+
 
 ## Session information
 
