@@ -1,0 +1,78 @@
+---
+title: "Explore coverage within 3` UTRs"
+author: "Briana Mittleman"
+date: 2018-01-29
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+I have a file with the 3` UTRs and I want to extract coverage from the drop and dronc seq bam files that are in these UTR regions.
+
+I will use:  
+
+
+- bedtools coverage -d -a /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam -b /project2/gilad/briana/apa_sites/three_prime_utr.bed > drop7_cardio_3utr.txt
+
+
+This is taking too much memory. I am going to convert bam to a bed file then sort it.  
+ 
+```{bash, eval=FALSE}
+bedtools bamtobed -i /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam > Day7_cardiomyocytes_drop_seq.bed  
+
+sort -k1,1 -k2,2n Day7_cardiomyocytes_drop_seq.bed >  Day7_cardiomyocytes_drop_seq_sort.bed 
+```
+
+
+
+Do this for the UTR file as well.  
+
+```{bash, eval=FALSE}
+sort -k1,1 -k2,2n three_prime_utr.bed > three_prime_utr_sort.bed  
+```
+
+
+Now add the sorted to the coverage:  Update the drop7_cardio_3UTR_cov.sh script  
+
+
+```{bash, eval=FALSE}
+bedtools coverage -d -sorted  -a /project2/gilad/briana/apa_sites/Day7_cardiomyocytes_drop_seq_sort.bed  -b /project2/gilad/briana/apa_sites/three_prime_utr_sort.bed > drop7_cardio_3utr.txt
+```
+
+Do this for one of 3' seq lines too (LCL). The scipt is called lcl_3UTR_cov.sh.  
+
+
+These files are not correct. They have coverage for a region rather than per base in each UTR. Try to switch a and b in the script. 
+
+Now this seems correct. THe file has the UTR regions. A line for each base in the region in column 6 and the coverage at that base in column 7.  
+
+* LCL_3utrAB.bed  
+
+* drop7_cardio_3utrAB.bed  
+
+I will continue this analysis on the Rstudio for midway because the coverage files are so big.  
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
