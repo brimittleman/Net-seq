@@ -315,26 +315,11 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-26</p>
+<p><strong>Last updated:</strong> 2018-01-29</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 4aeaf94</p>
+<p><strong>Code version:</strong> 450d67e</p>
 <!-- Add your analysis here -->
-<p>I have a file with the 3` UTRs and I want to extract coverage from the drop and dronc seq bam files that are in these UTR regions.</p>
-<p>I will use:</p>
-<ul>
-<li>bedtools coverage -d -a /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam -b /project2/gilad/briana/apa_sites/three_prime_utr.bed &gt; drop7_cardio_3utr.txt</li>
-</ul>
-<p>This is taking too much memory. I am going to convert bam to a bed file then sort it.</p>
-<pre class="bash"><code>bedtools bamtobed -i /project2/gilad/spott/dropBams/Day7_cardiomyocytes_drop_seq.bam &gt; Day7_cardiomyocytes_drop_seq.bed  
-
-sort -k1,1 -k2,2n Day7_cardiomyocytes_drop_seq.bed &gt;  Day7_cardiomyocytes_drop_seq_sort.bed </code></pre>
-<p>Do this for the UTR file as well.</p>
-<pre class="bash"><code>sort -k1,1 -k2,2n three_prime_utr.bed &gt; three_prime_utr_sort.bed  </code></pre>
-<p>Now add the sorted to the coverage: Update the drop7_cardio_3UTR_cov.sh script</p>
-<pre class="bash"><code>bedtools coverage -d -sorted  -a /project2/gilad/briana/apa_sites/Day7_cardiomyocytes_drop_seq_sort.bed  -b /project2/gilad/briana/apa_sites/three_prime_utr_sort.bed &gt; drop7_cardio_3utr.txt</code></pre>
-<p>Do this for one of 3’ seq lines too (LCL). The scipt is called lcl_3UTR_cov.sh.</p>
-<p><em>These files are too big to move onto my computer. I need to think of anotehr way to vizualize them.</em></p>
 <div id="called-apa-analysis" class="section level3">
 <h3>Called ApA analysis</h3>
 <p>Alternative anaylsis: Try to look at this similar to how I looked at the TSS enrichment.</p>
@@ -361,7 +346,7 @@ UTR %&lt;&gt;% resize(., width=10000, fix=&quot;center&quot;)
 <pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 5723
 windows fall off the target</code></pre>
 <pre class="r"><code>plotMeta(sm)</code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Do this against the pAsites:</p>
 <pre class="r"><code>(pAs_width= summary(width(pAsite)))</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -375,7 +360,14 @@ pAsite %&lt;&gt;% resize(., width=500, fix=&quot;center&quot;)
 <pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 10
 windows fall off the target</code></pre>
 <pre class="r"><code>plotMeta(sm_pA, xcoords = c(-250,250), main=&quot;pA enrichment Day7 Drop&quot;)</code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /> Try with the Dronc seq data:</p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Try to make this a heat map:</p>
+<pre class="r"><code>sm_pA_heat &lt;- ScoreMatrix(target = reads.GR,  windows = pAsite,strand.aware=TRUE)</code></pre>
+<pre><code>Warning in .local(target, windows, strand.aware): 10 windows fall off the
+target</code></pre>
+<pre class="r"><code>heatMatrix(sm_pA_heat)</code></pre>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Try with the Dronc seq data:</p>
 <pre class="r"><code>dronc_reads &lt;- readGAlignments(file = &quot;../data/Day7_cardiomyocytes_droNC_seq.bam&quot;, index=&quot;../data/Day7_cardiomyocytes_droNC_seq.bam.bai&quot;)
 dronc_reads.GR &lt;-  granges(dronc_reads)
 
@@ -384,7 +376,7 @@ dronc_sm_pA &lt;- ScoreMatrixBin(target =dronc_reads.GR,  windows = pAsite, bin.
 <pre><code>Warning in .local(target, windows, bin.num, bin.op, strand.aware): 10
 windows fall off the target</code></pre>
 <pre class="r"><code>plotMeta(dronc_sm_pA, xcoords = c(-250,250),  main=&quot;pA enrichment Day7 Dronc&quot;)</code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Compare this result to the 3` seq data :</p>
 <ul>
 <li>LCL</li>
@@ -394,7 +386,10 @@ LCL_reads.GR &lt;-  granges(LCL_reads)
 
 sm_LCL_pA &lt;- ScoreMatrixBin(target = LCL_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;, strand.aware=TRUE)
 plotMeta(sm_LCL_pA, xcoords = c(-250,250),  main=&quot;pA enrichment LCL&quot;)</code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sm_LCL_heat &lt;- ScoreMatrix(target = LCL_reads.GR,  windows = pAsite, strand.aware=TRUE)
+heatMatrix(sm_LCL_heat)</code></pre>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
 <ul>
 <li>hES</li>
 </ul>
@@ -403,7 +398,7 @@ hES_reads.GR &lt;-  granges(hES_reads)
 
 sm_hES_pA &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite, bin.num = 500, bin.op = &quot;mean&quot;, strand.aware=TRUE) 
 plotMeta(sm_hES_pA, xcoords = c(-250,250),  main=&quot;pA enrichment hES&quot;) </code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>I now want to try to look at the 3` most pAs. Start by overlapping the PaS sites with the UTRs then annotate the file with the UTR name.</p>
 <p>bedtools intersect- I want only the As (pAs) that are in B (UTR)</p>
 <ul>
@@ -420,19 +415,19 @@ pAsite_neg %&lt;&gt;% resize(., width=1000, fix=&quot;center&quot;)</code></pre>
 <pre class="r"><code>#drop and pos strand
 sm_pA_pos &lt;- ScoreMatrixBin(target = reads.GR,  windows = pAsite_pos, bin.num = 1000, bin.op = &quot;mean&quot;)
 plotMeta(sm_pA_pos, xcoords = c(-500,500), main=&quot;pA enrichment Day7 Drop pos strand&quot;)</code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /> negative Graph:</p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /> negative Graph:</p>
 <pre class="r"><code>#drop and neg strand
 sm_pA_neg &lt;- ScoreMatrixBin(target = reads.GR,  windows = pAsite_neg, bin.num = 1000, bin.op = &quot;mean&quot;)
 plotMeta(sm_pA_neg, xcoords = c(-500,500), main=&quot;pA enrichment Day7 Drop neg strand&quot;)</code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>hES with pos</p>
 <pre class="r"><code>sm_hES_pA_pos &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite_pos, bin.num = 1000, bin.op = &quot;mean&quot;) 
 plotMeta(sm_hES_pA_pos, xcoords = c(-500,500),  main=&quot;pA enrichment hES pos&quot;) </code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>hES neg</p>
 <pre class="r"><code>sm_hES_pA_neg &lt;- ScoreMatrixBin(target = hES_reads.GR,  windows = pAsite_neg, bin.num = 1000, bin.op = &quot;mean&quot;) 
 plotMeta(sm_hES_pA_neg, xcoords = c(-500,500),  main=&quot;pA enrichment hES pos&quot;) </code></pre>
-<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/three_prime_UTR.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="heat-maps-with-enrichedheatmap" class="section level3">
 <h3>Heat maps with EnrichedHeatmap</h3>
