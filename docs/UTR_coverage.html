@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-29</p>
+<p><strong>Last updated:</strong> 2018-01-30</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 26bf3e7</p>
+<p><strong>Code version:</strong> 5c5ea94</p>
 <!-- Add your analysis here -->
 <p>I have a file with the 3` UTRs and I want to extract coverage from the drop and dronc seq bam files that are in these UTR regions.</p>
 <p>I will use:</p>
@@ -344,6 +344,9 @@ sort -k1,1 -k2,2n Day7_cardiomyocytes_drop_seq.bed &gt;  Day7_cardiomyocytes_dro
 <div id="change-data-structure" class="section level3">
 <h3>Change data structure:</h3>
 <p>I am now using a python dictionary to create a file that has the UTRs as keys and the values as a list of the read count for that UTR. The script is /project2/gilad/briana/apa_sites/code/cov_per_UTR.py</p>
+<p>To run this I have to make a bash script. I called it test.sh for now.</p>
+<p>It has the bash heading, module load python, and the following line to call the pythn script.</p>
+<p>‘python cov_per_UTR.py ../LCL_3utrAB.bed ../output/cov_at_UTRs_LCL.csv’</p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
