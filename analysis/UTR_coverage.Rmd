@@ -83,8 +83,146 @@ It has the bash heading, module load python, and the following line to call the 
 'python cov_per_UTR.py ../LCL_3utrAB.bed ../output/cov_at_UTRs_LCL.csv'
 
 
+This takes too long to run. I will up the time and add a step that creates a file from the UTR list. This will help me know if the keys are created partway through the run. The new py script is cov_per_UTR2.py and takes 3 arguments, data, a UTR_names file and a full output file. The bash script to run this is /project2/gilad/briana/apa_sites/code/utr_py_lcl.sh. I updates this file for the drop7 coverage file as well. The bash script for this is /project2/gilad/briana/apa_sites/code/utr_py_drop7.sh.  
 
 
+
+###Use the group by function:
+
+First seperate the files by pos and neg strand UTR
+
+```{bash, eval=FALSE}
+
+awk '{if ($6 == "+") {print} }' drop7_cardio_3utrAB.bed > drop7_cardio_3utrAB.pos.bed
+awk '{if ($6 == "-") {print} }' drop7_cardio_3utrAB.bed > drop7_cardio_3utrAB.neg.bed
+
+
+awk '{if ($6 == "-") {print} }' LCL_3utrAB.bed > LCL_3utrAB.neg.bed
+awk '{if ($6 == "+") {print} }' LCL_3utrAB.bed > LCL_3utrAB.pos.bed
+
+```
+
+Use the group by bedtools function to group by the 7th column (base number in the UTR) and get the mean for the coverage at that base.  This script is /project2/gilad/briana/apa_sites/groupby/per_base_mean.sh 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=mean_UTR
+#SBATCH --time=2:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=10G
+#SBATCH --mail-type=END
+#SBATCH --ntasks-per-node=2
+
+module load Anaconda3
+source activate net-seq
+
+
+bedtools groupby -i drop7_cardio_3utrAB.pos.bed -g 7 -c 8 -o mean > drop7_cardio_pos_mean.bed
+
+
+bedtools groupby -i drop7_cardio_3utrAB.neg.bed -g 7 -c 8 -o mean > drop7_cardio_neg_mean.bed
+
+
+bedtools groupby -i LCL_3utrAB.pos.bed -g 7 -c 8 -o mean > LCL_pos_mean.bed
+
+bedtools groupby -i LCL_3utrAB.neg.bed -g 7 -c 8 -o mean > LCL_neg_mean.bed
+```
+
+
+
+This doesnt work. I am going to subset the file and try this for 1 chromosome.  
+
+* less drop7_cardio_3utrAB.pos.bed |head -n 10000 |sort -k7,7n |bedtools groupby -i stdin -g 7 -c 8 -o mean | head -n 10000
+
+```{bash, eval=FALSE}
+awk '{if ($1 == "chr21") {print} }' drop7_cardio_3utrAB.pos.bed > drop7_cardio_3utrAB.pos.chr21.bed
+```
+
+
+```{r}
+drop7_3UTR_pos_chr21= read.table("../data/drop7_cardio_3utrAB.pos.chr21.bed", header=FALSE)
+
+```
+
+```{r}
+library(dplyr)
+group_by(drop7_3UTR_pos_chr21, V7) %>% summarise(sum=sum(V8)) -> UTR_21_cov
+
+
+plot(UTR_21_cov$sum, ylab="sum expression", xlab="UTR base position", main="Chr 21 3' UTR coverage Dropseq day 7")
+```
+```{r}
+utr_unique_pos= unique(drop7_3UTR_pos_chr21[,1:3])
+summary(utr_unique_pos$V3-utr_unique_pos$V2)
+```
+
+
+```{r}
+plot(UTR_21_cov$sum, ylab="sum expression", xlab="UTR base position", main="Chr 21 3' UTR coverage Dropseq day 7", xlim = c(0,1000))
+```
+
+
+
+
+Do this on the negative strand. 
+
+```{r}
+drop7_3UTR_neg_chr21= read.table("../data/drop7_cardio_3utrAB.neg.chr21.bed", header=FALSE)
+group_by(drop7_3UTR_neg_chr21, V7) %>% summarise(sum=sum(V8)) -> UTR_21neg_cov
+
+
+plot(UTR_21neg_cov$sum, ylab="sum expression", xlab="UTR base position", main="Chr 21 3' UTR coverage Dropseq day 7")
+```
+
+Average utr size: 
+
+
+```{r}
+utr_unique= unique(drop7_3UTR_neg_chr21[,1:3])
+summary(utr_unique$V3-utr_unique$V2)
+```
+Subset plot wit this information:  
+
+```{r}
+plot(UTR_21neg_cov$sum, ylab="sum expression", xlab="UTR base position- negative strand", main="Chr 21 3' UTR coverage Dropseq day 7", xlim=c(0,1000))
+```
+
+With the 3` seq:
+
+
+```{r}
+LCL_3UTR_neg_chr20= read.table("../data/LCL_3utrAB.neg.chr20.bed", header=FALSE)
+group_by(LCL_3UTR_neg_chr20, V7) %>% summarise(sum=sum(V8)) -> LCL_UTR_20_cov
+plot(LCL_UTR_20_cov$sum, ylab="mean expression", xlab="UTR base position", main="Chr 20 3' UTR coverage LCL")
+```
+
+```{r}
+utr_lclneg_unique= unique(LCL_3UTR_neg_chr20[,1:3])
+summary(utr_lclneg_unique$V3-utr_lclneg_unique$V2)
+```
+
+Plot a little past the median:  
+
+```{r}
+plot(LCL_UTR_20_cov$sum, ylab="mean expression", xlab="UTR base position", main="Chr 20 3' UTR coverage LCL", xlim=c(0,200))
+```
+
+
+
+
+
+
+
+
+
+```{r}
+LCL_3UTR_pos_chr1= read.table("../data/LCL_3utrAB_pos.chr1.bed", header=FALSE)
+group_by(LCL_3UTR_pos_chr1, V7) %>% summarise(sum=sum(V8)) -> LCL_UTR_1_cov
+plot(LCL_UTR_1_cov$sum, ylab="mean expression", xlab="UTR base position", main="Chr 1 3' UTR coverage LCL")
+
+```
 
 
 ## Session information

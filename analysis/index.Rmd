@@ -36,5 +36,7 @@ Initials data exploration:
 
 Exploration of the 3` seq and ApA sites:  
 
-* [Look for read enrichment at ApA sites](three_prime_UTR.html)  
+* [Look for read enrichment at ApA sites](three_prime_UTR.html) 
+
+* [UTR coverage analysis](UTR_coverage.html)
 
