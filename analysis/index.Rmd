@@ -40,3 +40,5 @@ Exploration of the 3` seq and ApA sites:
 
 * [UTR coverage analysis](UTR_coverage.html)
 
+* [Look at enrichment using Deep tools](use_deeptools.html)
+
