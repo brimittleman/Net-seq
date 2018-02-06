@@ -1,0 +1,112 @@
+---
+title: "Quantify reads falling in PAS"
+author: "Briana Mittleman"
+date: 2018-02-06
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+The goal of this analysis is to quantify the number of reads at each PAS and to compare single cell clusters. I will use the day 3 cardiomyocyte differenciation protocol. To do this I will take advantage of the dropseq pipeline but change the gtf file to a file with the defined PAS.  The first step is to convert the clusters.hg38.bed file to to a gtf format.
+
+####Define each file format:  
+
+Bed file format:  
+
+1. chromosome  
+
+2. chrom start position  
+
+3. chrom end position  
+
+Optional but included in my file:  
+
+4. name  
+
+5. Score (0-100)  
+
+6. Strand  (+/-)  
+
+GTF file format:  
+
+1. seq name  
+
+2. source (name of program/database/project)
+
+3. feature type  
+
+4. chrom start  
+
+5. chrom end  
+
+6. score  
+
+7. strand (+/-)  
+
+8. frame (0/1/2)  
+
+9. attribute- semicolon sep. list of tag-value pairs with more information about the feature  (example- could have gene id)  
+
+####Code to switch bed to gtf:    
+
+Could do this in 2 steps:  bedtogenepred and genePredToGtf
+
+```
+#example
+bedToGenePred in.bed /dev/stdout | genePredToGtf file /dev/stdin out.gtf
+```
+
+These functions can be put into my net-seq conda environment:  
+
+* ucsc-bedtogenepred  
+
+* ucsc-genepredtogtf  
+
+Write a script using this for my file. This is /project2/gilad/briana/apa_sites/apa_bedtoGTF.sh  
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=bed.gtf
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=20G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq  
+
+
+bedToGenePred /project2/gilad/briana/apa_sites/clusters.hg38.bed /project2/gilad/briana/apa_sites/clusters.hg38.gp | genePredToGtf file /project2/gilad/briana/apa_sites/clusters.hg38.gp /project2/gilad/briana/apa_sites/clusters.hg38.gtf
+
+```
+
+ERROR:  Expecting at least 10 words line 8335 of /project2/gilad/briana/apa_sites/clusters.hg38.gp got 1  
+
+**Keep thinking aobut this**
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
