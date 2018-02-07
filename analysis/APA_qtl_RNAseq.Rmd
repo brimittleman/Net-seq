@@ -1,0 +1,141 @@
+---
+title: "Explore the APA qtls from RNAseq"
+author: "Briana Mittleman"
+date: 2018-02-06
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+The goal of this analysis is to do some exploration on the APA qtls that Yang called on the LCL RNA-seq data. 
+
+Relevant files are in: /project2/gilad/yangili/LCLs  
+
+run_lm_APA.txt: APA QTLs. cols are: ensembl geneid, snpID, distance to target, pvalue, beta
+
+qqnorm_APA_final.txt.gz : what went into the qtl mapping
+
+DaPars_APA_geuvadis.txt : the “raw” APA usage
+
+ensembl2refseq.txt : ensembl ids to the refseq ids
+
+First step: Use deeptools to look at APA enrichment in some of the individuals 
+This is the script for 18585. /project2/gilad/briana/apa_sites/rnaseq_LCL/heat_map18505.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_lcl
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq
+
+bamCoverage -b /project2/gilad/yangili/LCLs/bams/RNAseqGeuvadis_STAR_18505.final.bam -o LCL_18505.bw
+
+computeMatrix reference-point -S LCL_18505.bw -R /project2/gilad/briana/apa_sites/clusters.bed -b 1000 -a 1000 -out LCL_18505.gz
+
+plotHeatmap --sortRegions --xAxisLabel 'APA'  descend -m LCL_18505.gz  -out LCL_18505.apa.png
+```
+
+**Need to index the bam files before I can run this** 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=sort_bam
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+describer=$(echo ${sample} | sed 's/.bam//')  
+
+# Sort BAM file  
+samtools sort ${describer}.bam -o ${describer}.sort.bam  
+
+
+   
+```
+
+```{bash, eval=FALSE}
+
+#!/bin/bash
+
+
+#SBATCH --job-name=index_bams
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+describer=$(echo ${sample} | sed 's/.bam//')  
+
+
+# index the bam file  
+samtools index ${describer}.sort.bam  
+
+
+```
+
+
+Run these 2 scripts for:  
+
+* RNAseqGeuvadis_STAR_18505.final.bam 
+
+* RNAseqGeuvadis_STAR_18486.final.bam 
+
+Now I can run the deeptools script:  
+
+
+![APA enrichment in 18505 RNA seq](../data/LCL_18505.apa.png) 
+
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
