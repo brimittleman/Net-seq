@@ -131,8 +131,8 @@ Now I can run the deeptools script:
 
 ![APA enrichment in 18505 RNA seq](../data/LCL_18505.apa.png) 
 
-
-
+How to fix the TSS label!
+** --refPointLabel APA **
 
 ## Session information
 
