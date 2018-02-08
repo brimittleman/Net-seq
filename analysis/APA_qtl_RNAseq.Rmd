@@ -25,6 +25,10 @@ knitr::read_chunk("chunks.R")
 ```
 
 <!-- Add your analysis here -->
+```{r}
+library("dplyr")
+library("ggplot2")
+```
 
 
 The goal of this analysis is to do some exploration on the APA qtls that Yang called on the LCL RNA-seq data. 
@@ -83,7 +87,8 @@ source activate net-seq
 
 
 sample=$1
-describer=$(echo ${sample} | sed 's/.bam//')  
+describer=$(echo ${sample} | sed -e "s/\.bam$//")
+#describer=$(echo ${sample} | sed 's/.bam//')  
 
 # Sort BAM file  
 samtools sort ${describer}.bam -o ${describer}.sort.bam  
@@ -114,7 +119,7 @@ describer=$(echo ${sample} | sed 's/.bam//')
 
 
 # index the bam file  
-samtools index ${describer}.sort.bam  
+samtools index ${describer}.bam  
 
 
 ```
@@ -129,10 +134,219 @@ Run these 2 scripts for:
 Now I can run the deeptools script:  
 
 
-![APA enrichment in 18505 RNA seq](../data/LCL_18505.apa.png) 
+![APA enrichment in 18505 RNA seq](../data/LCL_18505.apa.png)   
 
-How to fix the TSS label!
-** --refPointLabel APA **
+How to fix the TSS label!  
+
+**--refPointLabel APA**
+
+###Take a look at the QTL files:  
+
+```{r}
+#qtl file
+APA_qtls=read.table("../data/run_lm_APA.txt", stringsAsFactors = FALSE)
+names(APA_qtls)=c("gene", "snp", "distance", "pval", "beta")
+
+#APA usage
+APA_usage=read.table("../data/DaPars_APA_geuvadis.txt", stringsAsFactors = FALSE)
+names(APA_usage)=c("#Chr",	"start",	"end",	"ID",	"NA18486",	"NA18487","NA18488",	"NA18489",	"NA18498",	"NA18499",	"NA18502",	"NA18505",	"NA18508",	"NA18510",	"NA18511",	"NA18517",	"NA18519",	"NA18520",	"NA18858",	"NA18861",	"NA18867",	"NA18868",	"NA18870",	"NA18873",	"NA18907",	"NA18909",	"NA18910",	"NA18912",	"NA18916",	"NA18917",	"NA18923",	"NA18933",	"NA18934",	'NA19092',	"NA19093",	"NA19095",	"NA19096",	"NA19098",	"NA19099",	"NA19102",	"NA19107",	"NA19108",	'NA19113',	'NA19114',	'NA19116',	'NA19117',	'NA19118',	'NA19119',	'NA19121',	'NA19129',	'NA19130', 'NA19131',	'NA19137',	'NA19138',	'NA19141',	'NA19143',	'NA19144',	'NA19146',	'NA19147',	'NA19149',	'NA19150', 'NA19152',	'NA19153',	'NA19159',	'NA19160',	'NA19171', 'NA19172',	'NA19175',	'NA19184',	'NA19185',	'NA19189',	'NA19190',	'NA19197',	'NA19198',	'NA19200',	'NA19201',	'NA19204',	'NA19206',	'NA19207',	'NA19209',	'NA19210',	'NA19213',	'NA19214',	'NA19222',	'NA19223',	'NA19225',	'NA19235',	'NA19247',	'NA19248')
+
+#gene IDs
+ensenbl2refseq=read.delim("../data/ensembl2refseq.txt", stringsAsFactors = FALSE)
+```
+
+To look at top QTLs I will sort by pval: 
+
+```{r}
+APA_qtls=arrange(APA_qtls, APA_qtls$pval )
+
+top_QTL=APA_qtls[1,]
+top_QTL
+```
+Find this gene in the ensenbl2refseq file:  
+
+```{r}
+ref_gene_top=ensenbl2refseq[which(grepl(top_QTL[1], ensenbl2refseq[,1])),]
+ref_gene_top
+```
+
+Find the APA usage line for this gene.  
+
+```{r}
+top_apa_usage=APA_usage[which(grepl("NM_001204064",APA_usage[,4])),]
+top_apa_usage
+
+hist(as.numeric(top_apa_usage[5:89]))
+length(as.numeric(top_apa_usage[5:89]))
+
+```
+
+
+
+The snp I am looking at is rs7144811. 
+
+I now need to assign the genotypes to the individuals and APA.  
+
+```{r}
+rs7144811_geno= read.table("../data/genotypes.rs7144811.txt")
+names_geno=read.delim("../data/names_geno.txt", header=FALSE)
+
+names(rs7144811_geno)=unname(unlist(names_geno[1,]))
+
+
+```
+
+```{r}
+individuals=names(APA_usage[,5:ncol(APA_usage)])
+individuals 
+length(individuals)
+```
+
+I need to subset the genotype files to only include these individuals:  
+```{r}
+geno_apa_rs7144811=rs7144811_geno[,which((names(rs7144811_geno) %in% individuals)==TRUE)] 
+dim(geno_apa_rs7144811)
+
+top_usage_nometa=top_apa_usage[,5:ncol(top_apa_usage)]
+
+
+#i need to order these the same before I can merge them into one df
+names(top_usage_nometa)
+names(geno_apa_rs7144811)
+```
+```{r}
+geno_apa_rs7144811_sort=geno_apa_rs7144811[,order(names(geno_apa_rs7144811))]
+top_usage_nometa_sort=top_usage_nometa[,order(names(top_usage_nometa))]
+summary(names(geno_apa_rs7144811_sort)==names(top_usage_nometa_sort))
+```
+```{r}
+rs7144811_geno_APA= rbind(top_usage_nometa_sort,geno_apa_rs7144811_sort)
+rownames(rs7144811_geno_APA)=c("APA", "geno")
+
+```
+
+Create a boxplot:  
+
+```{r}
+temp <- rs7144811_geno_APA %>%  tibble::rownames_to_column(., var ="feature") %>% tidyr::gather(.,Sample,feature)
+colnames(temp) <- c("Feature_name", "SampleID", "Value")
+longform <- temp %>% tidyr::spread(.,Feature_name, Value)
+
+#test <- data.frame(apa_score=as.character(rs7144811_geno_APA[1,]), genotype=as.character(rs7144811_geno_APA[2,]), individual=as.vector(colnames(rs7144811_geno_APA)))
+
+rs7144811_plot = ggplot(data = longform) + 
+  geom_boxplot(aes(x=geno, group=geno, y=APA), fill="#4271AE") +
+  labs(title="APA QTL rs7144811", x="Genotype", y="APA usage") 
+  
+
+
+
+rs7144811_plot
+```
+Think about another way to visualize. 
+
+1. Look for the PAS in this gene (NM_001204064/ENSG0000025828)  it is on the positive strand
+  * chr14 65398856, 65402084  
+```{r}
+clusters= read.table("../data/clusters.bed")
+clusters_chr14=clusters[clusters$V1=="chr14",]
+gene_loc=c(65398856, 65402084)
+pas_gene=clusters_chr14[clusters_chr14$V2 > gene_loc[1] & clusters_chr14$V2 < 65402084 & clusters_chr14$V6=="+",]
+
+
+```
+
+I need to create genome coverage -counts. But first I need to sort and index the bam files. I will create a script in bash with a for loop calling /project2/gilad/yangili/LCLs/sort_bams.sh on each file in the directory.  
+
+2 files to do this:  
+
+* sort_bam.sh  
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=sort_bam
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e "s/\.bam$//")
+#describer=$(echo ${sample} | sed -e '.bam//')
+  
+
+echo $sample
+echo $describer
+
+# Sort BAM file  
+samtools sort ${describer}.bam -o ${describer}.sort.bam
+```
+
+* wrap_sort_bams.sh  
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=wrap_sort
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3
+
+source activate net-seq 
+
+FILES=bams/*
+
+for i in $FILES ; do
+            	echo $i
+		sbatch /project2/gilad/yangili/LCLs/sort_bams.sh $(echo $i)
+        done
+
+
+```
+
+* wrap_index_bams.sh  
+
+```{bash eval=FALSE}
+
+#!/bin/bash
+
+
+#SBATCH --job-name=wrap_index
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3
+
+source activate net-seq 
+
+FILES=bams/*.sort.bam
+
+for i in $FILES ; do
+            	echo $i
+		sbatch /project2/gilad/yangili/LCLs/index_bams.sh $(echo $i)
+        done
+
+```
+
+
 
 ## Session information
 
