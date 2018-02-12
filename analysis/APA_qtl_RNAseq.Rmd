@@ -430,7 +430,7 @@ wrap_cov.sh
 
 #SBATCH --job-name=wrap_cov
 #SBATCH --time=8:00:00
-#SBATCH --partition=broawdl
+#SBATCH --partition=broadwl
 #SBATCH --mem=16G
 #SBATCH --mail-type=END
 
@@ -446,6 +446,47 @@ for i in $FILES ; do
 		          sbatch /project2/gilad/briana/apa_sites/rnaseq_LCL/count_cov_apa.sh $(echo $i)
         done
 
+```
+
+I need to do this for 500 bases upstream of the APA site as well. I will do this by changing the bed file with awk.  
+
+
+clusters.FAIDXsort.bed 
+
+```awk '{$2 = $2 - 500; print}' clusters.FAIDXsort.bed > clusters.500FAIDXsort.bed  ```
+
+The new script for this coverage file is count_cov_500U_apa.sh. I will also create a wrap file 
+wrap_cov_500.sh
+
+The output from this coverage count will be in /project2/gilad/briana/apa_sites/rnaseq_LCL/cov_500  
+
+Problem with the clusters.500FAIDXsort.bed file. It is space deliminated not tab deliminated.  
+
+'''awk '{ for(i=1;i<=NF;i++){if(i==NF){printf("%s\n",$NF);}else {printf("%s\t",$i)}}}' clusters.500FAIDXsort.bed > clusters.500FAIDXsort.bed'''
+
+
+Now I have 86 coverage files. I need to write a script to paste the last column of each onto the first file.
+
+
+'''awk '{print $7}' cov_500/STAR_18486.final.sort.APA500.coverage.bed | paste -d'' all_files.APA500.coverage.bed - > test.txt '''
+
+
+```{bash, eval=FALSE}
+
+cp all_files.APA500.coverage.bed tmp 
+for i in `cat lists_of_files.txt`; do awk 'NR==FNR {a[NR]=$7;next} {print $0,a[FNR]}' $i tmp > tmp2; mv tmp2 tmp; done
+
+ 
+```
+
+I then mv this into all_files.APA500.coverage.bed.
+
+Load this file into R:  
+
+```{r}
+all_files_cov= read.table(file="../data/all_files.APA500.coverage.bed", stringsAsFactors = FALSE, header = FALSE)
+names(all_files_cov)= c("chr", "start", "end", "gene", "score", "strand", "NA18486", 
+"NA18488", "NA18489", "NA18498", "NA18499", "NA18502","NA18505","NA18508","NA18510","NA18511","NA18517","NA18519",'NA18520',"NA18858",'NA18861','NA18867','NA18868','NA18870','NA18873','NA18907','NA18909','NA18910','NA18912','NA18916','NA18917','NA18923','NA18933','NA18934','NA19092','NA19093','NA19095','NA19096','NA19098','NA19099','NA9102','NA19107','NA19108','NA19113','NA19114','NA19116','NA19117','NA19118','NA19119','NA19121','NA19129','NA19130','NA19131','NA19137','NA19138','NA19141','NA19143','NA19144','NA19146','NA19147','NA19149','NA19150','NA19152','NA19153','NA19159','NA19160','NA19171','NA19172','NA19175','NA19184','NA19185','NA19189','NA19190','NA19197','NA19198','NA19200','NA19201','NA19204','NA19206','NA19207',"NA19209","NA19210","NA19213","NA19214","NA19222","NA19223","NA19225","NA19236","NA19247","NA19248","NA19256","NA19257")
 ```
 
 
