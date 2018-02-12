@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-02-08</p>
+<p><strong>Last updated:</strong> 2018-02-12</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 98a45bb</p>
+<p><strong>Code version:</strong> 4e6265c</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(&quot;dplyr&quot;)</code></pre>
 <pre><code>
@@ -667,6 +667,85 @@ FILES=bams/*.sort.bam
 for i in $FILES ; do
                 echo $i
         sbatch /project2/gilad/yangili/LCLs/index_bams.sh $(echo $i)
+        done
+</code></pre>
+<p>Script to run genome coverage. /project2/gilad/briana/apa_sites/rnaseq_LCL/count_cov_apa.sh</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=count_cov
+#SBATCH --output=count_cov_sbatch.out
+#SBATCH --error=count_cov_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=36G
+#SBATCH --mail-type=END
+
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+bedtools coverage -counts -sorted -a  /project2/gilad/briana/apa_sites/clusters.sort.bed  -b /project2/gilad/yangili/LCLs/bams/*sort.bam &gt; APA_LCL.coverage.bed
+</code></pre>
+<p>Waiting to run this until I can re-sort and index RNAseqGeuvadis_STAR_18487.final.bam - Remode this file due to truncated file error.</p>
+<p>This code sums the results for all of the bam files. I want a column per samples. I should be able to do this by running it through a wrapper.</p>
+<pre class="bash"><code>
+#!/bin/bash
+
+
+#SBATCH --job-name=count_cov
+#SBATCH --output=count_cov_sbatch.out
+#SBATCH --error=count_cov_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=36G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+
+describer=$(echo ${sample} | sed -e &#39;s/.*\RNAseqGeuvadis_//&#39; | sed -e &quot;s/\.bam$//&quot;)
+echo ${desriber}
+echo ${sample}
+
+bedtools coverage -counts -sorted -a /project2/gilad/briana/apa_sites/clusters.FAIDXsort.bed -b $1 &gt; /project2/gilad/briana/apa_sites/rnaseq_LCL/cov/${describer}.APA.coverage.bed
+</code></pre>
+<p>I would pass in one sorted bam file to this script. I will move this script to where the data is to see if this helps with the permision problems. This is now in /project2/gilad/yangili/LCLs</p>
+<p>ERROR: chromomsome sort ordering for file bams/RNAseqGeuvadis_STAR_18486.final.sort.bam is inconsistent with other files. Record was: chr1 14466 14541 ERR188214.17353972/1 255 +</p>
+<p>I can move it back now. THe permission problem was an extra space. I do need to resort the bed file to match the bam files.</p>
+<p>The chromosomes are in order:</p>
+<p>10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 1, 20, 21, 22, 2, 3, 4, 5, 6, 7, 8, 9, M, X, Y</p>
+<pre class="bash"><code>bedtools sort -faidx /project2/gilad/briana/apa_sites/rnaseq_LCL/names.txt -i /project2/gilad/briana/apa_sites/clusters.sort.bed &gt; /project2/gilad/briana/apa_sites/clusters.FAIDXsort.bed  </code></pre>
+<p>The script works now. I need to create a wrap script.</p>
+<p>wrap_cov.sh</p>
+<pre class="bash"><code>
+#!/bin/bash
+
+
+#SBATCH --job-name=wrap_cov
+#SBATCH --time=8:00:00
+#SBATCH --partition=broawdl
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3
+
+source activate net-seq 
+
+FILES=bams/*.sort.bam
+
+for i in $FILES ; do
+                echo $i
+                  sbatch /project2/gilad/briana/apa_sites/rnaseq_LCL/count_cov_apa.sh $(echo $i)
         done
 </code></pre>
 </div>
