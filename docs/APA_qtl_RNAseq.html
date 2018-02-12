@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-02-12</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 4e6265c</p>
+<p><strong>Code version:</strong> e3515ab</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(&quot;dplyr&quot;)</code></pre>
 <pre><code>
@@ -732,7 +732,7 @@ bedtools coverage -counts -sorted -a /project2/gilad/briana/apa_sites/clusters.F
 
 #SBATCH --job-name=wrap_cov
 #SBATCH --time=8:00:00
-#SBATCH --partition=broawdl
+#SBATCH --partition=broadwl
 #SBATCH --mem=16G
 #SBATCH --mail-type=END
 
@@ -748,6 +748,25 @@ for i in $FILES ; do
                   sbatch /project2/gilad/briana/apa_sites/rnaseq_LCL/count_cov_apa.sh $(echo $i)
         done
 </code></pre>
+<p>I need to do this for 500 bases upstream of the APA site as well. I will do this by changing the bed file with awk.</p>
+<p>clusters.FAIDXsort.bed</p>
+<p><code>awk '{$2 = $2 - 500; print}' clusters.FAIDXsort.bed &gt; clusters.500FAIDXsort.bed</code></p>
+<p>The new script for this coverage file is count_cov_500U_apa.sh. I will also create a wrap file wrap_cov_500.sh</p>
+<p>The output from this coverage count will be in /project2/gilad/briana/apa_sites/rnaseq_LCL/cov_500</p>
+<p>Problem with the clusters.500FAIDXsort.bed file. It is space deliminated not tab deliminated.</p>
+<p>‘’’awk’{ for(i=1;i&lt;=NF;i++){if(i==NF){printf(“%s”,<span class="math inline">\(NF);}else {printf(&quot;%s\t&quot;,\)</span>i)}}}‘clusters.500FAIDXsort.bed &gt; clusters.500FAIDXsort.bed’’’</p>
+<p>Now I have 86 coverage files. I need to write a script to paste the last column of each onto the first file.</p>
+<p>‘’’awk’{print $7}‘cov_500/STAR_18486.final.sort.APA500.coverage.bed | paste -d’‘all_files.APA500.coverage.bed - &gt; test.txt’’’</p>
+<pre class="bash"><code>
+cp all_files.APA500.coverage.bed tmp 
+for i in `cat lists_of_files.txt`; do awk &#39;NR==FNR {a[NR]=$7;next} {print $0,a[FNR]}&#39; $i tmp &gt; tmp2; mv tmp2 tmp; done
+
+ </code></pre>
+<p>I then mv this into all_files.APA500.coverage.bed.</p>
+<p>Load this file into R:</p>
+<pre class="r"><code>all_files_cov= read.table(file=&quot;../data/all_files.APA500.coverage.bed&quot;, stringsAsFactors = FALSE, header = FALSE)
+names(all_files_cov)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;NA18486&quot;, 
+&quot;NA18488&quot;, &quot;NA18489&quot;, &quot;NA18498&quot;, &quot;NA18499&quot;, &quot;NA18502&quot;,&quot;NA18505&quot;,&quot;NA18508&quot;,&quot;NA18510&quot;,&quot;NA18511&quot;,&quot;NA18517&quot;,&quot;NA18519&quot;,&#39;NA18520&#39;,&quot;NA18858&quot;,&#39;NA18861&#39;,&#39;NA18867&#39;,&#39;NA18868&#39;,&#39;NA18870&#39;,&#39;NA18873&#39;,&#39;NA18907&#39;,&#39;NA18909&#39;,&#39;NA18910&#39;,&#39;NA18912&#39;,&#39;NA18916&#39;,&#39;NA18917&#39;,&#39;NA18923&#39;,&#39;NA18933&#39;,&#39;NA18934&#39;,&#39;NA19092&#39;,&#39;NA19093&#39;,&#39;NA19095&#39;,&#39;NA19096&#39;,&#39;NA19098&#39;,&#39;NA19099&#39;,&#39;NA9102&#39;,&#39;NA19107&#39;,&#39;NA19108&#39;,&#39;NA19113&#39;,&#39;NA19114&#39;,&#39;NA19116&#39;,&#39;NA19117&#39;,&#39;NA19118&#39;,&#39;NA19119&#39;,&#39;NA19121&#39;,&#39;NA19129&#39;,&#39;NA19130&#39;,&#39;NA19131&#39;,&#39;NA19137&#39;,&#39;NA19138&#39;,&#39;NA19141&#39;,&#39;NA19143&#39;,&#39;NA19144&#39;,&#39;NA19146&#39;,&#39;NA19147&#39;,&#39;NA19149&#39;,&#39;NA19150&#39;,&#39;NA19152&#39;,&#39;NA19153&#39;,&#39;NA19159&#39;,&#39;NA19160&#39;,&#39;NA19171&#39;,&#39;NA19172&#39;,&#39;NA19175&#39;,&#39;NA19184&#39;,&#39;NA19185&#39;,&#39;NA19189&#39;,&#39;NA19190&#39;,&#39;NA19197&#39;,&#39;NA19198&#39;,&#39;NA19200&#39;,&#39;NA19201&#39;,&#39;NA19204&#39;,&#39;NA19206&#39;,&#39;NA19207&#39;,&quot;NA19209&quot;,&quot;NA19210&quot;,&quot;NA19213&quot;,&quot;NA19214&quot;,&quot;NA19222&quot;,&quot;NA19223&quot;,&quot;NA19225&quot;,&quot;NA19236&quot;,&quot;NA19247&quot;,&quot;NA19248&quot;,&quot;NA19256&quot;,&quot;NA19257&quot;)</code></pre>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
