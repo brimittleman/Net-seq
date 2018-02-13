@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-02-12</p>
+<p><strong>Last updated:</strong> 2018-02-13</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> f595d2f</p>
+<p><strong>Code version:</strong> 4e1d538</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(&quot;dplyr&quot;)</code></pre>
 <pre><code>
@@ -329,7 +329,14 @@ Attaching package: &#39;dplyr&#39;</code></pre>
 <pre><code>The following objects are masked from &#39;package:base&#39;:
 
     intersect, setdiff, setequal, union</code></pre>
-<pre class="r"><code>library(&quot;ggplot2&quot;)</code></pre>
+<pre class="r"><code>library(&quot;ggplot2&quot;)
+library(&quot;cowplot&quot;)</code></pre>
+<pre><code>Warning: package &#39;cowplot&#39; was built under R version 3.4.3</code></pre>
+<pre><code>
+Attaching package: &#39;cowplot&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:ggplot2&#39;:
+
+    ggsave</code></pre>
 <p>The goal of this analysis is to do some exploration on the APA qtls that Yang called on the LCL RNA-seq data.</p>
 <p>Relevant files are in: /project2/gilad/yangili/LCLs</p>
 <p>run_lm_APA.txt: APA QTLs. cols are: ensembl geneid, snpID, distance to target, pvalue, beta</p>
@@ -785,20 +792,83 @@ pas_gene_cov_norm= pas_gene_cov_sum[,1:10] / pas_gene_cov_sum[,11]</code></pre>
 <pre class="r"><code>pas_gene_cov_norm_t= data.frame(pas_gene_cov_norm %&gt;% t)
 names(pas_gene_cov_norm_t)=indiv_pas
 #problem here is NA are created when I use the rbind 
-list1=pas_gene_cov_norm_t[1,]
-list2= geno_apa_rs7144811_apa[1,]
-usage1= rbind(list1,list2)
+list1=data.frame(pas_gene_cov_norm_t[1,], stringsAsFactors = FALSE)
+list2= data.frame(geno_apa_rs7144811_apa[1,]) 
+usage1= rbind(list1,list2) 
 
-longform_usage1 &lt;- data.frame(apa_score=as.character(usage1[1,]), genotype=as.character(usage1[2,]), individual=as.vector(colnames(usage1)))
+longform_usage1 &lt;- data.frame(apa_score=as.numeric(as.character(usage1[1,])), genotype=as.character(usage1[2,]), individual=as.vector(colnames(usage1)))
 
-
-
-rs7144811_plot_usage = ggplot(data = longform_usage1) + 
+rs7144811_plot_usage1 = ggplot(data = longform_usage1) + 
   geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
-  labs(title=&quot;APA QTL rs7144811 usage of pA 1&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;) 
+  labs(title=&quot;APA QTL rs7144811 usage of pA 1&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))</code></pre>
+<p>Make this into a function so I can make this plot for all 10.</p>
+<pre class="r"><code>longform_usage_func=function(i){
+  listi=pas_gene_cov_norm_t[i,]
+  list2= geno_apa_rs7144811_apa[1,]
+  usagei= rbind(listi,list2)
+  longform_usagei &lt;- data.frame(apa_score=as.numeric(as.character(usagei[1,])), genotype=as.character(usagei[2,]), individual=as.vector(colnames(usagei)))
 
-rs7144811_plot_usage </code></pre>
-<p><img src="figure/APA_qtl_RNAseq.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+return(longform_usagei)
+}</code></pre>
+<pre class="r"><code>pAs2= longform_usage_func(2)
+rs7144811_plot_usage2 = ggplot(data = pAs2) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 2&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs3= longform_usage_func(3)
+rs7144811_plot_usage3 = ggplot(data = pAs3) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 3&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs4= longform_usage_func(4)
+rs7144811_plot_usage4 = ggplot(data = pAs4) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 4&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;) +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs5= longform_usage_func(5)
+rs7144811_plot_usage5 = ggplot(data = pAs5) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 5&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs6= longform_usage_func(6)
+rs7144811_plot_usage6 = ggplot(data = pAs6) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 6&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs7= longform_usage_func(7)
+rs7144811_plot_usage7 = ggplot(data = pAs7) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 7&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;) +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+
+pAs8= longform_usage_func(8)
+rs7144811_plot_usage8 = ggplot(data = pAs8) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 8&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;) +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+
+pAs9= longform_usage_func(9)
+rs7144811_plot_usage9 = ggplot(data = pAs9) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 9&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs10= longform_usage_func(10)
+rs7144811_plot_usage10 = ggplot(data = pAs10) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 10&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;)  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))</code></pre>
+<p>Use cowplot to plot all 10.</p>
+<pre class="r"><code>plot_grid(rs7144811_plot_usage1,rs7144811_plot_usage2,rs7144811_plot_usage3,rs7144811_plot_usage4,rs7144811_plot_usage5,rs7144811_plot_usage6,rs7144811_plot_usage7,rs7144811_plot_usage8,rs7144811_plot_usage9,rs7144811_plot_usage10, nrow=3)</code></pre>
+<p><img src="figure/APA_qtl_RNAseq.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -819,7 +889,7 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] bindrcpp_0.2  ggplot2_2.2.1 dplyr_0.7.4  
+[1] bindrcpp_0.2  cowplot_0.9.2 ggplot2_2.2.1 dplyr_0.7.4  
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.15     knitr_1.18       bindr_0.1        magrittr_1.5    
@@ -828,9 +898,9 @@ loaded via a namespace (and not attached):
 [13] grid_3.4.2       gtable_0.2.0     git2r_0.21.0     htmltools_0.3.6 
 [17] lazyeval_0.2.1   yaml_2.1.16      rprojroot_1.3-2  digest_0.6.14   
 [21] assertthat_0.2.0 tibble_1.4.2     purrr_0.2.4      tidyr_0.7.2     
-[25] glue_1.2.0       evaluate_0.10.1  rmarkdown_1.8.5  stringi_1.1.6   
-[29] compiler_3.4.2   pillar_1.1.0     scales_0.5.0     backports_1.1.2 
-[33] pkgconfig_2.0.1 </code></pre>
+[25] glue_1.2.0       evaluate_0.10.1  rmarkdown_1.8.5  labeling_0.3    
+[29] stringi_1.1.6    compiler_3.4.2   pillar_1.1.0     scales_0.5.0    
+[33] backports_1.1.2  pkgconfig_2.0.1 </code></pre>
 </div>
 
 <hr>
