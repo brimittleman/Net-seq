@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-02-12</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> e3515ab</p>
+<p><strong>Code version:</strong> f595d2f</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(&quot;dplyr&quot;)</code></pre>
 <pre><code>
@@ -766,7 +766,39 @@ for i in `cat lists_of_files.txt`; do awk &#39;NR==FNR {a[NR]=$7;next} {print $0
 <p>Load this file into R:</p>
 <pre class="r"><code>all_files_cov= read.table(file=&quot;../data/all_files.APA500.coverage.bed&quot;, stringsAsFactors = FALSE, header = FALSE)
 names(all_files_cov)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;NA18486&quot;, 
-&quot;NA18488&quot;, &quot;NA18489&quot;, &quot;NA18498&quot;, &quot;NA18499&quot;, &quot;NA18502&quot;,&quot;NA18505&quot;,&quot;NA18508&quot;,&quot;NA18510&quot;,&quot;NA18511&quot;,&quot;NA18517&quot;,&quot;NA18519&quot;,&#39;NA18520&#39;,&quot;NA18858&quot;,&#39;NA18861&#39;,&#39;NA18867&#39;,&#39;NA18868&#39;,&#39;NA18870&#39;,&#39;NA18873&#39;,&#39;NA18907&#39;,&#39;NA18909&#39;,&#39;NA18910&#39;,&#39;NA18912&#39;,&#39;NA18916&#39;,&#39;NA18917&#39;,&#39;NA18923&#39;,&#39;NA18933&#39;,&#39;NA18934&#39;,&#39;NA19092&#39;,&#39;NA19093&#39;,&#39;NA19095&#39;,&#39;NA19096&#39;,&#39;NA19098&#39;,&#39;NA19099&#39;,&#39;NA9102&#39;,&#39;NA19107&#39;,&#39;NA19108&#39;,&#39;NA19113&#39;,&#39;NA19114&#39;,&#39;NA19116&#39;,&#39;NA19117&#39;,&#39;NA19118&#39;,&#39;NA19119&#39;,&#39;NA19121&#39;,&#39;NA19129&#39;,&#39;NA19130&#39;,&#39;NA19131&#39;,&#39;NA19137&#39;,&#39;NA19138&#39;,&#39;NA19141&#39;,&#39;NA19143&#39;,&#39;NA19144&#39;,&#39;NA19146&#39;,&#39;NA19147&#39;,&#39;NA19149&#39;,&#39;NA19150&#39;,&#39;NA19152&#39;,&#39;NA19153&#39;,&#39;NA19159&#39;,&#39;NA19160&#39;,&#39;NA19171&#39;,&#39;NA19172&#39;,&#39;NA19175&#39;,&#39;NA19184&#39;,&#39;NA19185&#39;,&#39;NA19189&#39;,&#39;NA19190&#39;,&#39;NA19197&#39;,&#39;NA19198&#39;,&#39;NA19200&#39;,&#39;NA19201&#39;,&#39;NA19204&#39;,&#39;NA19206&#39;,&#39;NA19207&#39;,&quot;NA19209&quot;,&quot;NA19210&quot;,&quot;NA19213&quot;,&quot;NA19214&quot;,&quot;NA19222&quot;,&quot;NA19223&quot;,&quot;NA19225&quot;,&quot;NA19236&quot;,&quot;NA19247&quot;,&quot;NA19248&quot;,&quot;NA19256&quot;,&quot;NA19257&quot;)</code></pre>
+&quot;NA18488&quot;, &quot;NA18489&quot;, &quot;NA18498&quot;, &quot;NA18499&quot;, &quot;NA18502&quot;,&quot;NA18505&quot;,&quot;NA18508&quot;,&quot;NA18510&quot;,&quot;NA18511&quot;,&quot;NA18517&quot;,&quot;NA18519&quot;,&#39;NA18520&#39;,&quot;NA18858&quot;,&#39;NA18861&#39;,&#39;NA18867&#39;,&#39;NA18868&#39;,&#39;NA18870&#39;,&#39;NA18873&#39;,&#39;NA18907&#39;,&#39;NA18909&#39;,&#39;NA18910&#39;,&#39;NA18912&#39;,&#39;NA18916&#39;,&#39;NA18917&#39;,&#39;NA18923&#39;,&#39;NA18933&#39;,&#39;NA18934&#39;,&#39;NA19092&#39;,&#39;NA19093&#39;,&#39;NA19095&#39;,&#39;NA19096&#39;,&#39;NA19098&#39;,&#39;NA19099&#39;,&#39;NA19102&#39;,&#39;NA19107&#39;,&#39;NA19108&#39;,&#39;NA19113&#39;,&#39;NA19114&#39;,&#39;NA19116&#39;,&#39;NA19117&#39;,&#39;NA19118&#39;,&#39;NA19119&#39;,&#39;NA19121&#39;,&#39;NA19129&#39;,&#39;NA19130&#39;,&#39;NA19131&#39;,&#39;NA19137&#39;,&#39;NA19138&#39;,&#39;NA19141&#39;,&#39;NA19143&#39;,&#39;NA19144&#39;,&#39;NA19146&#39;,&#39;NA19147&#39;,&#39;NA19149&#39;,&#39;NA19150&#39;,&#39;NA19152&#39;,&#39;NA19153&#39;,&#39;NA19159&#39;,&#39;NA19160&#39;,&#39;NA19171&#39;,&#39;NA19172&#39;,&#39;NA19175&#39;,&#39;NA19184&#39;,&#39;NA19185&#39;,&#39;NA19189&#39;,&#39;NA19190&#39;,&#39;NA19197&#39;,&#39;NA19198&#39;,&#39;NA19200&#39;,&#39;NA19201&#39;,&#39;NA19204&#39;,&#39;NA19206&#39;,&#39;NA19207&#39;,&quot;NA19209&quot;,&quot;NA19210&quot;,&quot;NA19213&quot;,&quot;NA19214&quot;,&quot;NA19222&quot;,&quot;NA19223&quot;,&quot;NA19225&quot;,&quot;NA19236&quot;,&quot;NA19247&quot;,&quot;NA19248&quot;,&quot;NA19256&quot;,&quot;NA19257&quot;)</code></pre>
+<p>Look at the pas in the the top qtl that I looked at before:</p>
+<pre class="r"><code>all_files_chr14=all_files_cov[all_files_cov$chr==&quot;chr14&quot;,]
+pas_gene_list= pas_gene$V4
+pas_gene_cov= subset( all_files_chr14, all_files_chr14$gene %in% pas_gene_list)</code></pre>
+<p>I need the QTL genotypes for the individuals in this analysis:</p>
+<pre class="r"><code>indiv_pas= colnames(pas_gene_cov[7:92])
+geno_apa_rs7144811_apa=rs7144811_geno[,which((names(rs7144811_geno) %in% indiv_pas)==TRUE)] </code></pre>
+<p>I want usage over all 10 PA sites by dividing each entry by the sum of the column. It might be easiest to transform the matrix.</p>
+<pre class="r"><code>pas_gene_cov_t= data.frame(pas_gene_cov[,7:92] %&gt;% t )
+
+pas_gene_cov_sum= mutate(pas_gene_cov_t, tot=rowSums(pas_gene_cov_t))
+pas_gene_cov_norm= pas_gene_cov_sum[,1:10] / pas_gene_cov_sum[,11]</code></pre>
+<p>I now have the percent usage for each apa. This is PA site as column and individual as row. First just plot the distribution:</p>
+<pre class="r"><code>hist(pas_gene_cov_norm[,1], main=&quot;First pA site usage for QTL gene&quot;, xlab=&quot;Usage&quot;)</code></pre>
+<p><img src="figure/APA_qtl_RNAseq.Rmd/unnamed-chunk-28-1.png" width="672" style="display: block; margin: auto;" /> Create a long form data frame for this:</p>
+<pre class="r"><code>pas_gene_cov_norm_t= data.frame(pas_gene_cov_norm %&gt;% t)
+names(pas_gene_cov_norm_t)=indiv_pas
+#problem here is NA are created when I use the rbind 
+list1=pas_gene_cov_norm_t[1,]
+list2= geno_apa_rs7144811_apa[1,]
+usage1= rbind(list1,list2)
+
+longform_usage1 &lt;- data.frame(apa_score=as.character(usage1[1,]), genotype=as.character(usage1[2,]), individual=as.vector(colnames(usage1)))
+
+
+
+rs7144811_plot_usage = ggplot(data = longform_usage1) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill=&quot;#4271AE&quot;) +
+  labs(title=&quot;APA QTL rs7144811 usage of pA 1&quot;, x=&quot;Genotype&quot;, y=&quot;APA usage&quot;) 
+
+rs7144811_plot_usage </code></pre>
+<p><img src="figure/APA_qtl_RNAseq.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
