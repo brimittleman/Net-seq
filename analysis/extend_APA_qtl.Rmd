@@ -1,0 +1,87 @@
+---
+title: "Assign PAS to genes to call QTLs"
+author: "Briana Mittleman"
+date: 2018-02-13
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+###Match each PAS to its gene
+
+
+What gene go with each pas: 
+Goal: matrix with pas/gene by individual with percent usage of that pas compared to others in the gene.  
+
+```{r}
+library("dplyr")
+library("tidyr")
+library("ggplot2")
+library("cowplot")
+library("IRanges")
+library("biomaRt")
+```
+
+Import PAS file:  
+```{r}
+all_files_cov= read.table(file="../data/all_files.APA500.coverage.bed", stringsAsFactors = FALSE, header = FALSE)
+names(all_files_cov)= c("chr", "start", "end", "meta", "score", "strand", "NA18486", 
+"NA18488", "NA18489", "NA18498", "NA18499", "NA18502","NA18505","NA18508","NA18510","NA18511","NA18517","NA18519",'NA18520',"NA18858",'NA18861','NA18867','NA18868','NA18870','NA18873','NA18907','NA18909','NA18910','NA18912','NA18916','NA18917','NA18923','NA18933','NA18934','NA19092','NA19093','NA19095','NA19096','NA19098','NA19099','NA19102','NA19107','NA19108','NA19113','NA19114','NA19116','NA19117','NA19118','NA19119','NA19121','NA19129','NA19130','NA19131','NA19137','NA19138','NA19141','NA19143','NA19144','NA19146','NA19147','NA19149','NA19150','NA19152','NA19153','NA19159','NA19160','NA19171','NA19172','NA19175','NA19184','NA19185','NA19189','NA19190','NA19197','NA19198','NA19200','NA19201','NA19204','NA19206','NA19207',"NA19209","NA19210","NA19213","NA19214","NA19222","NA19223","NA19225","NA19236","NA19247","NA19248","NA19256","NA19257")
+```
+The meta info for each PAS includes the chr and chr location.  
+```{r}
+meta_info= separate(all_files_cov, meta, c("chr", "strand","pos", "type" ), ":")[,4:7]
+```
+
+
+```{r}
+genes=read.table(file="../data/RefSeqGenes.bed", stringsAsFactors = FALSE, skip=1)
+genes=genes[,1:6]
+names(genes)=c("chr", "start", "end", "name", "score", "strand")
+```
+
+I need the gene line where gene-chr' and gene-strand are the same as the line in the meta info table and the meta_info pos is between gene-start and gene-end. I will make a function to do this then loop the function over all PAS.  
+
+```{r}
+gene_at_pos=function(chrom, pos, strand){
+  #takes in the chr, pos, and strand from meta_info 
+  #relies on genes dataframe in environment
+  gene_line=which(genes$strand==strand & genes$chr==chrom & genes$start < pos & genes$end > pos)
+  #condition for no genes
+  if (length(gene_line)==0){
+    return("NA")
+  }
+  #condition for 1 or more genes 
+  else{
+  return(genes[gene_line,"name"])
+  }
+} 
+
+
+```
+
+This function will return NA if there is no gene, if there is one or more it will create a list of genes the pas is in.  Next step is to loop this function over my whole meta_info data frame.  
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
