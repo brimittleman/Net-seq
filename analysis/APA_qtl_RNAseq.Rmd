@@ -486,9 +486,61 @@ Load this file into R:
 ```{r}
 all_files_cov= read.table(file="../data/all_files.APA500.coverage.bed", stringsAsFactors = FALSE, header = FALSE)
 names(all_files_cov)= c("chr", "start", "end", "gene", "score", "strand", "NA18486", 
-"NA18488", "NA18489", "NA18498", "NA18499", "NA18502","NA18505","NA18508","NA18510","NA18511","NA18517","NA18519",'NA18520',"NA18858",'NA18861','NA18867','NA18868','NA18870','NA18873','NA18907','NA18909','NA18910','NA18912','NA18916','NA18917','NA18923','NA18933','NA18934','NA19092','NA19093','NA19095','NA19096','NA19098','NA19099','NA9102','NA19107','NA19108','NA19113','NA19114','NA19116','NA19117','NA19118','NA19119','NA19121','NA19129','NA19130','NA19131','NA19137','NA19138','NA19141','NA19143','NA19144','NA19146','NA19147','NA19149','NA19150','NA19152','NA19153','NA19159','NA19160','NA19171','NA19172','NA19175','NA19184','NA19185','NA19189','NA19190','NA19197','NA19198','NA19200','NA19201','NA19204','NA19206','NA19207',"NA19209","NA19210","NA19213","NA19214","NA19222","NA19223","NA19225","NA19236","NA19247","NA19248","NA19256","NA19257")
+"NA18488", "NA18489", "NA18498", "NA18499", "NA18502","NA18505","NA18508","NA18510","NA18511","NA18517","NA18519",'NA18520',"NA18858",'NA18861','NA18867','NA18868','NA18870','NA18873','NA18907','NA18909','NA18910','NA18912','NA18916','NA18917','NA18923','NA18933','NA18934','NA19092','NA19093','NA19095','NA19096','NA19098','NA19099','NA19102','NA19107','NA19108','NA19113','NA19114','NA19116','NA19117','NA19118','NA19119','NA19121','NA19129','NA19130','NA19131','NA19137','NA19138','NA19141','NA19143','NA19144','NA19146','NA19147','NA19149','NA19150','NA19152','NA19153','NA19159','NA19160','NA19171','NA19172','NA19175','NA19184','NA19185','NA19189','NA19190','NA19197','NA19198','NA19200','NA19201','NA19204','NA19206','NA19207',"NA19209","NA19210","NA19213","NA19214","NA19222","NA19223","NA19225","NA19236","NA19247","NA19248","NA19256","NA19257")
+```
+Look at the pas in the the top qtl that I looked at before:  
+
+```{r}
+all_files_chr14=all_files_cov[all_files_cov$chr=="chr14",]
+pas_gene_list= pas_gene$V4
+pas_gene_cov= subset( all_files_chr14, all_files_chr14$gene %in% pas_gene_list)
+
+
+```
+I need the QTL genotypes for the individuals in this analysis:    
+
+```{r}
+indiv_pas= colnames(pas_gene_cov[7:92])
+geno_apa_rs7144811_apa=rs7144811_geno[,which((names(rs7144811_geno) %in% indiv_pas)==TRUE)] 
 ```
 
+I want usage over all 10 PA sites by dividing each entry by the sum of the column. It might be easiest to transform the matrix. 
+
+```{r}
+pas_gene_cov_t= data.frame(pas_gene_cov[,7:92] %>% t )
+
+pas_gene_cov_sum= mutate(pas_gene_cov_t, tot=rowSums(pas_gene_cov_t))
+pas_gene_cov_norm= pas_gene_cov_sum[,1:10] / pas_gene_cov_sum[,11]
+
+```
+I now have the percent usage for each apa. This is PA site as column and individual as row. First just plot the distribution:  
+
+```{r}
+hist(pas_gene_cov_norm[,1], main="First pA site usage for QTL gene", xlab="Usage")
+```
+Create a long form data frame for this:  
+
+
+```{r}
+
+pas_gene_cov_norm_t= data.frame(pas_gene_cov_norm %>% t)
+names(pas_gene_cov_norm_t)=indiv_pas
+#problem here is NA are created when I use the rbind 
+list1=pas_gene_cov_norm_t[1,]
+list2= geno_apa_rs7144811_apa[1,]
+usage1= rbind(list1,list2)
+
+longform_usage1 <- data.frame(apa_score=as.character(usage1[1,]), genotype=as.character(usage1[2,]), individual=as.vector(colnames(usage1)))
+
+
+
+rs7144811_plot_usage = ggplot(data = longform_usage1) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 1", x="Genotype", y="APA usage") 
+
+rs7144811_plot_usage 
+
+```
 
 ## Session information
 
