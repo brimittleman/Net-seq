@@ -28,6 +28,7 @@ knitr::read_chunk("chunks.R")
 ```{r}
 library("dplyr")
 library("ggplot2")
+library("cowplot")
 ```
 
 
@@ -526,21 +527,110 @@ Create a long form data frame for this:
 pas_gene_cov_norm_t= data.frame(pas_gene_cov_norm %>% t)
 names(pas_gene_cov_norm_t)=indiv_pas
 #problem here is NA are created when I use the rbind 
-list1=pas_gene_cov_norm_t[1,]
-list2= geno_apa_rs7144811_apa[1,]
-usage1= rbind(list1,list2)
+list1=data.frame(pas_gene_cov_norm_t[1,], stringsAsFactors = FALSE)
+list2= data.frame(geno_apa_rs7144811_apa[1,]) 
+usage1= rbind(list1,list2) 
 
-longform_usage1 <- data.frame(apa_score=as.character(usage1[1,]), genotype=as.character(usage1[2,]), individual=as.vector(colnames(usage1)))
+longform_usage1 <- data.frame(apa_score=as.numeric(as.character(usage1[1,])), genotype=as.character(usage1[2,]), individual=as.vector(colnames(usage1)))
 
-
-
-rs7144811_plot_usage = ggplot(data = longform_usage1) + 
+rs7144811_plot_usage1 = ggplot(data = longform_usage1) + 
   geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
-  labs(title="APA QTL rs7144811 usage of pA 1", x="Genotype", y="APA usage") 
+  labs(title="APA QTL rs7144811 usage of pA 1", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
 
-rs7144811_plot_usage 
+
 
 ```
+Make this into a function so I can make this plot for all 10. 
+
+```{r}
+longform_usage_func=function(i){
+  listi=pas_gene_cov_norm_t[i,]
+  list2= geno_apa_rs7144811_apa[1,]
+  usagei= rbind(listi,list2)
+  longform_usagei <- data.frame(apa_score=as.numeric(as.character(usagei[1,])), genotype=as.character(usagei[2,]), individual=as.vector(colnames(usagei)))
+
+return(longform_usagei)
+}
+  
+
+  
+```
+
+
+```{r}
+pAs2= longform_usage_func(2)
+rs7144811_plot_usage2 = ggplot(data = pAs2) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 2", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs3= longform_usage_func(3)
+rs7144811_plot_usage3 = ggplot(data = pAs3) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 3", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs4= longform_usage_func(4)
+rs7144811_plot_usage4 = ggplot(data = pAs4) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 4", x="Genotype", y="APA usage") +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs5= longform_usage_func(5)
+rs7144811_plot_usage5 = ggplot(data = pAs5) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 5", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs6= longform_usage_func(6)
+rs7144811_plot_usage6 = ggplot(data = pAs6) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 6", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs7= longform_usage_func(7)
+rs7144811_plot_usage7 = ggplot(data = pAs7) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 7", x="Genotype", y="APA usage") +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+
+pAs8= longform_usage_func(8)
+rs7144811_plot_usage8 = ggplot(data = pAs8) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 8", x="Genotype", y="APA usage") +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+
+pAs9= longform_usage_func(9)
+rs7144811_plot_usage9 = ggplot(data = pAs9) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 9", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+pAs10= longform_usage_func(10)
+rs7144811_plot_usage10 = ggplot(data = pAs10) + 
+  geom_boxplot(aes(x=genotype, group=genotype, y=apa_score), fill="#4271AE") +
+  labs(title="APA QTL rs7144811 usage of pA 10", x="Genotype", y="APA usage")  +
+  scale_y_continuous(limits = c(0,.25), breaks = c(seq(0,.25,.05)))
+
+
+
+
+
+
+```
+Use cowplot to plot all 10. 
+
+
+```{r}
+plot_grid(rs7144811_plot_usage1,rs7144811_plot_usage2,rs7144811_plot_usage3,rs7144811_plot_usage4,rs7144811_plot_usage5,rs7144811_plot_usage6,rs7144811_plot_usage7,rs7144811_plot_usage8,rs7144811_plot_usage9,rs7144811_plot_usage10, nrow=3)
+
+
+
+```
+
 
 ## Session information
 
