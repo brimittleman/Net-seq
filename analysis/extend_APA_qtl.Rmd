@@ -61,10 +61,13 @@ names(genes)=c("chr", "start", "end", "name", "score", "strand")
 I need the gene line where gene-chr' and gene-strand are the same as the line in the meta info table and the meta_info pos is between gene-start and gene-end. I will make a function to do this then loop the function over all PAS.  
 
 ```{r}
-gene_at_pos=function(chrom, pos, strand){
-  #takes in the chr, pos, and strand from meta_info 
+gene_at_pos=function(row){
+  #takes in the row from meta_info 
   #relies on genes dataframe in environment
-  gene_line=which(genes$strand==strand & genes$chr==chrom & genes$start < pos & genes$end > pos)
+  chrom=as.character(row[1])
+  pos=as.integer(row[3])
+  st=as.character(row[2])
+  gene_line= which(genes$strand==st & genes$chr==chrom & genes$start < pos & genes$end > pos)
   #condition for no genes
   if (length(gene_line)==0){
     return("NA")
@@ -76,9 +79,114 @@ gene_at_pos=function(chrom, pos, strand){
 } 
 
 
+
 ```
 
 This function will return NA if there is no gene, if there is one or more it will create a list of genes the pas is in.  Next step is to loop this function over my whole meta_info data frame.  
+
+
+```{r}
+#uncomment to rerun:
+#gene_names=apply(meta_info,1,gene_at_pos)
+
+```
+
+If this doesnt work I will try this in python where it is better at loops.  
+It worked but here is code. 
+
+```{python, eval=FALSE}
+
+#List = open("filename.txt").readlines()
+import pandas as pd 
+
+
+genes=pd.read_csv("genes.csv")
+meta_info= pd.read_csv("meta_info.csv")
+
+def gene_at_pos_py(row):
+  """males a gene list for each row in the meta data, takes in a list of the row"""
+  chrom=row[0]
+  pos=row[1]
+  strand=row[2]
+  gene=genes[genes[["strand"]]==strand and genes[["chr"]]==chrom and genes[["strart"]] < pos and genes[["end"]] > pos, "name"]
+  return(gene)
+  
+gene_list=[] 
+for i, r in meta_info.iterrows():
+  x= gene_at_pos_py(r)
+  gene_list=[gene_list,x]
+
+df_gene_list=pd.DataFrame(gene_list, columns=["gene"])
+
+df_gene_list.to_csv("gene_list.csv")
+  
+
+
+```
+
+This works but some of the PAS are in multiple genes. I downloaded the BED file(different poly(A)site annotation) file from  http://polyasite.unibas.ch/#5 . It is in /project2/gilad/briana/apa_sites/rnaseq_LCL/clusters_fullAnno.bed. 
+
+I will use this to make a dictionary with the keys as genes and the values as the pas sites that are in that gene. The second to last column has the information I want. I will then use this to create a new bed file where the distances are either to the next pas in that gene or 500bp. This will give more precision for seeing choice rather than overlap as I saw before. 
+
+
+ALso for future use: https://www.gencodegenes.org/releases/19.html This is the gene annotations I should use.  
+
+Script from Yang: This is /project2/gilad/briana/apa_sites/rnaseq_LCL/parse_clusters.py  
+```{python, eval=FALSE }
+
+#!/usr/bin/env python
+
+dic = {}
+for ln in open("clusters_withTissueInfo.bed"):
+    gene = ln.split()[-2]
+    celltype = ln.split()[-1].split(";")
+    
+    # Change this depending on how conservative you want to be
+    if "B_LCL_cells" not in celltype and "native_B_cells" not in celltype: continue
+
+    if gene == ".": continue
+    
+    chrom, s, e, annot, support, strand = ln.split()[:6]
+    if annot.split(":")[-1] in ["AI", "AE"]: continue
+    if gene not in dic:
+        dic[gene] = []
+    dic[gene].append((int(s),int(e),strand, ln.split()[:4]))
+
+cutoff = 500
+for g in dic:
+    pas = dic[g]
+    if len(pas) <= 1: continue
+    pas.sort()
+    strand = pas[0][2]
+    N = 1
+    if strand == "+":
+        print "%s.PAS%d"%(g,N), pas[0][1]-cutoff, pas[0][1], pas[0]
+    else:
+        pas.reverse()
+        print "%s.PAS%d"%(g,N), pas[0][0], pas[0][0]+cutoff, pas[0]
+    for i in range(len(pas)-1):
+        N += 1
+        if strand == "+":
+            if (pas[i+1][0] - pas[i][1]) > cutoff:
+                # the next one is further than the cutoff
+                print "%s.PAS%d"%(g,N), chrom,  pas[i+1][1]-cutoff, pas[i+1][1], pas[i+1]
+            else:
+                print "%s.PAS%d"%(g,N), chrom, pas[i][1], pas[i+1][1], pas[i+1]
+        else:
+            if -(pas[i+1][0] - pas[i][0]) > cutoff:
+                # the next one is further than the cutoff
+                print "%s.PAS%d"%(g,N), chrom, pas[i+1][0], pas[i+1][0]+cutoff, pas[i+1]
+            else:
+                print "%s.PAS%d"%(g,N), chrom, pas[i+1][0], pas[i][0], pas[i+1]
+```
+
+
+
+to add to this script: 
+
+wrtie out the dic to a dataframe. Also the print is going to standard out- would want to change that in future.  
+
+
 
 ## Session information
 
