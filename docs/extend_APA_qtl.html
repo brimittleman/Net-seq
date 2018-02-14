@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-02-13</p>
+<p><strong>Last updated:</strong> 2018-02-14</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8e244fc</p>
+<p><strong>Code version:</strong> 145d59a</p>
 <!-- Add your analysis here -->
 <div id="match-each-pas-to-its-gene" class="section level3">
 <h3>Match each PAS to its gene</h3>
@@ -396,10 +396,13 @@ names(all_files_cov)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &qu
 genes=genes[,1:6]
 names(genes)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&quot;, &quot;score&quot;, &quot;strand&quot;)</code></pre>
 <p>I need the gene line where gene-chr’ and gene-strand are the same as the line in the meta info table and the meta_info pos is between gene-start and gene-end. I will make a function to do this then loop the function over all PAS.</p>
-<pre class="r"><code>gene_at_pos=function(chrom, pos, strand){
-  #takes in the chr, pos, and strand from meta_info 
+<pre class="r"><code>gene_at_pos=function(row){
+  #takes in the row from meta_info 
   #relies on genes dataframe in environment
-  gene_line=which(genes$strand==strand &amp; genes$chr==chrom &amp; genes$start &lt; pos &amp; genes$end &gt; pos)
+  chrom=as.character(row[1])
+  pos=as.integer(row[3])
+  st=as.character(row[2])
+  gene_line= which(genes$strand==st &amp; genes$chr==chrom &amp; genes$start &lt; pos &amp; genes$end &gt; pos)
   #condition for no genes
   if (length(gene_line)==0){
     return(&quot;NA&quot;)
@@ -410,6 +413,76 @@ names(genes)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;name&q
   }
 } </code></pre>
 <p>This function will return NA if there is no gene, if there is one or more it will create a list of genes the pas is in. Next step is to loop this function over my whole meta_info data frame.</p>
+<pre class="r"><code>#uncomment to rerun:
+#gene_names=apply(meta_info,1,gene_at_pos)</code></pre>
+<p>If this doesnt work I will try this in python where it is better at loops.<br />
+It worked but here is code.</p>
+<pre class="python"><code>#List = open(&quot;filename.txt&quot;).readlines()
+import pandas as pd 
+genes=pd.read_csv(&quot;genes.csv&quot;)
+meta_info= pd.read_csv(&quot;meta_info.csv&quot;)
+def gene_at_pos_py(row):
+  &quot;&quot;&quot;males a gene list for each row in the meta data, takes in a list of the row&quot;&quot;&quot;
+  chrom=row[0]
+  pos=row[1]
+  strand=row[2]
+  gene=genes[genes[[&quot;strand&quot;]]==strand and genes[[&quot;chr&quot;]]==chrom and genes[[&quot;strart&quot;]] &lt; pos and genes[[&quot;end&quot;]] &gt; pos, &quot;name&quot;]
+  return(gene)
+  
+gene_list=[] 
+for i, r in meta_info.iterrows():
+  x= gene_at_pos_py(r)
+  gene_list=[gene_list,x]
+df_gene_list=pd.DataFrame(gene_list, columns=[&quot;gene&quot;])
+df_gene_list.to_csv(&quot;gene_list.csv&quot;)
+  </code></pre>
+<p>This works but some of the PAS are in multiple genes. I downloaded the BED file(different poly(A)site annotation) file from <a href="http://polyasite.unibas.ch/#5" class="uri">http://polyasite.unibas.ch/#5</a> . It is in /project2/gilad/briana/apa_sites/rnaseq_LCL/clusters_fullAnno.bed.</p>
+<p>I will use this to make a dictionary with the keys as genes and the values as the pas sites that are in that gene. The second to last column has the information I want. I will then use this to create a new bed file where the distances are either to the next pas in that gene or 500bp. This will give more precision for seeing choice rather than overlap as I saw before.</p>
+<p>ALso for future use: <a href="https://www.gencodegenes.org/releases/19.html" class="uri">https://www.gencodegenes.org/releases/19.html</a> This is the gene annotations I should use.</p>
+<p>Script from Yang: This is /project2/gilad/briana/apa_sites/rnaseq_LCL/parse_clusters.py</p>
+<pre class="python"><code>#!/usr/bin/env python
+dic = {}
+for ln in open(&quot;clusters_withTissueInfo.bed&quot;):
+    gene = ln.split()[-2]
+    celltype = ln.split()[-1].split(&quot;;&quot;)
+    
+    # Change this depending on how conservative you want to be
+    if &quot;B_LCL_cells&quot; not in celltype and &quot;native_B_cells&quot; not in celltype: continue
+    if gene == &quot;.&quot;: continue
+    
+    chrom, s, e, annot, support, strand = ln.split()[:6]
+    if annot.split(&quot;:&quot;)[-1] in [&quot;AI&quot;, &quot;AE&quot;]: continue
+    if gene not in dic:
+        dic[gene] = []
+    dic[gene].append((int(s),int(e),strand, ln.split()[:4]))
+cutoff = 500
+for g in dic:
+    pas = dic[g]
+    if len(pas) &lt;= 1: continue
+    pas.sort()
+    strand = pas[0][2]
+    N = 1
+    if strand == &quot;+&quot;:
+        print &quot;%s.PAS%d&quot;%(g,N), pas[0][1]-cutoff, pas[0][1], pas[0]
+    else:
+        pas.reverse()
+        print &quot;%s.PAS%d&quot;%(g,N), pas[0][0], pas[0][0]+cutoff, pas[0]
+    for i in range(len(pas)-1):
+        N += 1
+        if strand == &quot;+&quot;:
+            if (pas[i+1][0] - pas[i][1]) &gt; cutoff:
+                # the next one is further than the cutoff
+                print &quot;%s.PAS%d&quot;%(g,N), chrom,  pas[i+1][1]-cutoff, pas[i+1][1], pas[i+1]
+            else:
+                print &quot;%s.PAS%d&quot;%(g,N), chrom, pas[i][1], pas[i+1][1], pas[i+1]
+        else:
+            if -(pas[i+1][0] - pas[i][0]) &gt; cutoff:
+                # the next one is further than the cutoff
+                print &quot;%s.PAS%d&quot;%(g,N), chrom, pas[i+1][0], pas[i+1][0]+cutoff, pas[i+1]
+            else:
+                print &quot;%s.PAS%d&quot;%(g,N), chrom, pas[i+1][0], pas[i][0], pas[i+1]</code></pre>
+<p>to add to this script:</p>
+<p>wrtie out the dic to a dataframe. Also the print is going to standard out- would want to change that in future.</p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -440,18 +513,19 @@ loaded via a namespace (and not attached):
  [4] git2r_0.21.0         plyr_1.8.4           bindr_0.1           
  [7] prettyunits_1.0.2    progress_1.1.2       bitops_1.0-6        
 [10] tools_3.4.2          bit_1.1-12           digest_0.6.14       
-[13] memoise_1.1.0        RSQLite_2.0          evaluate_0.10.1     
-[16] tibble_1.4.2         gtable_0.2.0         pkgconfig_2.0.1     
-[19] rlang_0.1.6          DBI_0.7              yaml_2.1.16         
-[22] bindrcpp_0.2         httr_1.3.1           stringr_1.2.0       
-[25] knitr_1.18           tidyselect_0.2.3     bit64_0.9-7         
-[28] rprojroot_1.3-2      grid_3.4.2           Biobase_2.38.0      
-[31] glue_1.2.0           R6_2.2.2             AnnotationDbi_1.40.0
-[34] XML_3.98-1.9         rmarkdown_1.8.5      blob_1.1.0          
-[37] purrr_0.2.4          magrittr_1.5         backports_1.1.2     
-[40] scales_0.5.0         htmltools_0.3.6      assertthat_0.2.0    
-[43] colorspace_1.3-2     stringi_1.1.6        RCurl_1.95-4.10     
-[46] lazyeval_0.2.1       munsell_0.4.3       </code></pre>
+[13] jsonlite_1.5         memoise_1.1.0        RSQLite_2.0         
+[16] evaluate_0.10.1      tibble_1.4.2         gtable_0.2.0        
+[19] pkgconfig_2.0.1      rlang_0.1.6          DBI_0.7             
+[22] yaml_2.1.16          bindrcpp_0.2         httr_1.3.1          
+[25] stringr_1.2.0        knitr_1.18           tidyselect_0.2.3    
+[28] bit64_0.9-7          rprojroot_1.3-2      grid_3.4.2          
+[31] reticulate_1.4       Biobase_2.38.0       glue_1.2.0          
+[34] R6_2.2.2             AnnotationDbi_1.40.0 XML_3.98-1.9        
+[37] rmarkdown_1.8.5      blob_1.1.0           purrr_0.2.4         
+[40] magrittr_1.5         backports_1.1.2      scales_0.5.0        
+[43] htmltools_0.3.6      assertthat_0.2.0     colorspace_1.3-2    
+[46] stringi_1.1.6        RCurl_1.95-4.10      lazyeval_0.2.1      
+[49] munsell_0.4.3       </code></pre>
 </div>
 
 <hr>
