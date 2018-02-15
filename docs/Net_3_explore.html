@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-02-14</p>
+<p><strong>Last updated:</strong> 2018-02-15</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d48ffe2</p>
+<p><strong>Code version:</strong> f226e6e</p>
 <!-- Add your analysis here -->
 <p>This analysis is to look at the quality of the library net-3. This has the first 8 libraries from the 16 pilot libraries.</p>
 <ul>
@@ -364,10 +364,8 @@ legend(&quot;topright&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &
 <p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Look at this by proportions:</p>
 <pre class="r"><code>percent_mapped= mapped/fastq
-percent_mapped</code></pre>
-<pre><code>[1] 0.4082131 0.5495220 0.1290152 0.7407553 0.1332542 0.7017958 0.6837408
-[8] 0.5853412</code></pre>
-<pre class="r"><code>percent_UMI= dedup/fastq
+percent_UMI= dedup/fastq
+percent_mapped= percent_mapped - percent_UMI
 percent_not_mapped= 1- percent_mapped - percent_UMI
 
 
@@ -379,6 +377,73 @@ prop_plot=barplot(as.matrix(prop), main=&quot;Proportions for coverage and compl
     ylab=&quot;Proportion of sequenced reads&quot;)
 legend(&quot;bottomright&quot;, legend = c(&quot;un-mapped&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = 0.75)</code></pre>
 <p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(mapped)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+14018943 25801188 27401128 28903173 37087002 38084941 </code></pre>
+<pre class="r"><code>summary(percent_mapped)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.1210  0.3056  0.5403  0.4594  0.6428  0.6927 </code></pre>
+<pre class="r"><code>summary(percent_not_mapped)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.2592  0.3117  0.4326  0.5085  0.6605  0.8710 </code></pre>
+<p>I will now use the get_mapped.py script from the previous analysis to see how long the mapped reads are. I copied it to /project2/gilad/briana/Net-seq/Net-seq3/code. The code takes in sorted bam file and an output text file. I will create a sbatch script to run this on all 8 files. This file is called wrap_get_mapped.sh and is in the same code directory.</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=wrap_get_map
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq  
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_18486.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18505-2018-1-8_S1_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_18505.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18508-2018-1-8_S2_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_18508.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19128-2018-1-8_S8_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19128.txt  
+
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19141-2018-1-8_S5_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19141.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19193-2018-1-8_S6_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19193.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19239-2018-1-8_S4_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19239.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19257-2018-1-8_S7_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19257.txt 
+</code></pre>
+<p>I will now make histograms showing the number of reads that map from the cigar strings.</p>
+<pre class="r"><code>#pull in data:  
+
+map.vec.18486=read.csv(&quot;../data/net-3-readmap/mapped_stats_18486.txt&quot;, header=FALSE)
+map.vec.18505=read.csv(&quot;../data/net-3-readmap/mapped_stats_18505.txt&quot;, header=FALSE)
+map.vec.18508=read.csv(&quot;../data/net-3-readmap/mapped_stats_18508.txt&quot;, header=FALSE)
+map.vec.19128=read.csv(&quot;../data/net-3-readmap/mapped_stats_19128.txt&quot;, header=FALSE)
+map.vec.19141=read.csv(&quot;../data/net-3-readmap/mapped_stats_19141.txt&quot;, header=FALSE)
+map.vec.19193=read.csv(&quot;../data/net-3-readmap/mapped_stats_19193.txt&quot;, header=FALSE)
+map.vec.19239=read.csv(&quot;../data/net-3-readmap/mapped_stats_19239.txt&quot;, header=FALSE)
+map.vec.19257=read.csv(&quot;../data/net-3-readmap/mapped_stats_19257.txt&quot;, header=FALSE)
+#pull in mayer as well
+
+map.vec.mayer=read.csv(&quot;../data/mapped_mayer.txt&quot;, header=FALSE)</code></pre>
+<pre class="r"><code>#make histograms
+
+par(mfrow=c(3,3))
+hist((as.numeric(map.vec.18486$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 18486 mapped reads&quot;)
+ hist((as.numeric(map.vec.18505$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 18505 mapped reads&quot;)
+hist((as.numeric(map.vec.18508$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 18508 mapped reads&quot;)
+hist((as.numeric(map.vec.19128$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 19128 mapped reads&quot;)
+hist((as.numeric(map.vec.19141$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 19141 mapped reads&quot;)
+hist((as.numeric(map.vec.19193$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 19193 mapped reads&quot;)
+hist((as.numeric(map.vec.19239$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 19239 mapped reads&quot;)
+hist((as.numeric(map.vec.19257$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 19257 mapped reads&quot;)
+hist((as.numeric(map.vec.mayer$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of Mayer mapped reads&quot;)</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
