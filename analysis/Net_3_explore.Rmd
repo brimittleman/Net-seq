@@ -93,8 +93,8 @@ Look at this by proportions:
 
 ```{r}
 percent_mapped= mapped/fastq
-percent_mapped
 percent_UMI= dedup/fastq
+percent_mapped= percent_mapped - percent_UMI
 percent_not_mapped= 1- percent_mapped - percent_UMI
 
 
@@ -110,6 +110,82 @@ legend("bottomright", legend = c("un-mapped", "mapped", "UMI"), col=c("lightskyb
 ```
 
 
+```{r}
+summary(mapped)
+summary(percent_mapped)
+summary(percent_not_mapped)
+```
+
+I will now use the get_mapped.py script from the previous analysis to see how long the mapped reads are. I copied it to /project2/gilad/briana/Net-seq/Net-seq3/code. The code takes in sorted bam file and an output text file. I will create a sbatch script to run this on all 8 files. This file is called wrap_get_mapped.sh and is in the same code directory.  
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=wrap_get_map
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq  
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_18486.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18505-2018-1-8_S1_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_18505.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18508-2018-1-8_S2_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_18508.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19128-2018-1-8_S8_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19128.txt  
+
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19141-2018-1-8_S5_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19141.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19193-2018-1-8_S6_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19193.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19239-2018-1-8_S4_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19239.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_mapped.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19257-2018-1-8_S7_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_stats_19257.txt 
+
+
+
+```
+
+I will now make histograms showing the number of reads that map from the cigar strings.  
+
+```{r}
+#pull in data:  
+
+map.vec.18486=read.csv("../data/net-3-readmap/mapped_stats_18486.txt", header=FALSE)
+map.vec.18505=read.csv("../data/net-3-readmap/mapped_stats_18505.txt", header=FALSE)
+map.vec.18508=read.csv("../data/net-3-readmap/mapped_stats_18508.txt", header=FALSE)
+map.vec.19128=read.csv("../data/net-3-readmap/mapped_stats_19128.txt", header=FALSE)
+map.vec.19141=read.csv("../data/net-3-readmap/mapped_stats_19141.txt", header=FALSE)
+map.vec.19193=read.csv("../data/net-3-readmap/mapped_stats_19193.txt", header=FALSE)
+map.vec.19239=read.csv("../data/net-3-readmap/mapped_stats_19239.txt", header=FALSE)
+map.vec.19257=read.csv("../data/net-3-readmap/mapped_stats_19257.txt", header=FALSE)
+#pull in mayer as well
+
+map.vec.mayer=read.csv("../data/mapped_mayer.txt", header=FALSE)
+```
+
+```{r}
+#make histograms
+
+par(mfrow=c(3,3))
+hist((as.numeric(map.vec.18486$V1)), xlab="Bases", main="Histogram of 18486 mapped reads")
+ hist((as.numeric(map.vec.18505$V1)), xlab="Bases", main="Histogram of 18505 mapped reads")
+hist((as.numeric(map.vec.18508$V1)), xlab="Bases", main="Histogram of 18508 mapped reads")
+hist((as.numeric(map.vec.19128$V1)), xlab="Bases", main="Histogram of 19128 mapped reads")
+hist((as.numeric(map.vec.19141$V1)), xlab="Bases", main="Histogram of 19141 mapped reads")
+hist((as.numeric(map.vec.19193$V1)), xlab="Bases", main="Histogram of 19193 mapped reads")
+hist((as.numeric(map.vec.19239$V1)), xlab="Bases", main="Histogram of 19239 mapped reads")
+hist((as.numeric(map.vec.19257$V1)), xlab="Bases", main="Histogram of 19257 mapped reads")
+hist((as.numeric(map.vec.mayer$V1)), xlab="Bases", main="Histogram of Mayer mapped reads")
+```
 
 
 
