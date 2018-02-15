@@ -1,0 +1,120 @@
+---
+title: "Initial Data exploration of Net-3"
+author: "Briana Mittleman"
+date: 2018-02-14
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+This analysis is to look at the quality of the library net-3. This has the first 8 libraries from the 16 pilot libraries. 
+
+* 18505  
+
+* 18508  
+
+* 18486  
+
+* 19239  
+
+* 19141  
+
+* 19193  
+
+* 19257  
+
+* 19128  
+
+The first step is to run the raw reads through my snakefile. To do this I have to change the project directory in the /project2/gilad/briana/net_seq_pipeline/config.yaml to /project2/gilad/briana/Net-seq/Net-seq3/ .   
+
+The reads will go in: /project2/gilad/briana/Net-seq/Net-seq3/data/fastq/  
+
+I first use gunzip to unzip all of the fastq files then I submit the snakemake file from /project2/gilad/briana/net_seq_pipeline with nohup scripts/submit-snakemake.sh
+
+Look at number of reads, mapped reads, deduplicated reads.  
+
+'samtools view -c -F 4'
+
+```{r}
+libraries=c("18486", "18505", "18508", "19128", "19141", "19193", "19239", '19257')
+fastq=c( 34342214,42959246,205654644, 51413661,211367408,52841852,54253650,45506210)
+mapped=c(14018943,23607050,26532568,38084941,28165596,37084191,37095436,26636660)
+dedup= c(1446379, 1032174,1642314,2469438,1926300,2717515, 2361238, 1377712 )
+
+read_count=rbind(fastq,mapped,dedup)
+colnames(read_count)=libraries 
+
+
+```
+
+```{r}
+total_reads= sum(fastq)
+total_reads
+total_map= sum(mapped)
+total_map
+total_dedup= sum(dedup)
+total_dedup
+
+total_map/total_reads
+total_dedup/total_map
+
+```
+
+Make a plot to look at this by line:  
+
+```{r}
+count_plot=barplot(as.matrix(read_count), main="Counts for coverage and complexity",
+  xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
+    ylab="Read counts")
+legend("topright", legend = c("total", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = .75)
+```
+
+
+Look at this by proportions:  
+
+```{r}
+percent_mapped= mapped/fastq
+percent_mapped
+percent_UMI= dedup/fastq
+percent_not_mapped= 1- percent_mapped - percent_UMI
+
+
+prop=rbind(percent_not_mapped, percent_mapped, percent_UMI)
+colnames(prop)= libraries
+
+prop_plot=barplot(as.matrix(prop), main="Proportions for coverage and complexity",
+  xlab="Library", col=c("lightskyblue2","dodgerblue1","navy"),
+    ylab="Proportion of sequenced reads")
+legend("bottomright", legend = c("un-mapped", "mapped", "UMI"), col=c("lightskyblue2","dodgerblue1","navy"), pch=20, cex = 0.75)
+
+
+```
+
+
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```

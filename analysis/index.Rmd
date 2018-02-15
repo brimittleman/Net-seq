@@ -15,7 +15,7 @@ Set-up for mappping my libraries:
 * [Setting up config and snake files](config.snake.setup.html)  
 
 
-Initials data exploration:  
+Initial data exploration:  
 
 * [Initial data exploration for NetSeq1 libary](initial.data.exploration.html)  
 
@@ -34,6 +34,11 @@ Initials data exploration:
 * [Create IGV browser style plots](gviz_plots.html)
 
 
+Initial analysis for Net-3:  
+
+* [Net-3 Initial exploration](Net_3_explore.html)  
+
+
 Exploration of the 3` seq and ApA sites:  
 
 * [Look for read enrichment at ApA sites](three_prime_UTR.html) 
@@ -41,4 +46,5 @@ Exploration of the 3` seq and ApA sites:
 * [UTR coverage analysis](UTR_coverage.html)
 
 * [Look at enrichment using Deep tools](use_deeptools.html)
+
 
