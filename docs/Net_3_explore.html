@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-02-15</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> f226e6e</p>
+<p><strong>Code version:</strong> ab86860</p>
 <!-- Add your analysis here -->
 <p>This analysis is to look at the quality of the library net-3. This has the first 8 libraries from the 16 pilot libraries.</p>
 <ul>
@@ -444,6 +444,77 @@ hist((as.numeric(map.vec.19239$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogra
 hist((as.numeric(map.vec.19257$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of 19257 mapped reads&quot;)
 hist((as.numeric(map.vec.mayer$V1)), xlab=&quot;Bases&quot;, main=&quot;Histogram of Mayer mapped reads&quot;)</code></pre>
 <p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="deep-tools-analysis" class="section level3">
+<h3>Deep tools analysis:</h3>
+<p>First I downloaded the gencode.hg19 gene gtf file. I will use bedops convert2bed.</p>
+<pre class="bash"><code>awk &#39;{ if ($0 ~ &quot;transcript_id&quot;) print $0; else print $0&quot; transcript_id \&quot;\&quot;;&quot;; }&#39; gencode.v19.annotation.gtf | gtf2bed - &gt; gencode.v19.annotation.bed 
+</code></pre>
+<p>Deep tools code:</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_sbatch.out
+#SBATCH --error=deeptools_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+bamCoverage -b /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam -o /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.annotation.bed --referencePoint TSS -b 100 -a 100 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel &quot;TSS&quot; -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.png</code></pre>
+<p>To look at TES I will change the reference point to TES. This script is also in the code file as deep_tools_TES_net18486.sh.</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_TES_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_TES_sbatch.out
+#SBATCH --error=deeptools_TES_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.annotation.bed --referencePoint TES -b 100o -a 1000 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-TES-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel &quot;TSS&quot;  -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-TES-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-TES-18486.png</code></pre>
+<p>Do this for DNA hypersensitivity clusters as well. This script is in the code file as deep_tools_DHS_net18486.sh.</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_DHS_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_DHS_sbatch.out
+#SBATCH --error=deeptools_DHS_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/wgEncodeRegDnaseClusteredV3.bed -b 1000 -a 1000 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-dhs-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel &quot;DHS&quot; -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-dhs-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-dhs-18486.png
+</code></pre>
+<p>I am running these and 1 more looking at the TSS but at 1000 base pairs on each side.</p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
