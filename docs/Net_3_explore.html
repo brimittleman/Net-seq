@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-02-18</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 24e34a0</p>
+<p><strong>Code version:</strong> c58a151</p>
 <!-- Add your analysis here -->
 <div id="mapped-reads" class="section level2">
 <h2>Mapped reads</h2>
@@ -663,7 +663,47 @@ ggheatmap</code></pre>
 12688   2 118846049 118867604 ENST00000245787.4     0      + 2651806
          18505    18508    19128   19141    19193    19239    19257
 12688 11856396 14059279 10862066 8216975 11877635 18071447 10156398</code></pre>
-<p>read buildup in insig2</p>
+<pre class="r"><code>which(net_cov_full$`19239`== max(net_cov_full$`19239`))</code></pre>
+<pre><code>[1] 12689</code></pre>
+<pre class="r"><code>net_cov_full[12689,]</code></pre>
+<pre><code>      chr     start       end              gene score strand   18486
+12689   2 118846049 118868573 ENST00000485520.1     0      + 2651806
+         18505    18508    19128   19141    19193    19239    19257
+12689 11856396 14059279 10862067 8216975 11877635 18071449 10156398</code></pre>
+<p>read buildup in insig2!</p>
+<p>To look into this I will use bedtools genomecov. This will help me find the region where the build up is within this gene. I will do this for just one line first.</p>
+<p>‘bedtools genomecov -ibam NA18152.bam -bg’</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=gencov_18486
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --output=gencov_sbatch.out
+#SBATCH --error=gencov_sbatch.err
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq 
+
+
+bedtools genomecov -ibam /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam -bg</code></pre>
+<p>I made this file, now I can look for the region and find the base position of the buildup.</p>
+<pre class="r"><code>gencov_18486=read.csv(&quot;../data/gencov_18486.bed&quot;, header=FALSE, sep = &quot;\t&quot;, stringsAsFactors = FALSE)
+colnames(gencov_18486)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;count&quot;)
+
+
+gencov_18486_insig2= gencov_18486[gencov_18486$chr == &quot;2&quot; &amp; gencov_18486$start &gt;= 118846049 &amp; gencov_18486$end &lt;= 118868573, ]</code></pre>
+<p>Buildup is 118847163-118867371</p>
+<p><a href="https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&amp;lastVirtModeType=default&amp;lastVirtModeExtraState" class="uri">https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&amp;lastVirtModeType=default&amp;lastVirtModeExtraState</a>=&amp;virtModeType=default&amp;virtMode=0&amp;nonVirtPosition=&amp;position=chr2%3A118853899%2D118860634&amp;hgsid=657371987_p3YvC1JmckcMJLpbqv6SsBjfPeik</p>
+<pre><code>http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr2:118847163,118867371</code></pre>
+<p>I will now be able to search for our primers in this seq to see if that is why we get buildup.<br />
+GACGCTCTT</p>
+<p>This sequence is in the reverse compliment of the linker:</p>
+<p>/5rApp/(N)6AGATCGGAAGAGCGTC/3ddC</p>
+<p>This is probably not long enough that this is the problem.</p>
 <div id="mapping-statistics" class="section level3">
 <h3>Mapping statistics:</h3>
 <p>The quality score is in the sorted bam file.</p>
@@ -793,7 +833,7 @@ hist(as.numeric(mq_19193[,1]), freq=FALSE, main=&quot;Quality 19193&quot;, xlab=
 hist(as.numeric(mq_19239[,1]), freq=FALSE, main=&quot;Quality 19239&quot;, xlab=&quot;Quality Score&quot;)
 hist(as.numeric(mq_19257[,1]), freq=FALSE, main=&quot;Quality 19257&quot;, xlab=&quot;Quality Score&quot;)
 hist(as.numeric(qual_mayer[,1]), freq=FALSE, main= &quot;Quality Mayer&quot;, xlab=&quot;Quality Score&quot;)</code></pre>
-<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-27-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
