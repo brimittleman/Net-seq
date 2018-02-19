@@ -455,9 +455,65 @@ plot(log(sort(net_cov_full$`18505`, decreasing = TRUE)))
 which(net_cov_full$`18486`== max(net_cov_full$`18486`))
 net_cov_full[12688,]
 
+
+which(net_cov_full$`19239`== max(net_cov_full$`19239`))
+
+net_cov_full[12689,]
 ```
 
-read buildup in insig2  
+read buildup in insig2!  
+
+To look into this I will use bedtools genomecov. This will help me find the region where the build up is within this gene. I will do this for just one line first.  
+
+'bedtools genomecov -ibam NA18152.bam -bg' 
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=gencov_18486
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --output=gencov_sbatch.out
+#SBATCH --error=gencov_sbatch.err
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq 
+
+
+bedtools genomecov -ibam /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam -bg
+```
+
+I made this file, now I can look for the region and find the base position of the buildup.  
+```{r}
+gencov_18486=read.csv("../data/gencov_18486.bed", header=FALSE, sep = "\t", stringsAsFactors = FALSE)
+colnames(gencov_18486)=c("chr", "start", "end", "count")
+
+
+gencov_18486_insig2= gencov_18486[gencov_18486$chr == "2" & gencov_18486$start >= 118846049	& gencov_18486$end <= 118868573, ]
+
+
+```
+
+
+
+Buildup is 118847163-118867371
+
+https://genome.ucsc.edu/cgi-bin/hgTracks?db=hg19&lastVirtModeType=default&lastVirtModeExtraState=&virtModeType=default&virtMode=0&nonVirtPosition=&position=chr2%3A118853899%2D118860634&hgsid=657371987_p3YvC1JmckcMJLpbqv6SsBjfPeik
+
+```
+http://genome.ucsc.edu/cgi-bin/das/hg19/dna?segment=chr2:118847163,118867371
+```
+I will now be able to search for our primers in this seq to see if that is why we get buildup.  
+GACGCTCTT
+
+This sequence is in the reverse compliment of the linker:  
+
+/5rApp/(N)6AGATCGGAAGAGCGTC/3ddC
+
+This is probably not long enough that this is the problem. 
 
 
 ###Mapping statistics:
