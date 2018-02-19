@@ -25,6 +25,8 @@ knitr::read_chunk("chunks.R")
 ```
 
 <!-- Add your analysis here -->
+##Mapped reads  
+
 
 This analysis is to look at the quality of the library net-3. This has the first 8 libraries from the 16 pilot libraries. 
 
@@ -187,7 +189,7 @@ hist((as.numeric(map.vec.19257$V1)), xlab="Bases", main="Histogram of 19257 mapp
 hist((as.numeric(map.vec.mayer$V1)), xlab="Bases", main="Histogram of Mayer mapped reads")
 ```
 
-###Deep tools analysis:  
+##Deep tools analysis:  
 
 First I downloaded the gencode.hg19 gene gtf file. I will use bedops convert2bed. 
 ```{bash, eval=FALSE}
@@ -203,8 +205,8 @@ Deep tools code:
 
 #SBATCH --job-name=deeptools_netseq
 #SBATCH --time=8:00:00
-#SBATCH --partition=gilad
-#SBATCH --mem=16G
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
 #SBATCH --mail-type=END
 #SBATCH --output=deeptool_sbatch.out
 #SBATCH --error=deeptools_sbatch.err
@@ -229,8 +231,8 @@ To look at TES I will change the reference point to TES. This script is also in 
 
 #SBATCH --job-name=deeptools_TES_netseq
 #SBATCH --time=8:00:00
-#SBATCH --partition=gilad
-#SBATCH --mem=16G
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
 #SBATCH --mail-type=END
 #SBATCH --output=deeptool_TES_sbatch.out
 #SBATCH --error=deeptools_TES_sbatch.err
@@ -254,8 +256,8 @@ Do this for DNA hypersensitivity clusters as well.  This script is in the code f
 
 #SBATCH --job-name=deeptools_DHS_netseq
 #SBATCH --time=8:00:00
-#SBATCH --partition=gilad
-#SBATCH --mem=16G
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
 #SBATCH --mail-type=END
 #SBATCH --output=deeptool_DHS_sbatch.out
 #SBATCH --error=deeptools_DHS_sbatch.err
@@ -273,8 +275,286 @@ plotHeatmap --sortRegions descend --refPointLabel "DHS" -m /project2/gilad/brian
 ```
 
 I am running these and 1 more looking at the TSS but at 1000 base pairs on each side.  
+**timed out at 1000 need to try 500 on each side**
+
+##Gene counts with Feature counts 
+
+I will use featureCounts to count the number of reads at each gene in the gencode.v19.annotation.gtf file. I will make a file that takes the bam as a input so I can run it on each bam file.  
+
+'Usage: featureCounts [options] -a <annotation_file> -o <output_file> input_file1'
+
+This file is in the net3 code directory. featureCounts_genes.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=featureCounts
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+#SBATCH --output=featurecount.out
+#SBATCH --error=featurecount.err
+
+
+#$1 input bam full file  
+
+module load Anaconda3
+
+source activate net-seq
+
+
+sample=$1
+
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_L008_R1_001-sort.bam$//")
+
+
+featureCounts -a /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.annotation.gtf -o /project2/gilad/briana/Net-seq/Net-seq3/output/featureCounts/${sample}-gene-counts.txt ${sample}
+
+
+
+```
+
+
+Try this with one file. /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam
+
+Bedtools coverage is a better program for this analyisis. I want to look at coverage along the full gene, not by exon/transcript.
+
+Need to cut the chr from the gencode file so this matches the way my bam files are written.
+```cat gencode.Genes.bed |sed 's/^chr//' > gencode_noCHR_genes.bed```
+
+This is in the code directory as gencode_cov.sh  
+
+
+```{bash, eval=FALSE}
+
+#!/bin/bash
+
+
+#SBATCH --job-name=count_cov
+#SBATCH --output=count_cov_sbatch.out
+#SBATCH --error=count_cov_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=36G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_L008_R1_001-sort.bam$//")
+
+bedtools coverage -counts -sorted -a /project2/gilad/briana/Net-seq/Net-seq3/gencode_noCHR_genes_MT_Fsort.bed -b $1 > /project2/gilad/briana/Net-seq/Net-seq3/data/gencode_cov/${describer}.coverage.bed
+
+```
+
+run on /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam
+
+I will run this on all 8 files then merge the files.  
+
+To merge: 
+
+```{bash, eval=FALSE}
+
+touch all_files_coverage.bed
+awk '{print $7}' NET3-18486-2018-1-8_S3.coverage.bed | paste -d'' all_files_coverage.bed  > all_files_coverage.bed
+
+
+cp all_files_coverage.bed tmp 
+for i in `cat list_of_files.txt`; do awk 'NR==FNR {a[NR]=$7;next} {print $0,a[FNR]}' $i tmp > tmp2; mv tmp2 tmp; done
+
+cut -f -6  NET3-18486-2018-1-8_S3.coverage.bed > meta_info_coverage.bed
+
+
+```
+
+Now I will have the meta data seperate from the matrix of counts.  
+
+
+```{r}
+net_coverage=read.table("../data/all_files_coverage.bed", header=FALSE)
+colnames(net_coverage)= libraries
+net_coverage_meta=read.table("../data/meta_info_coverage.bed", header=FALSE)
+colnames(net_coverage_meta)=c("chr", "start", "end", "gene", "score", "strand")
+```
+Make one with counts and meta info:  
+
+```{r}
+net_cov_full= cbind(net_coverage_meta, net_coverage)
+
+```
+Make a function that will tell me proportion of genes detected.
+```{r}
+genes_detected=function(col){
+  #takes in net_cov_full col which corresponds to one library
+  tot_genes=nrow(net_cov_full)
+  exp_genes=sum(col!=0)
+  return(exp_genes/tot_genes)
+}
+
+prop_non0= c(genes_detected(net_cov_full$`18486`), genes_detected(net_cov_full$`18505`),genes_detected(net_cov_full$`18508`), genes_detected(net_cov_full$`19128`), genes_detected(net_cov_full$`19141`), genes_detected(net_cov_full$`19193`), genes_detected(net_cov_full$`19239`), genes_detected(net_cov_full$`19257`))
+names(prop_non0)=libraries
+
+barplot(prop_non0, ylim = c(0,1), main="Net-seq Genes detected", ylab="Proportion non zero genes", xlab="Library", col = 'Blue')
+
+
+
+```
+
+Heatmap to see relatedness:
+
+```{r}
+cor_function=function(data){
+  corr_matrix= matrix(0,8,8)
+  for (i in seq(1,8)){
+    for (j in seq(1,8)){
+      x=cor.test(net_coverage[,i],  net_coverage[,j], method='pearson')
+      cor_ij=as.numeric(x$estimate)
+      corr_matrix[i,j]=cor_ij
+    }
+  }
+  return(corr_matrix)
+}
+
+
+net_cor_matrix=cor_function(net_coverage)
+rownames(net_cor_matrix)=c("NA18486", "NA18505", "NA18508", "NA19128", "NA19141", "NA19193", "NA19239", 'NA19257')
+colnames(net_cor_matrix)=c("NA18486", "NA18505", "NA18508", "NA19128", "NA19141", "NA19193", "NA19239", 'NA19257')
+
+
+```
+```{r}
+library(reshape2)
+library(ggplot2)
+melted_net_corr=melt(net_cor_matrix)
+head(melted_net_corr)
+ggheatmap=ggplot(data = melted_net_corr, aes(x=Var1, y=Var2, fill=value)) +
+  geom_tile() +
+  labs(title="Net-seq Correlation Heatplot")
+ggheatmap
+
+```
+
+
+Look at the distribution of read counts:  
+
+1. Create a length of gene column to standardize by length.  
+
+```{r}
+summary(net_cov_full$`18486`)
+plot(log(sort(net_cov_full$`18486`, decreasing = TRUE)))
+plot(log(sort(net_cov_full$`18505`, decreasing = TRUE)))
+```
+```{r}
+which(net_cov_full$`18486`== max(net_cov_full$`18486`))
+net_cov_full[12688,]
+
+```
+
+read buildup in insig2  
+
+
+###Mapping statistics:
+
+The quality score is in the sorted bam file.
+
+MAPQ: MAPping Quality. It equals -10*log10 Prob mapping position is wrong, rounded to the nearest integer. A value 255 indicates that the mapping quality is not available. 
+
+
+I will get the mapping quality stats from the bam files as I did for Net1. I coppied the pytho script to /project2/gilad/briana/Net-seq/Net-seq3/code. I will create a wrap function for this in bash.  
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=wrap_get_map
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+module load Anaconda3
+
+source activate net-seq  
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_18486.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18505-2018-1-8_S1_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_18505.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18508-2018-1-8_S2_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_18508.txt
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19128-2018-1-8_S8_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_19128.txt  
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19141-2018-1-8_S5_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_19141.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19193-2018-1-8_S6_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_19193.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19239-2018-1-8_S4_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_19239.txt 
+
+python /project2/gilad/briana/Net-seq/Net-seq3/code/get_qual.py /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-19257-2018-1-8_S7_L008_R1_001-sort.bam /project2/gilad/briana/Net-seq/Net-seq3/output/mapped_qual_19257.txt 
+
+
+
+
+
+
+```
+
+```{r}
+qual_mayer= read.csv("../data/qual_mayer.txt", head=FALSE)
+summary(qual_mayer)
+```
+I will compare our lines to the mayer data.  
+
+```{r}
+ mq_18486= read.csv("../data/mapped_qual_18486.txt", header=FALSE)
+ mq_18505= read.csv("../data/mapped_qual_18505.txt", header=FALSE)
+ mq_18508= read.csv("../data/mapped_qual_18508.txt", header=FALSE)
+ mq_19128=read.csv("../data/mapped_qual_19128.txt", header=FALSE)
+ mq_19141=read.csv("../data/mapped_qual_19141.txt", header=FALSE)
+ mq_19193=read.csv("../data/mapped_qual_19193.txt", header=FALSE)
+ mq_19239=read.csv("../data/mapped_qual_19239.txt", header=FALSE)
+ mq_19257=read.csv("../data/mapped_qual_19257.txt", header=FALSE)
+```
+
+summaries of each:  
+
+```{r}
+summary(mq_18486)
+summary(mq_18505)
+summary(mq_18508)
+summary(mq_19128)
+summary(mq_19141)
+summary(mq_19193)
+summary(mq_19239)
+summary(mq_19257)
+```
+
+Make histograms as I had for the net1.  
+
+```{r}
+par(mfrow = c(3,3))
+
+hist(as.numeric(mq_18486[,1]), freq=FALSE, main="Quality 18486", xlab="Quality Score")
+hist(as.numeric(mq_18505[,1]), freq=FALSE, main="Quality 18505", xlab="Quality Score")
+hist(as.numeric(mq_18508[,1]), freq=FALSE, main="Quality 18508", xlab="Quality Score")
+hist(as.numeric(mq_19128[,1]), freq=FALSE, main="Quality 19128", xlab="Quality Score")
+hist(as.numeric(mq_19141[,1]), freq=FALSE, main="Quality 19141", xlab="Quality Score")
+hist(as.numeric(mq_19193[,1]), freq=FALSE, main="Quality 19193", xlab="Quality Score")
+hist(as.numeric(mq_19239[,1]), freq=FALSE, main="Quality 19239", xlab="Quality Score")
+hist(as.numeric(mq_19257[,1]), freq=FALSE, main="Quality 19257", xlab="Quality Score")
+hist(as.numeric(qual_mayer[,1]), freq=FALSE, main= "Quality Mayer", xlab="Quality Score")
+```
+
+
 
 ## Session information
+
  
 
 
