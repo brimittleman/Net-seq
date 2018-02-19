@@ -118,6 +118,14 @@ summary(percent_mapped)
 summary(percent_not_mapped)
 ```
 
+
+Net1 UMI/fastq:  0.03347032 0.02509783 0.02486150 0.01652832 
+Mayer UMI/fastq: 0.01647986  
+Net3 UMI/fastq: 0.042116650 0.024026818 0.007985786 0.048030775 0.009113515 0.051427323 0.043522196 0.030275253
+
+
+
+
 I will now use the get_mapped.py script from the previous analysis to see how long the mapped reads are. I copied it to /project2/gilad/briana/Net-seq/Net-seq3/code. The code takes in sorted bam file and an output text file. I will create a sbatch script to run this on all 8 files. This file is called wrap_get_mapped.sh and is in the same code directory.  
 
 
@@ -605,6 +613,215 @@ hist(as.numeric(mq_19193[,1]), freq=FALSE, main="Quality 19193", xlab="Quality S
 hist(as.numeric(mq_19239[,1]), freq=FALSE, main="Quality 19239", xlab="Quality Score")
 hist(as.numeric(mq_19257[,1]), freq=FALSE, main="Quality 19257", xlab="Quality Score")
 hist(as.numeric(qual_mayer[,1]), freq=FALSE, main= "Quality Mayer", xlab="Quality Score")
+```
+
+
+###Assess UMI usage:  
+
+```{bash, eval=FALSE}
+
+
+samtools view YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_18486_stat.txt
+
+samtools view YG-SP-NET3-18505-2018-1-8_S1_L008_R1_001-sort.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_18505_stat.txt
+
+samtools view YG-SP-NET3-18508-2018-1-8_S2_L008_R1_001-sort.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_18508_stat.txt
+
+samtools view YG-SP-NET3-19128-2018-1-8_S8_L008_R1_001-sort.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19128_stat.txt
+
+
+samtools view YG-SP-NET3-19141-2018-1-8_S5_L008_R1_001-sort.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19141_stat.txt
+
+
+samtools view YG-SP-NET3-19193-2018-1-8_S6_L008_R1_001-sort.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19193_stat.txt
+
+samtools view YG-SP-NET3-19239-2018-1-8_S4_L008_R1_001-sort.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19239_stat.txt
+
+samtools view YG-SP-NET3-19257-2018-1-8_S7_L008_R1_001-sort.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19257_stat.txt
+
+
+
+```
+Function to get the information I want.  
+
+
+```{r}
+library("tidyr")
+library("dplyr")
+library("ggplot2")
+
+
+prepare_UMI_data=function(path.txt){
+  x=read.delim(file=path.txt, header = FALSE,stringsAsFactors = FALSE)
+  colnames(x) <- "UMI"
+  x= data.frame(sapply(x, trimws), stringsAsFactors = FALSE)
+  x= separate(data=x, col = UMI, into= c("number", "umi"), sep="\\s+")
+  x$number= as.numeric(x$number)
+  x= arrange(x, desc(number))
+  return(x)
+}
+```
+Run function for each file:  
+
+```{r}
+UMI_mayer= prepare_UMI_data("../data/UMI_mayer_stat.txt")
+UMI_net3_18486= prepare_UMI_data("../data/UMI_Net3_18486_stat.txt")
+UMI_net3_18505= prepare_UMI_data("../data/UMI_Net3_18505_stat.txt")
+UMI_net3_18508= prepare_UMI_data("../data/UMI_Net3_18508_stat.txt")
+UMI_net3_19128= prepare_UMI_data("../data/UMI_Net3_19128_stat.txt")
+UMI_net3_19141= prepare_UMI_data("../data/UMI_Net3_19141_stat.txt")
+UMI_net3_19193= prepare_UMI_data("../data/UMI_Net3_19193_stat.txt")
+UMI_net3_19239= prepare_UMI_data("../data/UMI_Net3_19239_stat.txt")
+UMI_net3_19257= prepare_UMI_data("../data/UMI_Net3_19257_stat.txt")
+```
+
+UMI distributions:  
+```{r}
+par(mfrow = c(3,3))
+plot(UMI_net3_18486$number, ylab="UMI count", xlab="UMI", main="18486 distribution")
+plot(UMI_net3_18505$number, ylab="UMI count", xlab="UMI", main="18505 distribution")
+plot(UMI_net3_18508$number, ylab="UMI count", xlab="UMI", main="18508 distribution")
+plot(UMI_net3_19128$number, ylab="UMI count", xlab="UMI", main="19128 distribution")
+plot(UMI_net3_19141$number, ylab="UMI count", xlab="UMI", main="19141 distribution")
+plot(UMI_net3_19193$number, ylab="UMI count", xlab="UMI", main="19193 distribution")
+plot(UMI_net3_19239$number, ylab="UMI count", xlab="UMI", main="19239 distribution")
+plot(UMI_net3_19257$number, ylab="UMI count", xlab="UMI", main="19257 distribution")
+plot(UMI_mayer$number, ylab="UMI count", xlab="UMI", main="Mayer distribution")
+
+```
+Look at the top 3 for each: 
+
+
+```{r}
+#they are sorted so the first one is the most used in that line  
+top_umi= c(UMI_net3_18486$umi[1], UMI_net3_18505$umi[1], UMI_net3_18508$umi[1],UMI_net3_19128$umi[1], UMI_net3_19141$umi[1], UMI_net3_19193$umi[1],UMI_net3_19239$umi[1], UMI_net3_19257$umi[1], UMI_mayer$umi[1]) 
+sec_umi= c(UMI_net3_18486$umi[2], UMI_net3_18505$umi[2], UMI_net3_18508$umi[2],UMI_net3_19128$umi[2], UMI_net3_19141$umi[2], UMI_net3_19193$umi[2],UMI_net3_19239$umi[2], UMI_net3_19257$umi[2], UMI_mayer$umi[2]) 
+
+third_umi= c(UMI_net3_18486$umi[3], UMI_net3_18505$umi[3], UMI_net3_18508$umi[3],UMI_net3_19128$umi[3], UMI_net3_19141$umi[3], UMI_net3_19193$umi[3],UMI_net3_19239$umi[3], UMI_net3_19257$umi[3], UMI_mayer$umi[3])
+
+
+top3_UMI= rbind(top_umi, sec_umi, third_umi)
+colnames(top3_UMI)=c(libraries, "mayer")
+```
+Seq logo plots:  
+
+```{r}
+require(ggseqlogo)
+library("cowplot")
+```
+
+```{r}
+cs1 = make_col_scheme(chars=c('A', 'T', 'C', 'G', 'N'), groups=c('A', 'T', 'C', 'G', 'N'), cols=c('red', 'blue', 'green', 'yellow', 'pink'))
+```
+
+```{r}
+gg_18486=ggseqlogo(UMI_net3_18486$umi, col_scheme=cs1)
+gg_18505=ggseqlogo(UMI_net3_18505$umi, col_scheme=cs1)
+gg_18508=ggseqlogo(UMI_net3_18508$umi, col_scheme=cs1)
+gg_19128=ggseqlogo(UMI_net3_19128$umi, col_scheme=cs1)
+gg_19141=ggseqlogo(UMI_net3_19141$umi, col_scheme=cs1)
+gg_19193=ggseqlogo(UMI_net3_19193$umi, col_scheme=cs1)
+gg_19239=ggseqlogo(UMI_net3_19239$umi, col_scheme=cs1)
+gg_19257=ggseqlogo(UMI_net3_19257$umi, col_scheme=cs1)
+gg_mayer=ggseqlogo(UMI_mayer$umi, col_scheme=cs1)
+```
+
+
+```{r}
+plot_grid(gg_18486, gg_18505, gg_18508, gg_19128, gg_19141, gg_19193, gg_19239, gg_19257, gg_mayer, ncol=3, labels = c(libraries, "mayer"))
+```
+
+I will now use the same code on the deduplicated files so we can see if there is a descrepency is usage, this will help me know if pileup occured for one umi.  
+
+```{bash, eval=FALSE}
+samtools view YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_18486_dedupstat.txt
+
+samtools view YG-SP-NET3-18505-2018-1-8_S1_L008_R1_001-sort.dedup.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_18505_dedupstat.txt
+
+samtools view YG-SP-NET3-18508-2018-1-8_S2_L008_R1_001-sort.dedup.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_18508_dedupstat.txt
+
+samtools view YG-SP-NET3-19128-2018-1-8_S8_L008_R1_001-sort.dedup.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19128_dedupstat.txt
+
+
+samtools view YG-SP-NET3-19141-2018-1-8_S5_L008_R1_001-sort.dedup.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19141_dedupstat.txt
+
+
+samtools view YG-SP-NET3-19193-2018-1-8_S6_L008_R1_001-sort.dedup.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19193_dedupstat.txt
+
+samtools view YG-SP-NET3-19239-2018-1-8_S4_L008_R1_001-sort.dedup.bam  | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19239_dedupstat.txt
+
+samtools view YG-SP-NET3-19257-2018-1-8_S7_L008_R1_001-sort.dedup.bam | tr "_" "\t" | cut -f 2 | sort | uniq -c > ../../output/UMI_Net3_19257_dedupstat.txt
+
+```
+
+```{r}
+UMI_net3_18486_dedup= prepare_UMI_data("../data/UMI_Net3_18486_dedupstat.txt")
+UMI_net3_18505_dedup= prepare_UMI_data("../data/UMI_Net3_18505_dedupstat.txt")
+UMI_net3_18508_dedup= prepare_UMI_data("../data/UMI_Net3_18508_dedupstat.txt")
+UMI_net3_19128_dedup= prepare_UMI_data("../data/UMI_Net3_19128_dedupstat.txt")
+UMI_net3_19141_dedup= prepare_UMI_data("../data/UMI_Net3_19141_dedupstat.txt")
+UMI_net3_19193_dedup= prepare_UMI_data("../data/UMI_Net3_19193_dedupstat.txt")
+UMI_net3_19239_dedup= prepare_UMI_data("../data/UMI_Net3_19239_dedupstat.txt")
+UMI_net3_19257_dedup= prepare_UMI_data("../data/UMI_Net3_19257_dedupstat.txt")
+```
+
+```{r}
+gg_18486_dedup=ggseqlogo(UMI_net3_18486_dedup$umi, col_scheme=cs1)
+gg_18505_dedup=ggseqlogo(UMI_net3_18505_dedup$umi, col_scheme=cs1)
+gg_18508_dedup=ggseqlogo(UMI_net3_18508_dedup$umi, col_scheme=cs1)
+gg_19128_dedup=ggseqlogo(UMI_net3_19128_dedup$umi, col_scheme=cs1)
+gg_19141_dedup=ggseqlogo(UMI_net3_19141_dedup$umi, col_scheme=cs1)
+gg_19193_dedup=ggseqlogo(UMI_net3_19193_dedup$umi, col_scheme=cs1)
+gg_19239_dedup=ggseqlogo(UMI_net3_19239_dedup$umi, col_scheme=cs1)
+gg_19257_dedup=ggseqlogo(UMI_net3_19257_dedup$umi, col_scheme=cs1)
+
+plot_grid(gg_18486_dedup, gg_18505_dedup, gg_18508_dedup, gg_19128_dedup, gg_19141_dedup, gg_19193_dedup, gg_19239_dedup, gg_19257_dedup, ncol=3, labels = c(libraries))
+
+```
+Distributions:
+```{r}
+par(mfrow = c(3,3))
+plot(UMI_net3_18486_dedup$number, ylab="UMI count", xlab="UMI", main="18486 dedup distribution")
+plot(UMI_net3_18505_dedup$number, ylab="UMI count", xlab="UMI", main="18505 dedup distribution")
+plot(UMI_net3_18508_dedup$number, ylab="UMI count", xlab="UMI", main="18508 dedup distribution")
+plot(UMI_net3_19128_dedup$number, ylab="UMI count", xlab="UMI", main="19128 dedup distribution")
+plot(UMI_net3_19141_dedup$number, ylab="UMI count", xlab="UMI", main="19141 dedup distribution")
+plot(UMI_net3_19193_dedup$number, ylab="UMI count", xlab="UMI", main="19193 dedup distribution")
+plot(UMI_net3_19239_dedup$number, ylab="UMI count", xlab="UMI", main="19239 dedup distribution")
+plot(UMI_net3_19257_dedup$number, ylab="UMI count", xlab="UMI", main="19257 dedup distribution")
+
+```
+
+I need to merge files so I can analyze if there are differences. The problem is they are not the same size. I need a way to merge them and for the missing UMIs in the smaller file to become 0.  
+
+
+right_join(a, b, by = "x1")
+
+
+```{r}
+UMI_net3_18486_all=left_join(UMI_net3_18486, UMI_net3_18486_dedup, by="umi")
+UMI_net3_18486_all[is.na(UMI_net3_18486_all)] <- 0 
+#column with the difference 
+UMI_net3_18486_all = mutate(UMI_net3_18486_all, diff= number.x- number.y)
+UMI_net3_18486_all = mutate(UMI_net3_18486_all, per_diff= diff/(number.x+number.y))
+
+
+summary(UMI_net3_18486_all$per_diff)
+```
+Look at the distribution of this:  
+
+```{r}
+plot(UMI_net3_18486_all$per_diff)
+```
+Expectation for number of times we see 1 UMI in map to the genome: 
+
+14018943/4^6
+[1] 3422.594
+
+```{r}
+sum(UMI_net3_18486_all$number.y >= 2000)
+
+which(UMI_net3_18486_all$number.y ==max(UMI_net3_18486_all$number.y))
 ```
 
 
