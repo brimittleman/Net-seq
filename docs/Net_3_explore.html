@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-02-19</p>
+<p><strong>Last updated:</strong> 2018-02-21</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 72d291b</p>
+<p><strong>Code version:</strong> 03d365d</p>
 <!-- Add your analysis here -->
 <div id="mapped-reads" class="section level2">
 <h2>Mapped reads</h2>
@@ -1009,6 +1009,165 @@ summary(UMI_net3_18486_all$per_diff)</code></pre>
 <pre class="r"><code>which(UMI_net3_18486_all$number.y ==max(UMI_net3_18486_all$number.y))</code></pre>
 <pre><code>[1] 3</code></pre>
 </div>
+<div id="umi-analsis-by-position" class="section level3">
+<h3>UMI analsis by position:</h3>
+<ol style="list-style-type: decimal">
+<li>Subset the sort_bam file and dedup bam file by chr 2</li>
+</ol>
+<pre class="bash"><code>samtools view YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.bam 2 -b &gt; YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.chr2.bam
+
+samtools view YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam 2 -b &gt; YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.chr2.bam</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>run genomecoverage -d (per base genome coverage)</li>
+</ol>
+<p>chr2_coverage_18486.sh</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=coverage
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --tasks-per-node=4 
+#SBATCH --mail-type=END
+#SBATCH --output=coverage_sbatch.out
+#SBATCH --error=coverage_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+bedtools genomecov -ibam /project2/gilad/briana/Net-seq/Net-seq3/data/dedup/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.chr2.bam -d &gt; /project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/dedup_18486_chr2.txt
+
+
+bedtools genomecov -ibam  /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.chr2.bam -d &gt; /project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/sort_18486_chr2.txt
+</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>plot sort coverage by dedup coverage.</li>
+</ol>
+<p>Files I made are dedup_18486_chr2.txt and sort_18486_chr2.txt.</p>
+<pre class="python"><code>import pandas as pd
+import matplotlib.pyplot as plt
+dedup_18486_chr2= pd.read_csv(&quot;/project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/dedup_18486_chr2.txt&quot;, sep=&quot;\t&quot;)
+sort_18486_chr2=pd.read_csv(&quot;/project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/sort_18486_chr2.txt&quot;, sep=&quot;\t&quot;)</code></pre>
+<p>2 options:<br />
+* plot pyplot from pandas dateframe</p>
+<ul>
+<li>use awk if statement to get rid of the lines where both are 0.</li>
+</ul>
+<pre class="bash"><code>cut -f 3 dedup_18486_chr2.txt &gt; count_dedup.txt
+paste -d&#39;\t&#39; sort_18486_chr2.txt count_dedup.txt &gt; sort_dedup_chr2_18486.txt</code></pre>
+<p>Now I need to get rid of the lines that are both 0:</p>
+<pre class="bash"><code> awk &#39;{if($3!=0 || $4!=0) print($1 &quot;\t&quot; $2 &quot;\t&quot; $3 &quot;\t&quot; $4)}&#39; sort_dedup_chr2_18486.txt &gt; sort_dedup_chr2_no0_18486.txt</code></pre>
+<pre class="r"><code>chr2_no0_18486=read.csv(&quot;../data/sort_dedup_chr2_no0_18486.txt&quot;, header = FALSE, sep=&quot;\t&quot;)
+colnames(chr2_no0_18486)= c(&quot;chr&quot;, &quot;pos&quot;, &quot;sort&quot;, &quot;dedup&quot;)
+
+ plot(chr2_no0_18486$sort ~ chr2_no0_18486$dedup, ylab = &quot;reads&quot;, xlab=&quot;molecules&quot;, main=&quot;Reads vs molecules by position chr2&quot;)</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-51-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>summary(chr2_no0_18486$sort==0)</code></pre>
+<pre><code>   Mode   FALSE 
+logical 1356189 </code></pre>
+<pre class="r"><code>summary(chr2_no0_18486$dedup ==0)</code></pre>
+<pre><code>   Mode   FALSE    TRUE 
+logical 1355227     962 </code></pre>
+<p>I need to subset the super high expressed ones to see the distribution better.</p>
+<pre class="r"><code>chr2_no0_18486_sum=mutate (chr2_no0_18486, sum=chr2_no0_18486$sort + chr2_no0_18486$dedup) 
+
+chr2_no0_18486_sum_sort=arrange(chr2_no0_18486_sum, desc(sum))
+
+#cut top 500 possitions
+
+
+chr2_no0_18486_cut=chr2_no0_18486_sum_sort[which(chr2_no0_18486_sum_sort$sort&lt;30000),]
+ plot(chr2_no0_18486_cut$sort ~ chr2_no0_18486_cut$dedup, ylab = &quot;reads&quot;, xlab=&quot;molecules&quot;, main=&quot;Reads vs molecules by position chr2&quot;)
+abline(0,1) </code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-52-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>x=chr2_no0_18486$dedup/chr2_no0_18486$sort
+summary(x)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.01163 0.50000 0.58145 1.00000 1.00000 </code></pre>
+<p>Problem could be in the or statement from awk. It looks like we see 0s in the dedup but not in the sort. We wouldnt expect that.</p>
+<p>Get the 3 and 5 splice sites from the GTF file</p>
+<pre class="bash"><code>less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39; | awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.5prime.gtf
+
+less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39; | awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.3prime.gtf
+</code></pre>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_3_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_3_sbatch.out
+#SBATCH --error=deeptools_3_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.3prime.gtf -b 500 -a 500 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-3prime-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel &quot;3&#39; boundary&quot; -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-3prime-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-3prime-18486.png</code></pre>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_5_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_5_sbatch.out
+#SBATCH --error=deeptools_5_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.3prime.gtf -b 500 -a 500 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-5prime-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel &quot;5 boundary&quot; -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-5prime-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-5prime-18486.png</code></pre>
+<p>Now I will seperate the genes bed file into pos and neg genes. This will seperate the genes on each strand but not strand.</p>
+<p>I need to separate the bw files by strand as well. I do this in teh bamCoverage command with –filterRNAstrand froward and –filterRNAstrand reverse</p>
+<p>I can the look at the difference in strand in pos then in neg genes.</p>
+<div id="try-star-alligner" class="section level4">
+<h4>Try star alligner:</h4>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=star_align_net3
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+#SBATCH --output=star_sbatch.out
+#SBATCH --error=star_sbatch.err
+#SBATCH --mail-type=END
+
+
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn /project2/gilad/briana/Net-seq/Net-seq3/data/fastq_extr/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate &gt; /project2/gilad/briana/Net-seq/Net-seq3/data/star/star_net3-18486.bam
+</code></pre>
+<p>Output:<br />
+* Uniquely mapped reads % | 11.46%<br />
+* Average mapped length | 37.17<br />
+* % of reads unmapped: too short | 69.27%<br />
+* % of reads mapped to too many loci | 19.01%</p>
+<p>I will run the same code with 19141.</p>
+<p>Output:<br />
+* Uniquely mapped reads % | 14.65%<br />
+* Average mapped length | 37.90<br />
+* % of reads unmapped: too short | 63.46%<br />
+* % of reads mapped to too many loci | 21.21%</p>
+</div>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -1033,15 +1192,15 @@ other attached packages:
 [5] tidyr_0.7.2    ggplot2_2.2.1  reshape2_1.4.3
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.15     bindr_0.1        knitr_1.18       magrittr_1.5    
- [5] tidyselect_0.2.3 munsell_0.4.3    colorspace_1.3-2 R6_2.2.2        
- [9] rlang_0.1.6      stringr_1.2.0    plyr_1.8.4       tools_3.4.2     
-[13] grid_3.4.2       gtable_0.2.0     git2r_0.21.0     htmltools_0.3.6 
-[17] assertthat_0.2.0 yaml_2.1.16      lazyeval_0.2.1   rprojroot_1.3-2 
-[21] digest_0.6.14    tibble_1.4.2     purrr_0.2.4      glue_1.2.0      
-[25] evaluate_0.10.1  rmarkdown_1.8.5  labeling_0.3     stringi_1.1.6   
-[29] compiler_3.4.2   pillar_1.1.0     scales_0.5.0     backports_1.1.2 
-[33] pkgconfig_2.0.1 </code></pre>
+ [1] Rcpp_0.12.15     pillar_1.1.0     compiler_3.4.2   git2r_0.21.0    
+ [5] plyr_1.8.4       bindr_0.1        tools_3.4.2      digest_0.6.14   
+ [9] jsonlite_1.5     evaluate_0.10.1  tibble_1.4.2     gtable_0.2.0    
+[13] pkgconfig_2.0.1  rlang_0.1.6      yaml_2.1.16      stringr_1.2.0   
+[17] knitr_1.18       rprojroot_1.3-2  grid_3.4.2       tidyselect_0.2.3
+[21] reticulate_1.4   glue_1.2.0       R6_2.2.2         rmarkdown_1.8.5 
+[25] purrr_0.2.4      magrittr_1.5     backports_1.1.2  scales_0.5.0    
+[29] htmltools_0.3.6  assertthat_0.2.0 colorspace_1.3-2 labeling_0.3    
+[33] stringi_1.1.6    lazyeval_0.2.1   munsell_0.4.3   </code></pre>
 </div>
 
 <hr>
