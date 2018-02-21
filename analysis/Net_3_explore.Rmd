@@ -824,6 +824,236 @@ sum(UMI_net3_18486_all$number.y >= 2000)
 which(UMI_net3_18486_all$number.y ==max(UMI_net3_18486_all$number.y))
 ```
 
+###UMI analsis by position:
+
+1. Subset the sort_bam file and dedup bam file by chr 2
+
+```{bash, eval=FALSE}
+samtools view YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.bam 2 -b > YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.chr2.bam
+
+samtools view YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.bam 2 -b > YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.chr2.bam
+```
+
+
+2. run genomecoverage -d (per base genome coverage)
+
+chr2_coverage_18486.sh
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=coverage
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --tasks-per-node=4 
+#SBATCH --mail-type=END
+#SBATCH --output=coverage_sbatch.out
+#SBATCH --error=coverage_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+bedtools genomecov -ibam /project2/gilad/briana/Net-seq/Net-seq3/data/dedup/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.chr2.bam -d > /project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/dedup_18486_chr2.txt
+
+
+bedtools genomecov -ibam  /project2/gilad/briana/Net-seq/Net-seq3/data/sort/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.chr2.bam -d > /project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/sort_18486_chr2.txt
+
+```
+
+
+
+
+3. plot sort coverage by dedup coverage.
+
+Files I made are dedup_18486_chr2.txt and sort_18486_chr2.txt. 
+
+```{python, eval=FALSE}
+import pandas as pd
+import matplotlib.pyplot as plt
+
+
+dedup_18486_chr2= pd.read_csv("/project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/dedup_18486_chr2.txt", sep="\t")
+
+sort_18486_chr2=pd.read_csv("/project2/gilad/briana/Net-seq/Net-seq3/output/chr2_cov/sort_18486_chr2.txt", sep="\t")
+
+
+```
+
+2 options:  
+* plot pyplot from pandas dateframe  
+
+* use awk if statement to get rid of the lines where both are 0.  
+
+```{bash, eval=FALSE}
+cut -f 3 dedup_18486_chr2.txt > count_dedup.txt
+paste -d'\t' sort_18486_chr2.txt count_dedup.txt > sort_dedup_chr2_18486.txt
+```
+
+
+Now I need to get rid of the lines that are both 0:  
+
+```{bash, eval=FALSE}
+ awk '{if($3!=0 || $4!=0) print($1 "\t" $2 "\t" $3 "\t" $4)}' sort_dedup_chr2_18486.txt > sort_dedup_chr2_no0_18486.txt
+```
+
+```{r}
+chr2_no0_18486=read.csv("../data/sort_dedup_chr2_no0_18486.txt", header = FALSE, sep="\t")
+colnames(chr2_no0_18486)= c("chr", "pos", "sort", "dedup")
+
+ plot(chr2_no0_18486$sort ~ chr2_no0_18486$dedup, ylab = "reads", xlab="molecules", main="Reads vs molecules by position chr2")
+
+
+
+summary(chr2_no0_18486$sort==0)
+summary(chr2_no0_18486$dedup ==0)
+
+```
+
+
+I need to subset the super high expressed ones to see the distribution better.  
+
+```{r}
+chr2_no0_18486_sum=mutate (chr2_no0_18486, sum=chr2_no0_18486$sort + chr2_no0_18486$dedup) 
+
+chr2_no0_18486_sum_sort=arrange(chr2_no0_18486_sum, desc(sum))
+
+#cut top 500 possitions
+
+
+chr2_no0_18486_cut=chr2_no0_18486_sum_sort[which(chr2_no0_18486_sum_sort$sort<30000),]
+ plot(chr2_no0_18486_cut$sort ~ chr2_no0_18486_cut$dedup, ylab = "reads", xlab="molecules", main="Reads vs molecules by position chr2")
+abline(0,1) 
+ 
+```
+
+```{r}
+x=chr2_no0_18486$dedup/chr2_no0_18486$sort
+summary(x)
+```
+
+
+
+
+
+Problem could be in the or statement from awk. It looks like we see 0s in the dedup but not in the sort. We wouldnt expect that.  
+
+
+Get the 3 and 5 splice sites from the GTF file 
+
+```{bash, eval=FALSE}
+less gencode.v19.annotation.gtf | tr "\"" "\t" | awk '$3 == "exon"' | awk 'NR >=6 {if($7 == "+") print($1 "\t" $4 -1 "\t" $4 "\t" $10 "\t0\t" $7 ); else print($1 "\t" $5 -1 "\t" $5 "\t" $10 "\t0\t" $7 )}'  | sort -k1,1 -k2,2n > gencode.v19.5prime.gtf
+
+less gencode.v19.annotation.gtf | tr "\"" "\t" | awk '$3 == "exon"' | awk 'NR >=6 {if($7 == "+") print($1 "\t" $5 -1 "\t" $5 "\t" $10 "\t0\t" $7 ); else print($1 "\t" $4 -1 "\t" $4 "\t" $10 "\t0\t" $7 )}'  | sort -k1,1 -k2,2n > gencode.v19.3prime.gtf
+
+```
+
+
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_3_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_3_sbatch.out
+#SBATCH --error=deeptools_3_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.3prime.gtf -b 500 -a 500 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-3prime-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel "3' boundary" -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-3prime-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-3prime-18486.png
+```
+
+
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_5_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=30G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_5_sbatch.out
+#SBATCH --error=deeptools_5_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.3prime.gtf -b 500 -a 500 -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-5prime-18486.gz
+
+plotHeatmap --sortRegions descend --refPointLabel "5 boundary" -m /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-5prime-18486.gz  -out /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-5prime-18486.png
+```
+
+
+Now I will seperate the genes bed file into pos and neg genes. This will seperate the genes on each strand but not strand. 
+
+I need to separate the bw files by strand as well. I do this in teh bamCoverage command with --filterRNAstrand froward and --filterRNAstrand reverse
+
+I can the look at the difference in strand in pos then in neg genes.  
+
+
+
+####Try star alligner:
+
+
+```{bash, eval=FALSE }
+#!/bin/bash
+
+#SBATCH --job-name=star_align_net3
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=50G
+#SBATCH --tasks-per-node=4 
+#SBATCH --output=star_sbatch.out
+#SBATCH --error=star_sbatch.err
+#SBATCH --mail-type=END
+
+
+
+module load Anaconda3
+source activate net-seq
+
+STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --readFilesIn /project2/gilad/briana/Net-seq/Net-seq3/data/fastq_extr/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001_extracted.fastq  --outFilterMultimapNmax 1 --outSAMtype BAM SortedByCoordinate --outStd BAM_SortedByCoordinate > /project2/gilad/briana/Net-seq/Net-seq3/data/star/star_net3-18486.bam
+
+
+```
+
+
+
+Output:  
+* Uniquely mapped reads % |	11.46%  
+* Average mapped length |	37.17   
+* % of reads unmapped: too short |	69.27%  
+* % of reads mapped to too many loci |	19.01%  
+
+I will run the same code with 19141. 
+
+Output:  
+* Uniquely mapped reads % |	14.65%  
+* Average mapped length |	37.90  
+*  % of reads unmapped: too short |	63.46%  
+* % of reads mapped to too many loci |	21.21%  
+
+
+
 
 
 ## Session information
