@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-02-21</p>
+<p><strong>Last updated:</strong> 2018-02-23</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 03d365d</p>
+<p><strong>Code version:</strong> 4449fa3</p>
 <!-- Add your analysis here -->
 <div id="mapped-reads" class="section level2">
 <h2>Mapped reads</h2>
@@ -339,7 +339,7 @@ shared across the workflowr files. -->
 <p>Look at number of reads, mapped reads, deduplicated reads.</p>
 <p>‘samtools view -c -F 4’</p>
 <pre class="r"><code>libraries=c(&quot;18486&quot;, &quot;18505&quot;, &quot;18508&quot;, &quot;19128&quot;, &quot;19141&quot;, &quot;19193&quot;, &quot;19239&quot;, &#39;19257&#39;)
-fastq=c( 34342214,42959246,205654644, 51413661,211367408,52841852,54253650,45506210)
+fastq=c( 34342214,42959246,51413661, 57292491,52841852,60898831,54253650,45506210)
 mapped=c(14018943,23607050,26532568,38084941,28165596,37084191,37095436,26636660)
 dedup= c(1446379, 1032174,1642314,2469438,1926300,2717515, 2361238, 1377712 )
 
@@ -347,7 +347,7 @@ read_count=rbind(fastq,mapped,dedup)
 colnames(read_count)=libraries </code></pre>
 <pre class="r"><code>total_reads= sum(fastq)
 total_reads</code></pre>
-<pre><code>[1] 698338885</code></pre>
+<pre><code>[1] 399508155</code></pre>
 <pre class="r"><code>total_map= sum(mapped)
 total_map</code></pre>
 <pre><code>[1] 231225385</code></pre>
@@ -355,14 +355,14 @@ total_map</code></pre>
 total_dedup</code></pre>
 <pre><code>[1] 14973070</code></pre>
 <pre class="r"><code>total_map/total_reads</code></pre>
-<pre><code>[1] 0.3311077</code></pre>
+<pre><code>[1] 0.5787751</code></pre>
 <pre class="r"><code>total_dedup/total_map</code></pre>
 <pre><code>[1] 0.0647553</code></pre>
 <p>Make a plot to look at this by line:</p>
 <pre class="r"><code>count_plot=barplot(as.matrix(read_count), main=&quot;Counts for coverage and complexity&quot;,
   xlab=&quot;Library&quot;, col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;),
     ylab=&quot;Read counts&quot;)
-legend(&quot;topright&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = .75)</code></pre>
+legend(&quot;topleft&quot;, legend = c(&quot;total&quot;, &quot;mapped&quot;, &quot;UMI&quot;), col=c(&quot;lightskyblue2&quot;,&quot;dodgerblue1&quot;,&quot;navy&quot;), pch=20, cex = .75)</code></pre>
 <p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Look at this by proportions:</p>
 <pre class="r"><code>percent_mapped= mapped/fastq
@@ -384,12 +384,19 @@ legend(&quot;bottomright&quot;, legend = c(&quot;un-mapped&quot;, &quot;mapped&q
 14018943 25801188 27401128 28903173 37087002 38084941 </code></pre>
 <pre class="r"><code>summary(percent_mapped)</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.1210  0.3056  0.5403  0.4594  0.6428  0.6927 </code></pre>
+ 0.3661  0.4935  0.5403  0.5317  0.5787  0.6402 </code></pre>
 <pre class="r"><code>summary(percent_not_mapped)</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
- 0.2592  0.3117  0.4326  0.5085  0.6605  0.8710 </code></pre>
-<p>Net1 UMI/fastq: 0.03347032 0.02509783 0.02486150 0.01652832 Mayer UMI/fastq: 0.01647986<br />
-Net3 UMI/fastq: 0.042116650 0.024026818 0.007985786 0.048030775 0.009113515 0.051427323 0.043522196 0.030275253</p>
+ 0.3163  0.3771  0.4326  0.4313  0.4712  0.5918 </code></pre>
+<pre class="r"><code>summary(percent_UMI)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.02403 0.03153 0.03929 0.03701 0.04321 0.04462 </code></pre>
+<pre class="r"><code>percent_mapped</code></pre>
+<pre><code>[1] 0.3660965 0.5254952 0.4841175 0.6216435 0.4965628 0.5643241 0.6402186
+[8] 0.5550660</code></pre>
+<pre class="r"><code>percent_UMI</code></pre>
+<pre><code>[1] 0.04211665 0.02402682 0.03194314 0.04310230 0.03645406 0.04462343
+[7] 0.04352220 0.03027525</code></pre>
 <p>I will now use the get_mapped.py script from the previous analysis to see how long the mapped reads are. I copied it to /project2/gilad/briana/Net-seq/Net-seq3/code. The code takes in sorted bam file and an output text file. I will create a sbatch script to run this on all 8 files. This file is called wrap_get_mapped.sh and is in the same code directory.</p>
 <pre class="bash"><code>#!/bin/bash
 
@@ -654,7 +661,7 @@ ggheatmap</code></pre>
 <pre class="r"><code>summary(net_cov_full$`18486`)</code></pre>
 <pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
       0.0       0.0       5.0     325.7      22.0 2651806.0 </code></pre>
-<pre class="r"><code>plot(log(sort(net_cov_full$`18486`, decreasing = TRUE)))</code></pre>
+<pre class="r"><code>plot(log10(sort(net_cov_full$`18486`, decreasing = TRUE)))</code></pre>
 <p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-21-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(log(sort(net_cov_full$`18505`, decreasing = TRUE)))</code></pre>
 <p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-21-2.png" width="672" style="display: block; margin: auto;" /></p>
@@ -1086,12 +1093,71 @@ abline(0,1) </code></pre>
 summary(x)</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
 0.00000 0.01163 0.50000 0.58145 1.00000 1.00000 </code></pre>
-<p>Problem could be in the or statement from awk. It looks like we see 0s in the dedup but not in the sort. We wouldnt expect that.</p>
+<p>Specifically remove rows in the INSIG2 gene: 118843994-118869607</p>
+<pre class="r"><code>chr2_no0_18486_noinsig2= chr2_no0_18486[which(chr2_no0_18486$pos &gt; 118869607 | chr2_no0_18486$pos &lt; 118843994),]</code></pre>
+<p>This gets rid of 22550 rows. Now I can plot again.</p>
+<pre class="r"><code> plot(chr2_no0_18486_noinsig2$sort ~ chr2_no0_18486_noinsig2$dedup, ylab = &quot;reads&quot;, xlab=&quot;molecules&quot;, main=&quot;Reads vs molecules by position chr2&quot;)
+abline(0,1) </code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /> Redo this analysis but only map 3’ end of the reads.</p>
+<pre class="r"><code>chr2_3prime_no0_18486=read.csv(&quot;../data/sort_dedup_3prime_chr2_no0.18486.txt&quot;, header = FALSE, sep=&quot;\t&quot;)
+colnames(chr2_3prime_no0_18486)= c(&quot;chr&quot;, &quot;pos&quot;, &quot;sort&quot;, &quot;dedup&quot;)
+
+ plot(chr2_3prime_no0_18486$sort ~ chr2_3prime_no0_18486$dedup, ylab = &quot;reads&quot;, xlab=&quot;molecules&quot;, main=&quot;Reads vs molecules by position chr2&quot;)</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-56-1.png" width="672" style="display: block; margin: auto;" /> Cut that top point:</p>
+<pre class="r"><code>chr2_3prime_no0_18486_sum=mutate (chr2_3prime_no0_18486, sum=chr2_3prime_no0_18486$sort + chr2_3prime_no0_18486$dedup) 
+
+chr2_3prime_no0_18486_sum_sort=arrange(chr2_3prime_no0_18486_sum, desc(sum))
+
+
+
+chr2_3prime_no0_18486_cut=chr2_3prime_no0_18486_sum_sort[which(chr2_3prime_no0_18486_sum_sort$sort&lt;10000),]
+plot(chr2_3prime_no0_18486_cut$sort ~ chr2_3prime_no0_18486_cut$dedup, ylab = &quot;reads&quot;, xlab=&quot;molecules&quot;, main=&quot;Reads vs molecules by position chr2&quot;)
+abline(0,1) </code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>y=chr2_3prime_no0_18486$dedup/chr2_3prime_no0_18486$sort
+summary(y)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.5000  1.0000  0.8051  1.0000  1.0000 </code></pre>
+<pre class="r"><code>#look at top difference ones 
+chr2_3prime_no0_18486_sum_sort_dif= mutate(chr2_3prime_no0_18486_sum_sort, diff=chr2_3prime_no0_18486_sum_sort$sort - chr2_3prime_no0_18486_sum_sort$dedup)</code></pre>
+<div id="coverage-at-splice-sites" class="section level4">
+<h4>Coverage at splice sites</h4>
 <p>Get the 3 and 5 splice sites from the GTF file</p>
-<pre class="bash"><code>less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39; | awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.5prime.gtf
+<pre class="bash"><code>less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39;| awk &quot;&quot; | awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.5prime.gtf
 
 less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39; | awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.3prime.gtf
 </code></pre>
+<p>Get rid of first exon:</p>
+<pre class="bash"><code>less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39;| awk &#39;$34 != &quot;1;&quot;&#39; | awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.5prime.noE1.bed
+
+less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;exon&quot;&#39; | awk &#39;$34 != &quot;1;&quot;&#39;| awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $5 -1 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $4 -1 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.3prime.noE1.bed</code></pre>
+<p>Now I need to make a TES bed file. I want 3 == gene. On the pos strand I want 4 - 300 to 4 and for the reverse strand I want 5 -300 to 5</p>
+<pre class="bash"><code>less gencode.v19.annotation.gtf | tr &quot;\&quot;&quot; &quot;\t&quot; | awk &#39;$3 == &quot;gene&quot;&#39;| awk &#39;NR &gt;=6 {if($7 == &quot;+&quot;) print($1 &quot;\t&quot; $4 - 300 &quot;\t&quot; $4 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 ); else print($1 &quot;\t&quot; $5 -300 &quot;\t&quot; $5 &quot;\t&quot; $10 &quot;\t0\t&quot; $7 )}&#39;  | sort -k1,1 -k2,2n &gt; gencode.v19.300TES.bed</code></pre>
+<p>Now I want to get only the lines in the noE1 files that are not in the TES file. I will do this with bedtool intersect -v</p>
+<pre class="bash"><code>#!/bin/bash
+
+
+#SBATCH --job-name=intersect
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --tasks-per-node=4 
+#SBATCH --mail-type=END
+#SBATCH --output=intersect.sbatch.out
+#SBATCH --error=intersect.sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+
+
+bedtools intersect -v -sorted -a gencode.v19.5prime.noE1.bed -b gencode.v19.300TES.bed &gt; gencode.v19.5prime.noE1noTES.bed
+
+
+bedtools intersect -v -sorted -a gencode.v19.3prime.noE1.bed -b gencode.v19.300TES.bed &gt; gencode.v19.3prime.noE1noTES.bed
+</code></pre>
+<p>No I will change the 5prime and 3prime deep tools scripts to use these files.</p>
 <pre class="bash"><code>#!/bin/bash
 
 
@@ -1135,6 +1201,7 @@ plotHeatmap --sortRegions descend --refPointLabel &quot;5 boundary&quot; -m /pro
 <p>Now I will seperate the genes bed file into pos and neg genes. This will seperate the genes on each strand but not strand.</p>
 <p>I need to separate the bw files by strand as well. I do this in teh bamCoverage command with –filterRNAstrand froward and –filterRNAstrand reverse</p>
 <p>I can the look at the difference in strand in pos then in neg genes.</p>
+</div>
 <div id="try-star-alligner" class="section level4">
 <h4>Try star alligner:</h4>
 <pre class="bash"><code>#!/bin/bash
@@ -1168,6 +1235,82 @@ STAR --runThreadN 4 --genomeDir /scratch/midway2/brimittleman/star_genome/ --rea
 * % of reads mapped to too many loci | 21.21%</p>
 </div>
 </div>
+<div id="correlations-with-rna-seq-for-the-same-line" class="section level3">
+<h3>Correlations with rna seq for the same line</h3>
+<p>/project2/gilad/yangili/LCLs/bams/RNAseqGeuvadis_STAR_18486.final.bam</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=RNA_count_cov
+#SBATCH --output=RNA_count_cov_sbatch.out
+#SBATCH --error=RNA_count_cov_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=bigmem2
+#SBATCH --mem=60G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+bedtools coverage -counts -sorted -a /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.annotation.sort.bed -b /project2/gilad/yangili/LCLs/bams/RNAseqGeuvadis_STAR_18486.final.bam &gt; /project2/gilad/briana/Net-seq/Net-seq3/data/gencode_cov/RNAseqGeuvadis_STAR_18486.coverage.bed</code></pre>
+<p>Correlation between this and 18486,</p>
+<pre class="r"><code>rna_seq_cov= read.csv(&quot;../data/RNAseqGeuvadis_STAR_18486.coverage.bed&quot;, stringsAsFactors = FALSE, sep=&quot;\t&quot;, header=FALSE)
+dim(net_cov_full) </code></pre>
+<pre><code>[1] 99900    14</code></pre>
+<pre class="r"><code>dim(rna_seq_cov)</code></pre>
+<pre><code>[1] 99900    13</code></pre>
+<pre class="r"><code>plot(log(rna_seq_cov$V13)~ log(net_cov_full$`18486`))</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-69-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(rna_seq_cov$V13~ net_cov_full$`18486`)</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-69-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>both_18486=as.data.frame(cbind(rna_seq_cov$V13, net_cov_full$`18486`))
+colnames(both_18486)=c(&quot;RNA&quot;, &quot;Net&quot;)
+cor(both_18486$RNA, both_18486$Net)</code></pre>
+<pre><code>[1] -0.0003325867</code></pre>
+<p>Need to subset this:</p>
+<ul>
+<li>extreme outliers in Net-seq<br />
+</li>
+<li>both =0</li>
+</ul>
+<pre class="r"><code>both_18486_no0= both_18486[both_18486$Net&lt;=30000,]
+both_18486_no0 %&gt;%
+   ggplot(., aes(log(RNA), log(Net))) +
+         geom_point(na.rm = TRUE, size =0.1) +
+         geom_density2d(na.rm = TRUE, size = 1, colour = &#39;red&#39;) +
+         ylab(&#39;log(RNA gene Count)&#39;) +
+         xlab(&#39;Log(Net-seq gene Count)&#39;) + 
+        ggtitle(&quot;Counts per gene in RNAseq bs Netseq 18486&quot;)</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-70-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="quality-of-dedup-mapped" class="section level3">
+<h3>Quality of dedup mapped</h3>
+<p>/project2/gilad/briana/Net-seq/Net-seq3/data/dedup/YG-SP-NET3-18486-2018-1-8_S3_L008_R1_001-sort.dedup.bam</p>
+<pre class="r"><code>qual_dedup_18486=read.csv(&quot;../data/dedup_18486_mapqual.txt&quot;)
+summary(qual_dedup_18486)</code></pre>
+<pre><code>      X13       
+ Min.   : 6.00  
+ 1st Qu.:13.00  
+ Median :13.00  
+ Mean   :19.37  
+ 3rd Qu.:20.00  
+ Max.   :40.00  </code></pre>
+<pre class="r"><code>hist(qual_dedup_18486$X13)</code></pre>
+<p><img src="figure/Net_3_explore.Rmd/unnamed-chunk-71-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>t.test(mq_18486$V1, qual_dedup_18486$X13)</code></pre>
+<pre><code>
+    Welch Two Sample t-test
+
+data:  mq_18486$V1 and qual_dedup_18486$X13
+t = -188.18, df = 1709600, p-value &lt; 2.2e-16
+alternative hypothesis: true difference in means is not equal to 0
+95 percent confidence interval:
+ -1.920881 -1.881281
+sample estimates:
+mean of x mean of y 
+ 17.46468  19.36576 </code></pre>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -1198,9 +1341,9 @@ loaded via a namespace (and not attached):
 [13] pkgconfig_2.0.1  rlang_0.1.6      yaml_2.1.16      stringr_1.2.0   
 [17] knitr_1.18       rprojroot_1.3-2  grid_3.4.2       tidyselect_0.2.3
 [21] reticulate_1.4   glue_1.2.0       R6_2.2.2         rmarkdown_1.8.5 
-[25] purrr_0.2.4      magrittr_1.5     backports_1.1.2  scales_0.5.0    
-[29] htmltools_0.3.6  assertthat_0.2.0 colorspace_1.3-2 labeling_0.3    
-[33] stringi_1.1.6    lazyeval_0.2.1   munsell_0.4.3   </code></pre>
+[25] purrr_0.2.4      magrittr_1.5     MASS_7.3-48      backports_1.1.2 
+[29] scales_0.5.0     htmltools_0.3.6  assertthat_0.2.0 colorspace_1.3-2
+[33] labeling_0.3     stringi_1.1.6    lazyeval_0.2.1   munsell_0.4.3   </code></pre>
 </div>
 
 <hr>
