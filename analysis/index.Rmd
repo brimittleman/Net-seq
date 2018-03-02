@@ -39,6 +39,13 @@ Initial analysis for Net-3:
 * [Net-3 Initial exploration](Net_3_explore.html)  
 
 
+Net-pilot analysis: 
+
+* [Update snakefile for pilot analysis](update_snakefile.html)  
+
+* [Create blacklist to filter reads](create_blacklist.html)  
+
+
 Exploration of the 3` seq and ApA sites:  
 
 * [Look for read enrichment at ApA sites](three_prime_UTR.html) 

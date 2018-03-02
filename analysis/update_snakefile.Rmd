@@ -1,0 +1,137 @@
+---
+title: "Update Snakefile for pilot analysis"
+author: "Briana Mittleman"
+date: 2018-03-02
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+##Pilot data:  
+
+The pilot project has 16 human lines of net-seq data. I have 3 lanes of sequencing for each library of 8. The first library is the same 8 samples from Net3. I can use zcat to combine the samles from seperate lanes into one file. I will call these [sample_name]_combined_Netpilot.fastq. I will use the project directory /project2/gilad/briana/Net-seq-pilot 
+
+##Snakefile Update:  
+
+I will update my snakefile by copying the old one as Snakefile_old.  
+
+Changes:  
+
+* change genome location to /project2/gilad/briana/genome_anotation_data  
+
+* Add picard tools annotation to the snakefile  
+
+* compute genome coverage for the dedup and sorted bam files  
+
+
+
+###Genome location  
+
+My old snakefile create the reference genome for every new analysis. It would be better to build the reference once and always keep it in one place. I will now be in /project2/gilad/briana/genome_anotation_data. To do this I will change the snakefile to point to this location and change the config file to point to the correct location.  
+```{bash, eval=FALSE}
+#config file  
+
+dir_genome: /project2/gilad/briana/genome_anotation_data/
+
+#snakefile
+dir_gen=config["dir_genome"]
+dir_genome= dir_gen + "genome/" 
+
+
+```
+
+###Picard tools  
+
+Picard tools will take in a flat file and a rRna file and will assess coverage at genomic regions. Before I make the rule I need to convert the gencode.v19.annotation.gtf to a flat file.  
+
+Update net-seq environment:  
+
+* ucsc-gtfToGenePred  
+* picard >= 2.9.2  
+
+```{bash, eval=FALSE}
+#convert gtf to genepred flat  
+gtfToGenePred -genePredExt -ignoreGroupsWithoutExons gencode.v19.annotation.gtf gencode.v19.annotation.refFlat
+```
+
+Adapt rule from Seb's Snakefile  
+
+```{bash, eval=FALSE}
+#config file 
+ref_flat: /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.refFlat
+ribosome_intervals: /project2/gilad/briana/genome_anotation_data/hg19.rRNA.intervals  
+
+#snakefile  
+ref_flat = config["ref_flat"]
+ribosome_int = config["ribosome_intervals"]
+
+
+#rule 
+rule collect_rna_metrics:
+    input:
+        bam = dir_sort + "{samples}-sort.bam"
+        ref_flat = ref_flat,
+        ribosome_int = ribosome_int
+    output:
+        rna_metrics = output + "{samples}_RNAmetrics.picard.txt"
+    params:
+        strand = "NONE",
+        memory = "-Xmx12G"
+    shell:
+        "picard CollectRnaSeqMetrics {params.memory} I={input.bam} O={output.rna_metrics} REF_FLAT={input.ref_flat} STRAND={params.strand} RIBOSOMAL_INTERVALS={input.ribosome_int}"
+
+```
+
+
+###Genome Coverage  
+
+The old snakefile has a genome_cov rule for genome cov of the deduplicated files. I want to do this for the sort and dedup files. I also will change the rule so it is -d -5.  
+```{bash, eval=FALSE}
+rule genome_cov_dedup:
+    input:
+       bamdedup = dir_dedup + "{samples}-sort.dedup.bam",
+       genome = dir_genome + ensembl_genome + ".reads"
+    output:
+       dir_cov + "{samples}-sort.dedup.cov.bed"
+    shell: "bedtools genomecov -d -5 -ibam {input.bamdedup} -g {input.genome} > {output}"
+    
+    
+rule genome_cov_sort:
+    input:
+      bamsort = dir_sort + "{samples}-sort.bam"
+      genome = dir_genome + ensembl_genome + ".reads"  
+    output: 
+      dir_cov + "{samples}-sort.cov.bed"
+    shell: "bedtools genomecov -d -5 -ibam {input.bamsort} -g {input.genome} > {output}"
+   
+   
+#in rule all:  
+expand(dir_cov + "{samples}-sort.dedup.cov.bed", samples=samples),
+expand(dir_cov + "{samples}-sort.cov.bed", samples=samples),
+```
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
