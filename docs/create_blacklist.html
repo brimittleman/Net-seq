@@ -315,12 +315,69 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-02</p>
+<p><strong>Last updated:</strong> 2018-03-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 646ee57</p>
+<p><strong>Code version:</strong> 06a46f9</p>
 <!-- Add your analysis here -->
 <p>This analysis will allow me assess the places in the data that account for the read pileup. I will look for ribosomal, snoRNA, snRNA, hNRP genes. I will then look at highly expressed genes that we would not expect high expression/pileup such as insig1 (found in net3 exploration). I will remove reads at all of these locations by creating a blacklist of sequences to filter the fastq files.</p>
+<div id="gene-expression-analysis" class="section level2">
+<h2>Gene expression analysis</h2>
+<div id="insig2" class="section level4">
+<h4>Insig2</h4>
+<p>First I am subsetting the genome coverage file for the 2nd chromosome. This is where insig2 is. I can use this to look at the distribution.</p>
+<pre class="bash"><code>awk &#39;{ if ($1 = 2) { print } }&#39; YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.bed  &gt; YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.chr2.bed   
+
+
+awk &#39;{ if ($1 = 2) { print } }&#39; YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed  &gt; YG-SP-NET3-18486_combined_Netpilot-sort.cov.chr2.bed   
+
+awk &#39;{ if ($2 &gt; 118846028 &amp;&amp; $2 &lt; 118868573) { print }}&#39; YG-SP-NET3-18486_combined_Netpilot-sort.cov.chr2.bed &gt;  YG-SP-NET3-18486_combined_Netpilot-sort.cov.insig2.bed</code></pre>
+<p>Pull in the insig2:</p>
+<pre class="r"><code>insig2=read.table(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.insig2.bed&quot;, header=FALSE)
+plot(insig2$V3 ~ insig2$V2, ylab=&quot;Read count&quot;, xlab=&quot;Chrom 2 position&quot;, main=&quot;Genome Coverage at Ingsig2 gene&quot;)</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Do this for the same line but deduplicated:</p>
+<pre class="bash"><code>awk &#39;{ if ($2 &gt; 118846028 &amp;&amp; $2 &lt; 118868573) { print }}&#39; YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.chr2.bed &gt;  YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.insig2.bed
+</code></pre>
+<pre class="r"><code>insig2_de=read.table(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.insig2.bed&quot;, header=FALSE)
+plot(insig2_de$V3 ~ insig2_de$V2, ylab=&quot;Molecule count&quot;, xlab=&quot;Chrom 2 position&quot;, main=&quot;Genome Coverage at Ingsig2 gene (deduplicated)&quot;)</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>max_sort=max(insig2$V3)
+max_sort_de=max(insig2_de$V3)
+1- max_sort_de/max_sort</code></pre>
+<pre><code>[1] 0.9864162</code></pre>
+<p>This means that the deduplication removed 99 percent of the buildup but the peak is still there.</p>
+</div>
+<div id="expand-to-more-genes" class="section level4">
+<h4>Expand to more genes</h4>
+<p>How to make this more efficent:<br />
+* Look at the top genes<br />
+* create a script where I can enter the positions and get out the gene coverage by base (need gene name, chrom, start, end) * pull it into R and plot like this</p>
+<p>To do this I need to use bedtools coverage -counts</p>
+<p>Copy the gencode gene file /project2/gilad/briana/Net-seq/Net-seq3/gencode_noCHR_genes_MT_Fsort.bed to genome annotation.</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=count_cov
+#SBATCH --output=count_cov_sbatch.out
+#SBATCH --error=count_cov_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=36G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e &#39;s/.*\YG-SP-//&#39; | sed -e &quot;s/_combined_Netpilot-sort.bed$//&quot;)
+
+bedtools coverage -counts -sorted -a /project2/gilad/briana/genome_anotation_data/gencode_noCHR_genes_MT_Fsort.bed -b $1 &gt; /project2/gilad/briana/Net-seq-pilot/data/gene_cov/${describer}.gene.coverage.bed</code></pre>
+<p>Run this first for /project2/gilad/briana/Net-seq-pilot/data/gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.bed</p>
+</div>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
