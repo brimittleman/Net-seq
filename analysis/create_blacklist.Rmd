@@ -28,6 +28,82 @@ knitr::read_chunk("chunks.R")
 
 This analysis will allow me assess the places in the data that account for the read pileup. I will look for ribosomal, snoRNA, snRNA, hNRP genes. I will then look at highly expressed genes that we would not expect high expression/pileup such as insig1 (found in net3 exploration). I will remove reads at all of these locations by creating a blacklist of sequences to filter the fastq files.  
 
+##Gene expression analysis  
+
+####Insig2
+
+First I am subsetting the genome coverage file for the 2nd chromosome. This is where insig2 is. I can use this to look at the distribution.  
+
+```{bash, eval=FALSE}
+awk '{ if ($1 = 2) { print } }' YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.bed  > YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.chr2.bed   
+
+
+awk '{ if ($1 = 2) { print } }' YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed  > YG-SP-NET3-18486_combined_Netpilot-sort.cov.chr2.bed   
+
+awk '{ if ($2 > 118846028 && $2 < 118868573) { print }}' YG-SP-NET3-18486_combined_Netpilot-sort.cov.chr2.bed >  YG-SP-NET3-18486_combined_Netpilot-sort.cov.insig2.bed
+```
+
+Pull in the insig2: 
+
+```{r}
+insig2=read.table("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.insig2.bed", header=FALSE)
+plot(insig2$V3 ~ insig2$V2, ylab="Read count", xlab="Chrom 2 position", main="Genome Coverage at Ingsig2 gene")
+```
+
+Do this for the same line but deduplicated:  
+```{bash, eval=FALSE}
+awk '{ if ($2 > 118846028 && $2 < 118868573) { print }}' YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.chr2.bed >  YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.insig2.bed
+
+```
+
+```{r}
+insig2_de=read.table("../data/YG-SP-NET3-18486_combined_Netpilot-sort.dedup.cov.insig2.bed", header=FALSE)
+plot(insig2_de$V3 ~ insig2_de$V2, ylab="Molecule count", xlab="Chrom 2 position", main="Genome Coverage at Ingsig2 gene (deduplicated)")
+```
+```{r}
+max_sort=max(insig2$V3)
+max_sort_de=max(insig2_de$V3)
+1- max_sort_de/max_sort
+```
+This means that the deduplication removed 99 percent of the buildup but the peak is still there.  
+
+
+####Expand to more genes  
+How to make this more efficent:  
+* Look at the top genes  
+* create a script where I can enter the positions and get out the gene coverage by base  (need gene name, chrom, start, end)
+* pull it into R and plot like this  
+
+To do this I need to use bedtools coverage -counts 
+
+
+Copy the gencode gene file /project2/gilad/briana/Net-seq/Net-seq3/gencode_noCHR_genes_MT_Fsort.bed to genome annotation. 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=count_cov
+#SBATCH --output=count_cov_sbatch.out
+#SBATCH --error=count_cov_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=36G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-sort.bed$//")
+
+bedtools coverage -counts -sorted -a /project2/gilad/briana/genome_anotation_data/gencode_noCHR_genes_MT_Fsort.bed -b $1 > /project2/gilad/briana/Net-seq-pilot/data/gene_cov/${describer}.gene.coverage.bed
+```
+
+Run this first for /project2/gilad/briana/Net-seq-pilot/data/gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.bed  
+
 ## Session information
 
 <!-- Insert the session information into the document -->
