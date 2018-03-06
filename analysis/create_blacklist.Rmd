@@ -68,6 +68,19 @@ max_sort_de=max(insig2_de$V3)
 This means that the deduplication removed 99 percent of the buildup but the peak is still there.  
 
 
+Try this with ggplot. 
+```{r}
+library(ggplot2)
+colnames(insig2)=c("chr", "pos", "count")
+denstiy_plot= ggplot(data=insig2, aes(y=count, x=pos)) + geom_line(aes(x=pos,y=count))
+denstiy_plot
+
+
+```
+
+
+
+
 ####Expand to more genes  
 How to make this more efficent:  
 * Look at the top genes  
@@ -102,7 +115,159 @@ describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpil
 bedtools coverage -counts -sorted -a /project2/gilad/briana/genome_anotation_data/gencode_noCHR_genes_MT_Fsort.bed -b $1 > /project2/gilad/briana/Net-seq-pilot/data/gene_cov/${describer}.gene.coverage.bed
 ```
 
-Run this first for /project2/gilad/briana/Net-seq-pilot/data/gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.bed  
+Run this first for /project2/gilad/briana/Net-seq-pilot/data/gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.bed 
+
+```{r}
+gene_cov_18486= read.table("../data/NET3-18486.gene.coverage.bed")
+colnames(gene_cov_18486)= c("chr", "start", "end", "gene", "score", "strand", "count")
+
+```
+
+```{r}
+summary(gene_cov_18486$count)
+gene_cov_18486_sort= gene_cov_18486[order(gene_cov_18486$count, decreasing = TRUE),]
+plot(log10(gene_cov_18486_sort$count))
+gene_cov_18486_sort[1:15,]
+```
+
+Many of these are SnRNAs. Getting rid of these should help.  
+
+
+1. Insig2  
+2. (lincRNA)- AC093901.1- CCAGGGAA(+) so - strand is GGTCCCTT
+3. RNU5B (SnRNA)  ENST00000363286.1
+4. RNVU1  (SnRNA)  
+5. RNU5A (SnRNA)  
+6. BTRC  
+
+Make the bash script  
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=gene_cov
+#SBATCH --time=8:00:00
+#SBATCH --output=gene_cov_sbatch.out
+#SBATCH --error=gene_cov_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=10G
+#SBATCH --mail-type=END
+
+#script takes in the chr, start, end, and gene name. It will output a 
+chr=$1
+start=$2
+end=$3
+name=$4
+
+
+awk -v var=${chr} '{ if ($1 = var) { print }}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed  > temp
+
+awk -v var1=${start} -v var2=${end} '{ if ($2 > var1 && $2 < var2) { print }}' -v var1=${start} -v var2=${end} temp >  /project2/gilad/briana/Net-seq-pilot/output/high_gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.${name}.bed
+```
+
+Rfunction to make plot:  
+
+```{r}
+plot_gene_dis <- function(file, chr, geneName){
+  gene <- read.table(file, header=FALSE)
+  colnames(gene)=c("chr", "pos", "count")
+  plt_gene = ggplot(data=gene) + geom_line(aes(x=pos,y=count)) + ggtitle(paste("Genome coverage at ",geneName)) + xlab(paste("Chrom ",chr ," postion")) + ylab("read count")
+  return(plt_gene)
+}
+```
+
+
+
+
+sbatch high_ex_gene_cov.sh '1' '148604907' '148605072' 'AC093901'
+
+```{r}
+aco_plt=plot_gene_dis("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.AC093901.bed", "1", "ACO93901")
+aco_plt
+```
+
+
+sbatch high_ex_gene_cov.sh '15' '65597014' '65597130' 'RNU5B'
+
+
+```{r}
+RNU5B_plt=plot_gene_dis("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.RNU5B.bed", "15", "RNU5B")
+
+RNU5B_plt
+
+RNU5B=read.table("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.RNU5B.bed", header=FALSE, col.names = c("chr", "pos", "count"))
+```
+sbatch high_ex_gene_cov.sh '10' '103113819' '103317078' 'BTRC'
+
+```{r}
+btrc_plt= plot_gene_dis("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.BTRC.bed", "10", "BTRC")
+btrc_plt
+
+
+btrc=read.table("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.BTRC.bed", header=FALSE)
+colnames(btrc)= c("chr", "pos", "count")
+plot(btrc$count~btrc$pos)
+btrc_sort=btrc[order(btrc$count, decreasing=TRUE),]
+btrc_sort[1:20,]
+```
+
+
+sbatch high_ex_gene_cov.sh '10' '103124601' '103124792' 'rnu259p'
+```{r}
+rnu259_plt=plot_gene_dis("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.rnu259p.bed", "10", "rnu259p")
+rnu259_plt
+```
+
+
+
+sbatch high_ex_gene_cov.sh '4' '76781024' '76823681' 'ppef2'
+
+
+```{r}
+ppef2_plt= plot_gene_dis("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.ppef2.bed", "4", "ppef2")
+ppef2_plt
+```
+
+
+sbatch high_ex_gene_cov.sh '11' '62600383' '62609281' 'WDR74'
+62600383	62609281
+
+```{r}
+WDR74_plt= plot_gene_dis("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.WDR74.bed", "11", "WDR74")
+WDR74_plt
+wd74=read.table("../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.WDR74.bed")
+colnames(wd74)=c("chr", "pos", "count")
+summary(wd74$V3)
+```
+
+
+####Summary stat for buildup  
+Think for a summary statistic for these genes. Maybe the top position over the sum of the gene standardized by length?
+
+```{r}
+buildup_test_stat=function(df){
+  length=nrow(df)
+  x=df$count/length
+  max=max(x)
+  teststat= max/sum(x)
+  return(teststat)
+}
+
+
+buildup_test_stat(insig2)
+buildup_test_stat(btrc)
+buildup_test_stat(RNU5B)
+buildup_test_stat(wd74)
+```
+
+
+
+
+####Extend to second sample  
+Extend analysis to 1 more line to make sure the top genes are the same:  
+
+
+
 
 ## Session information
 
