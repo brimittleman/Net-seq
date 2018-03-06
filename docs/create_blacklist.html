@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-05</p>
+<p><strong>Last updated:</strong> 2018-03-06</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 06a46f9</p>
+<p><strong>Code version:</strong> 32a1f5d</p>
 <!-- Add your analysis here -->
 <p>This analysis will allow me assess the places in the data that account for the read pileup. I will look for ribosomal, snoRNA, snRNA, hNRP genes. I will then look at highly expressed genes that we would not expect high expression/pileup such as insig1 (found in net3 exploration). I will remove reads at all of these locations by creating a blacklist of sequences to filter the fastq files.</p>
 <div id="gene-expression-analysis" class="section level2">
@@ -347,6 +347,12 @@ max_sort_de=max(insig2_de$V3)
 1- max_sort_de/max_sort</code></pre>
 <pre><code>[1] 0.9864162</code></pre>
 <p>This means that the deduplication removed 99 percent of the buildup but the peak is still there.</p>
+<p>Try this with ggplot.</p>
+<pre class="r"><code>library(ggplot2)
+colnames(insig2)=c(&quot;chr&quot;, &quot;pos&quot;, &quot;count&quot;)
+denstiy_plot= ggplot(data=insig2, aes(y=count, x=pos)) + geom_line(aes(x=pos,y=count))
+denstiy_plot</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="expand-to-more-genes" class="section level4">
 <h4>Expand to more genes</h4>
@@ -376,6 +382,154 @@ describer=$(echo ${sample} | sed -e &#39;s/.*\YG-SP-//&#39; | sed -e &quot;s/_co
 
 bedtools coverage -counts -sorted -a /project2/gilad/briana/genome_anotation_data/gencode_noCHR_genes_MT_Fsort.bed -b $1 &gt; /project2/gilad/briana/Net-seq-pilot/data/gene_cov/${describer}.gene.coverage.bed</code></pre>
 <p>Run this first for /project2/gilad/briana/Net-seq-pilot/data/gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.bed</p>
+<pre class="r"><code>gene_cov_18486= read.table(&quot;../data/NET3-18486.gene.coverage.bed&quot;)
+colnames(gene_cov_18486)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;count&quot;)</code></pre>
+<pre class="r"><code>summary(gene_cov_18486$count)</code></pre>
+<pre><code>    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+       0        0       14     1665       65 31156619 </code></pre>
+<pre class="r"><code>gene_cov_18486_sort= gene_cov_18486[order(gene_cov_18486$count, decreasing = TRUE),]
+plot(log10(gene_cov_18486_sort$count))</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>gene_cov_18486_sort[1:15,]</code></pre>
+<pre><code>      chr     start       end              gene score strand    count
+12688   2 118846049 118867604 ENST00000245787.4     0      + 31156619
+12689   2 118846049 118868573 ENST00000485520.1     0      + 31156619
+12690   2 118889703 118943962 ENST00000414886.1     0      - 30589292
+5265    1 148604907 148605072 ENST00000384476.1     0      -  2118514
+71571  15  65597014  65597130 ENST00000363286.1     0      +  1738588
+71568  15  65558914  65592956 ENST00000558873.1     0      -  1220341
+71570  15  65588388  65588504 ENST00000362698.1     0      +  1219665
+52960  10 103113819 103317078 ENST00000370187.3     0      +  1198878
+52961  10 103113858 103317054 ENST00000393441.4     0      +  1198862
+52962  10 103113863 103317078 ENST00000408038.2     0      +  1198862
+52963  10 103124601 103124792 ENST00000410482.1     0      -  1198755
+5276    1 149224057 149224221 ENST00000384010.1     0      -  1022753
+23151   4  76781024  76823681 ENST00000286719.7     0      -   935122
+56403  11  62600383  62609281 ENST00000525239.1     0      -   813933
+56407  11  62609090  62609281 ENST00000410396.1     0      -   813798</code></pre>
+<p>Many of these are SnRNAs. Getting rid of these should help.</p>
+<ol style="list-style-type: decimal">
+<li>Insig2<br />
+</li>
+<li>(lincRNA)- AC093901.1- CCAGGGAA(+) so - strand is GGTCCCTT</li>
+<li>RNU5B (SnRNA) ENST00000363286.1</li>
+<li>RNVU1 (SnRNA)<br />
+</li>
+<li>RNU5A (SnRNA)<br />
+</li>
+<li>BTRC</li>
+</ol>
+<p>Make the bash script</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=gene_cov
+#SBATCH --time=8:00:00
+#SBATCH --output=gene_cov_sbatch.out
+#SBATCH --error=gene_cov_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=10G
+#SBATCH --mail-type=END
+
+#script takes in the chr, start, end, and gene name. It will output a 
+chr=$1
+start=$2
+end=$3
+name=$4
+
+
+awk -v var=${chr} &#39;{ if ($1 = var) { print }}&#39; /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed  &gt; temp
+
+awk -v var1=${start} -v var2=${end} &#39;{ if ($2 &gt; var1 &amp;&amp; $2 &lt; var2) { print }}&#39; -v var1=${start} -v var2=${end} temp &gt;  /project2/gilad/briana/Net-seq-pilot/output/high_gene_cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.${name}.bed</code></pre>
+<p>Rfunction to make plot:</p>
+<pre class="r"><code>plot_gene_dis &lt;- function(file, chr, geneName){
+  gene &lt;- read.table(file, header=FALSE)
+  colnames(gene)=c(&quot;chr&quot;, &quot;pos&quot;, &quot;count&quot;)
+  plt_gene = ggplot(data=gene) + geom_line(aes(x=pos,y=count)) + ggtitle(paste(&quot;Genome coverage at &quot;,geneName)) + xlab(paste(&quot;Chrom &quot;,chr ,&quot; postion&quot;)) + ylab(&quot;read count&quot;)
+  return(plt_gene)
+}</code></pre>
+<p>sbatch high_ex_gene_cov.sh ‘1’ ‘148604907’ ‘148605072’ ‘AC093901’</p>
+<pre class="r"><code>aco_plt=plot_gene_dis(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.AC093901.bed&quot;, &quot;1&quot;, &quot;ACO93901&quot;)
+aco_plt</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>sbatch high_ex_gene_cov.sh ‘15’ ‘65597014’ ‘65597130’ ‘RNU5B’</p>
+<pre class="r"><code>RNU5B_plt=plot_gene_dis(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.RNU5B.bed&quot;, &quot;15&quot;, &quot;RNU5B&quot;)
+
+RNU5B_plt</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>RNU5B=read.table(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.RNU5B.bed&quot;, header=FALSE, col.names = c(&quot;chr&quot;, &quot;pos&quot;, &quot;count&quot;))</code></pre>
+<p>sbatch high_ex_gene_cov.sh ‘10’ ‘103113819’ ‘103317078’ ‘BTRC’</p>
+<pre class="r"><code>btrc_plt= plot_gene_dis(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.BTRC.bed&quot;, &quot;10&quot;, &quot;BTRC&quot;)
+btrc_plt</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>btrc=read.table(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.BTRC.bed&quot;, header=FALSE)
+colnames(btrc)= c(&quot;chr&quot;, &quot;pos&quot;, &quot;count&quot;)
+plot(btrc$count~btrc$pos)</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-14-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>btrc_sort=btrc[order(btrc$count, decreasing=TRUE),]
+btrc_sort[1:20,]</code></pre>
+<pre><code>        chr       pos   count
+1840110  10 103124607 1064950
+1840111  10 103124608  111925
+1840108  10 103124605   10272
+1840112  10 103124609    4733
+1840109  10 103124606    1846
+1840113  10 103124610    1693
+1840114  10 103124611     967
+1840115  10 103124612     835
+1840116  10 103124613     698
+1840254  10 103124751     114
+1840117  10 103124614      79
+1840159  10 103124656      78
+1840165  10 103124662      77
+1840158  10 103124655      72
+1809410  10 103297165      56
+841530   10 103142317      49
+1840154  10 103124651      47
+1610687  10 103301700      39
+1840157  10 103124654      32
+1840152  10 103124649      30</code></pre>
+<p>sbatch high_ex_gene_cov.sh ‘10’ ‘103124601’ ‘103124792’ ‘rnu259p’</p>
+<pre class="r"><code>rnu259_plt=plot_gene_dis(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.rnu259p.bed&quot;, &quot;10&quot;, &quot;rnu259p&quot;)
+rnu259_plt</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>sbatch high_ex_gene_cov.sh ‘4’ ‘76781024’ ‘76823681’ ‘ppef2’</p>
+<pre class="r"><code>ppef2_plt= plot_gene_dis(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.ppef2.bed&quot;, &quot;4&quot;, &quot;ppef2&quot;)
+ppef2_plt</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>sbatch high_ex_gene_cov.sh ‘11’ ‘62600383’ ‘62609281’ ‘WDR74’ 62600383 62609281</p>
+<pre class="r"><code>WDR74_plt= plot_gene_dis(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.WDR74.bed&quot;, &quot;11&quot;, &quot;WDR74&quot;)
+WDR74_plt</code></pre>
+<p><img src="figure/create_blacklist.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>wd74=read.table(&quot;../data/YG-SP-NET3-18486_combined_Netpilot-sort.cov.WDR74.bed&quot;)
+colnames(wd74)=c(&quot;chr&quot;, &quot;pos&quot;, &quot;count&quot;)
+summary(wd74$V3)</code></pre>
+<pre><code>Length  Class   Mode 
+     0   NULL   NULL </code></pre>
+</div>
+<div id="summary-stat-for-buildup" class="section level4">
+<h4>Summary stat for buildup</h4>
+<p>Think for a summary statistic for these genes. Maybe the top position over the sum of the gene standardized by length?</p>
+<pre class="r"><code>buildup_test_stat=function(df){
+  length=nrow(df)
+  x=df$count/length
+  max=max(x)
+  teststat= max/sum(x)
+  return(teststat)
+}
+
+
+buildup_test_stat(insig2)</code></pre>
+<pre><code>[1] 0.3864875</code></pre>
+<pre class="r"><code>buildup_test_stat(btrc)</code></pre>
+<pre><code>[1] 0.8870532</code></pre>
+<pre class="r"><code>buildup_test_stat(RNU5B)</code></pre>
+<pre><code>[1] 0.3864984</code></pre>
+<pre class="r"><code>buildup_test_stat(wd74)</code></pre>
+<pre><code>[1] 0.4801532</code></pre>
+</div>
+<div id="extend-to-second-sample" class="section level4">
+<h4>Extend to second sample</h4>
+<p>Extend analysis to 1 more line to make sure the top genes are the same:</p>
 </div>
 </div>
 <div id="session-information" class="section level2">
@@ -396,11 +550,17 @@ locale:
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
+other attached packages:
+[1] ggplot2_2.2.1
+
 loaded via a namespace (and not attached):
- [1] compiler_3.4.2  backports_1.1.2 magrittr_1.5    rprojroot_1.3-2
- [5] tools_3.4.2     htmltools_0.3.6 yaml_2.1.16     Rcpp_0.12.15   
- [9] stringi_1.1.6   rmarkdown_1.8.5 knitr_1.18      git2r_0.21.0   
-[13] stringr_1.2.0   digest_0.6.14   evaluate_0.10.1</code></pre>
+ [1] Rcpp_0.12.15     digest_0.6.14    rprojroot_1.3-2  plyr_1.8.4      
+ [5] grid_3.4.2       gtable_0.2.0     backports_1.1.2  git2r_0.21.0    
+ [9] magrittr_1.5     scales_0.5.0     evaluate_0.10.1  pillar_1.1.0    
+[13] rlang_0.1.6      stringi_1.1.6    lazyeval_0.2.1   rmarkdown_1.8.5 
+[17] labeling_0.3     tools_3.4.2      stringr_1.2.0    munsell_0.4.3   
+[21] yaml_2.1.16      compiler_3.4.2   colorspace_1.3-2 htmltools_0.3.6 
+[25] knitr_1.18       tibble_1.4.2    </code></pre>
 </div>
 
 <hr>
