@@ -366,7 +366,7 @@ I already have genome coverage file and I can use bedtools make windows function
 
 **the coverge file is not a bed file because it does not have a start and end. I need to use awk to make it a bedfile**
 
-```{bash, eval=FALSe}
+```{bash, eval=FALSE}
 less YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed | awk '{print($1 "\t" $2 "\t" $2 "\t" $3)}' > YG-SP-NET3-18486_combined_Netpilot-sort.cov.fixed.bed
 ```
 
@@ -448,8 +448,8 @@ File with chromosome lengths: hg19.chrlen.txt
 ```{python, eval=FALSE}
 import pandas as pd 
 
-
-chr_length= pd.read_table("/project2/gilad/briana/Net-seq-pilot/code/hg19.chrlen.txt")
+#FIX with NO HEADER!!
+chr_length= pd.read_table("/project2/gilad/briana/Net-seq-pilot/code/hg19.chrlen.txt", header=None)
 
 bed_list=[]
 
@@ -461,7 +461,7 @@ for ind, row in chr_length.iterrows():
 
 bed_df=pd.DataFrame(bed_list)
 
-bed_df.to_csv('genome_200_wind.bed', sep="\t")
+bed_df.to_csv('/project2/gilad/briana/Net-seq-pilot/code/genome_200_wind.bed', sep="\t")
 ```
 
 use awk to get rid of the first line and the first column  
@@ -494,7 +494,7 @@ sample=$1
 describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-sort.bam$//")
 
 
-featureCounts -T 5 -a /project2/gilad/briana/Net-seq-pilot/code/genome_200_wind_fix.saf -F 'SAF' -o /project2/gilad/briana/Net-seq-pilot/data/200wind_cov/${describer}_combined_Netpilot-sort.FC200.cov.bed $1
+featureCounts -T 5 -a /project2/gilad/briana/Net-seq-pilot/code/genome_200_wind_fix.saf2 -F 'SAF' -o /project2/gilad/briana/Net-seq-pilot/data/200wind_cov/${describer}_combined_Netpilot-sort.FC200.cov.bed $1
 
 
 ```
@@ -525,7 +525,7 @@ Fix the first column name. It starts at 000002.
 
 
 ```{r}
-gen_wind200_no0=read.table('../data/NET3-18486_combined_Netpilot-sort.FC200.cov.no0.bed', header=TRUE, stringsAsFactors = FALSE, col.names = c('Geneid', 'Chr', 'Start', 'End', 'Strand', 'Length', 'Counts') )
+gen_wind200_no0=read.table('../data/NET3-18486_combined_Netpilot-sort.FC200.cov.no0.bed', header=TRUE, stringsAsFactors = FALSE, col.names = c('Geneid', 'Chr', 'Start', 'End', 'Strand', 'Length', 'Counts'), na.strings = "NA")
 
 gen_wind200_no0_order=gen_wind200_no0[order(gen_wind200_no0$Counts, decreasing=TRUE),]
 
@@ -536,17 +536,146 @@ plot(gen_wind200_no0_order$Counts,  ylab='read count', xlab="Bin index", main="S
 plot(log10(gen_wind200_no0_order$Counts),  ylab='log10 read count', xlab="Bin index", main="Sorted counts per 200bp bin without 0 bins")
 
 
-x=gen_wind200_no0_order$Counts[1: 21011]
+x=gen_wind200_no0_order$Counts[1: 23098]
 
 plot(log10(x),  ylab='log10 read count', xlab="Bin index", main="Sorted counts per 200bp, top 5%")
+
+
+
+```
+
+Subset the top 5% of bins:  
+
+```{r}
+top5_gen_wind200_no0_order=gen_wind200_no0_order[1:23098,]
+
+head(top5_gen_wind200_no0_order)
+
+top5_gen_wind200.bed=top5_gen_wind200_no0_order[,2:5]
+
+write.csv(top5_gen_wind200.bed, file = "../data/top5_gen_wind200.bed", row.names = FALSE, quote = FALSE)
+```
+
+I need to create a sorted bed file out of this so I can exclude these regions.  
+
+```{bash, eval=FALSE}
+cat top5_gen_wind200.bed | tr ',' '\t' > top5_gen_wind200.tab.bed 
 ```
 
 
-Assigned	23191887
-Unassigned_Unmapped	36511070
+Put in: /project2/gilad/briana/genome_anotation_data
+
+```{bash, eval=FALSE}
+cat top5_gen_wind200.tab.bed |sed 's/^chr//' > top5_gen_wind200.tab.nochr.bed
+#remove header in vi
+bedtools sort -faidx names.txt -i top5_gen_wind200.tab.nochr.bed > top5_gen_wind200.tab.nochr.sort.bed
+```
+Now use intersect to remove genes including these.   
+
+/project2/gilad/briana/Net-seq-pilot/code/int.topwind.sh 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=top_intersect
+#SBATCH --time=8:00:00
+#SBATCH --output=top_int_sbatch.out
+#SBATCH --error=top_int_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=10G
+#SBATCH --mail-type=END
 
 
-**bug: missing chromosome 1**  
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e 's/.*\gene_cov\///' | sed -e "s/.gene.coverage.bed$//")
+
+
+bedtools intersect -v -wa -a $1 -b /project2/gilad/briana/genome_anotation_data/top5_gen_wind200.tab.nochr.sort.bed  > /project2/gilad/briana/Net-seq-pilot/data/gene_cov/${describer}.gene.coverage.notopwind.bed
+
+```
+run with /project2/gilad/briana/Net-seq-pilot/data/gene_cov/NET3-18486.gene.coverage.bed
+
+```{r}
+gene_cov_18486_notoo=read.table("../data/NET3-18486.gene.coverage.notopwind.bed")
+colnames(gene_cov_18486_notoo)=c("chr", "start", "end", "gene", "score", "strand", "count")
+gene_cov_18486_notoo_st= gene_cov_18486_notoo %>% mutate(., st_count=count/(end-start))
+gene_cov_18486_notoo_st_order=gene_cov_18486_notoo_st[order(gene_cov_18486_notoo_st$st_count, decreasing=TRUE),]
+```
+
+Run this for all lines to see how similar the top bins are:  
+
+The script is FT_200_cov.sh, run on:  
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-18505_combined_Netpilot-sort.bam  
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-18508_combined_Netpilot-sort.bam 
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-19128_combined_Netpilot-sort.bam  
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-19141_combined_Netpilot-sort.bam
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-19193_combined_Netpilot-sort.bam
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-19239_combined_Netpilot-sort.bam
+
+* sbatch  FT_200_cov.sh /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-19257_combined_Netpilot-sort.bam
+
+Remove bins with 0s.  
+
+```{bash, eval=FALSE}
+awk '{if ($7 != 0) print}' file > file.no0
+
+
+
+awk '{if ($7 != 0) print}' NET3-18508_combined_Netpilot-sort.FC200.cov.bed  > NET3-18508_combined_Netpilot-sort.FC200.cov.no0.bed
+awk '{if ($7 != 0) print}' NET3-19128_combined_Netpilot-sort.FC200.cov.bed  > NET3-19128_combined_Netpilot-sort.FC200.cov.no0.bed
+awk '{if ($7 != 0) print}' NET3-19141_combined_Netpilot-sort.FC200.cov.bed  > NET3-19141_combined_Netpilot-sort.FC200.cov.no0.bed
+awk '{if ($7 != 0) print}' NET3-19193_combined_Netpilot-sort.FC200.cov.bed  > NET3-19193_combined_Netpilot-sort.FC200.cov.no0.bed
+awk '{if ($7 != 0) print}' NET3-19239_combined_Netpilot-sort.FC200.cov.bed  > NET3-19239_combined_Netpilot-sort.FC200.cov.no0.bed
+awk '{if ($7 != 0) print}' NET3-19257_combined_Netpilot-sort.FC200.cov.bed  > NET3-19257_combined_Netpilot-sort.FC200.cov.no0.bed
+```
+
+
+```{r}
+top_5_wind=function(file){
+  wind200_no0=read.table(file, header=TRUE, stringsAsFactors = FALSE, col.names = c('Geneid', 'Chr', 'Start', 'End', 'Strand', 'Length', 'Counts'), na.strings = "NA")
+  wind200_no0_order=wind200_no0[order(wind200_no0$Counts, decreasing=TRUE),]
+  x=.5*nrow(wind200_no0_order)
+  top5_wind200_no0_order=wind200_no0_order[1:x,]
+  return(top5_wind200_no0_order$Geneid)
+}
+
+
+#test=top_5_wind('../data/NET3-18486_combined_Netpilot-sort.FC200.cov.no0.bed')
+```
+
+
+
+
+
+
+```{r}
+top5_bin_18486=top_5_wind('../data/NET3-18486_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_18505=top_5_wind('../data/NET3-18505_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_18508=top_5_wind('../data/NET3-18508_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_19128=top_5_wind('../data/NET3-19128_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_19141=top_5_wind('../data/NET3-19141_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_19193=top_5_wind('../data/NET3-19193_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_19239=top_5_wind('../data/NET3-19239_combined_Netpilot-sort.FC200.cov.no0.bed')
+top5_bin_19257=top_5_wind('../data/NET3-19257_combined_Netpilot-sort.FC200.cov.no0.bed')
+
+
+
+```
+
+
+
 
 
 ####Look for snoRNA, SNRNA,hNRP
@@ -665,15 +794,216 @@ gene_cov_18486_smallfilter_st = gene_cov_18486_smallfilter%>% mutate(., st_count
 gene_cov_18486_smallfilter_st_order =gene_cov_18486_smallfilter_st[order(gene_cov_18486_smallfilter_st$st_count, decreasing=TRUE),]
 ```
 
-plot all 3:  
+plot all 4:  
 
 
 ```{r}
-par(mfrow = c(1,3))
+par(mfrow = c(2,2))
 withsRNA=plot(log10(gene_cov_18486_sort_st_order$st_count), ylab="log10 read count st. by gene length", main="Netseq read coverage", xlab="Gene index",  ylim=c(-5,5))
 nosRNA=plot(log10(gene_cov_18486_srnafilter_st_order$st_count), ylab="log10 read count st. by gene length", main="Netseq read coverage without snRNAs or snoRNAs", xlab="Gene index ",  ylim=c(-5,5))
 noSM=plot(log10(gene_cov_18486_smallfilter_st_order$st_count), ylab="log10 read count st. by gene length", main="Netseq read coverage without snRNA, snoRNA, rRNA", xlab="Gene index",  ylim=c(-5,5))
+no_topwind=plot(log10(gene_cov_18486_notoo_st_order$st_count), ylab="log10 read count st. by gene length", main="Netseq read coverage without top 5% of windows", xlab="Gene index",  ylim=c(-5,5))
+
 ```
+
+Bedtools intersect to remove: 
+
+###Meta plots on filtered data:  
+
+First: use samtools intersect to remove these regions from the bam files  
+* /project2/gilad/briana/Net-seq-pilot/code/filter_bams.sh
+
+```{bash, eval=FALSE}
+
+#!/bin/bash
+
+#SBATCH --job-name=bamintersect
+#SBATCH --time=8:00:00
+#SBATCH --output=bamint_sbatch.out
+#SBATCH --error=bamint_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-sort.bam$//")
+
+
+bedtools intersect -abam $1 -b /project2/gilad/briana/genome_anotation_data/top5_gen_wind200.tab.nochr.sort.bed -v > /project2/gilad/briana/Net-seq-pilot/data/filter_bam/${describer}.Netpilot.binfilter.bam
+```
+
+run on /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-18486_combined_Netpilot-sort.bam  
+
+index this bam  
+
+
+Make the deep tools plot at TSS:  
+
+dt_tss_filter_18486.sh 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=dt_tss_18486
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=16G
+#SBATCH --mail-type=END
+#SBATCH --output=dt_tss_18486_sbatch.out
+#SBATCH --error=dt_tss_18486_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+bamCoverage -b /project2/gilad/briana/Net-seq-pilot/data/filter_bam/NET3-18486.Netpilot.binfilter.bam -o /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.bw
+
+computeMatrix reference-point -S/project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.bw -R /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.bed --referencePoint TSS -b 500 -a 500 -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.gz
+
+plotHeatmap --sortRegions descend  --refPointLabel "TSS"   -m /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.gz  -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.gz.png
+```
+
+dt_tes_filter_18486.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=dt_tes_18486
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+#SBATCH --output=dt_tes_18486_sbatch.out
+#SBATCH --error=dt_tes_18486_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#bw created in tss plot
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.bw -R /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.bed --referencePoint TES -b 500 -a 500 -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.TES.Netpilot.binfilter.gz
+
+plotHeatmap --sortRegions descend  --refPointLabel "TES"   -m /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.TES.Netpilot.binfilter.gz  -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.TES.Netpilot.binfilter.gz.png
+```
+
+
+PAS  
+dt_pas_filter_18486.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_pas_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --tasks-per-node=4 
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_pas_sbatch.out
+#SBATCH --error=deeptools_pas_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.bw -R /project2/gilad/briana/apa_sites/clusters.bed -b 500 -a 500 -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.PAS.Netpilot.binfilter.gz
+
+plotHeatmap --sortRegions descend --refPointLabel "PAS"  -m /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.PAS.Netpilot.binfilter.gz  -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.PAS.Netpilot.binfilter.png
+```
+
+
+dt_3ss_filter_18486.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_3_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_3_sbatch.out
+#SBATCH --error=deeptools_3_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.Netpilot.binfilter.bw   -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.3prime.noE1noTES.bed -b 500 -a 500 -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.3SS.Netpilot.binfilter.gz
+
+plotHeatmap --sortRegions descend --refPointLabel "3'splice boundary" -m /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.3SS.Netpilot.binfilter.gz  -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.3SS.Netpilot.binfilter.png
+```
+
+dt_5ss_filter_18486.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_5_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_5_sbatch.out
+#SBATCH --error=deeptools_5_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S  /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/gencode.v19.5prime.noE1noTES.bed -b 500 -a 500 -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.5SS.Netpilot.binfilter.gz
+
+plotHeatmap --sortRegions descend --refPointLabel "5' splice boundary" -m /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.5SS.Netpilot.binfilter.gz  -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.5SS.Netpilot.binfilter.png
+```
+
+CTCF  
+
+dt_ctcf_filter_18486.sh  
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=deeptools_ctcf_netseq
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --tasks-per-node=4
+#SBATCH --mail-type=END
+#SBATCH --output=deeptool_ctcf_sbatch.out
+#SBATCH --error=deeptools_ctcf_sbatch.err
+
+module load Anaconda3
+
+source activate net-seq
+
+#the bw file has already been created
+
+computeMatrix reference-point -S /project2/gilad/briana/Net-seq/Net-seq3/output/deeptools/net-seq-18486.bw -R /project2/gilad/briana/Net-seq/Net-seq3/GM12873-DS14433.peaks.fdr0.01.hg19.bed -b 500 -a 500 -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.ctcf.Netpilot.binfilter.gz
+
+plotHeatmap --sortRegions descend --refPointLabel "CTCF"  -m /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.ctcf.Netpilot.binfilter.gz  -out /project2/gilad/briana/Net-seq-pilot/output/deeptools/NET3-18486.ctcf.Netpilot.binfilter.png
+```
+
 
 ## Session information
 
