@@ -28,7 +28,7 @@ knitr::read_chunk("chunks.R")
 
 ##Pilot data:  
 
-The pilot project has 16 human lines of net-seq data. I have 3 lanes of sequencing for each library of 8. The first library is the same 8 samples from Net3. I can use zcat to combine the samles from seperate lanes into one file. I will call these [sample_name]_combined_Netpilot.fastq. I will use the project directory /project2/gilad/briana/Net-seq-pilot 
+The pilot project has 16 human lines of net-seq data. I have 3 lanes of sequencing for each library of 8. The first library is the same 8 samples from Net3. I can use cat to combine the samles from seperate lanes into one file. I will call these YG-SP-NET3-[sample_name]_combined_Netpilot.fastq. I will use the project directory /project2/gilad/briana/Net-seq-pilot 
 
 ##Snakefile Update:  
 
@@ -128,6 +128,59 @@ rule genome_cov_sort:
 expand(dir_cov + "{samples}-sort.dedup.cov.bed", samples=samples),
 expand(dir_cov + "{samples}-sort.cov.bed", samples=samples),
 ```
+
+
+To test: snakemake -np  
+to run: nohup scripts/submit-snakemake.sh  
+
+####Current error:
+n: Wrong number of fields in refFlat file /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.refFlat at line 1  
+
+ wget http://hgdownload.cse.ucsc.edu/goldenPath/mm10/database/refFlat.txt.gz  downloaded this to see what a proper one should look like. it has 11 columns
+ 
+(awk '{print NF}' gencode.v19.annotation.refFlat | sort -nu | tail -n 1)  
+
+this file has 15
+
+The test file has a gene name before the NM_genecod. My file also has 4 columns at the end that dont seem to be needed. The 12th column is the ensg gene id. I will try ot fix this by moving that to the first comlumn and not printing after 10 in the current file.
+
+```{bash eval=FALSE}
+awk '{ print $12 "\t" $1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6 "\t" $7 "\t" $8 "\t" $9 "\t" $10 }' gencode.v19.annotation.refFlat > gencode.v19.annotation2.refFlat
+```
+
+I needed to get rid of the extra information in the ribsome file. I only want the lines with a known chromosome. The dictionary for the bam file with that is in its header needs to match the dictionary header in the ribsome file.  
+
+
+I fixed the file by getting rig of the chr in the refflat file. 
+
+
+####Explore picard file
+This is the meta file with the information from each picard file when the none flag was used.  
+
+```{r}
+picard_all=read.csv("../data/all_RNAmetrics.picard.none.csv", header=TRUE)
+```
+
+Melt this so I can make ggplots.  
+
+```{r}
+library(tidyr)
+library(reshape2)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+#make libarary a factor
+picard_all$line <= factor(picard_all$line)
+long_picard=melt(picard_all, id.vars=("line"))
+```
+
+```{r}
+pct_df=filter(long_picard,variable=='PCT_RIBOSOMAL_BASES' | variable=='PCT_CODING_BASES' | variable=='PCT_UTR_BASES' | variable=='PCT_INTRONIC_BASES' | variable=='PCT_MRNA_BASES')
+
+pct_df$line = factor(pct_df$line)
+ggplot(pct_df,aes(line, value, fill=variable )) + geom_bar(stat = "identity",position="dodge") + ggtitle("Picard read distribution") + labs(y="Percent") 
+```
+
 
 
 ## Session information
