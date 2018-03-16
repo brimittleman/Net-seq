@@ -1,0 +1,152 @@
+---
+title: "Analyze growth of LCLs"
+author: "Briana Mittleman"
+date: 2018-03-16
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+```
+
+
+
+
+```{r}
+growth=read.csv("../data/growth_curve_3.16.csv", header = TRUE)
+#filter out control 
+growth_e= growth %>% filter(control=="e") %>% mutate(avg_h=(h_18486+ h_18499 + h_18502 + h_18504 + h_18510 + h_18517 + h_18523)/7) %>% mutate(avg_c=(c_c3641 + c_pt30 + c_pt91 + c_3610 + c_3659 + c_3622 + c_18358 + c_18359)/8)
+```
+
+
+
+```{r}
+plot(growth_e$avg_h, xlab="Day", ylim=c(0,2), ylab="cells/ml 10^6", main="Human growth by day")
+lines(growth_e$h_18486, col="red")
+lines(growth_e$h_18499, col="orange")
+lines(growth_e$h_18502, col="yellow")
+lines(growth_e$h_18504, col="green")
+lines(growth_e$h_18510, col= "blue")
+lines(growth_e$h_18517, col="purple")
+lines(growth_e$h_18523, col="pink")
+
+```
+
+```{r}
+plot(growth_e$avg_c, xlab="Day", ylim=c(0,3), ylab="cells/ml 10^6", main="Chimp Growth by day")
+lines(growth_e$c_c3641, col="red")
+lines(growth_e$c_pt30, col="orange")
+lines(growth_e$c_pt91, col="yellow")
+lines(growth_e$c_3610, col="green")
+lines(growth_e$c_3659, col= "blue")
+lines(growth_e$c_18358, col="purple")
+lines(growth_e$c_18359, col="pink")
+lines(growth_e$c_3622, col="black")
+```
+
+```{r}
+alive=read.csv("../data/perc_alive_3.16.csv", header=TRUE)
+alive_e= alive %>% filter(control=="e") %>% mutate(avg_h=(h_18486+ h_18499 + h_18502 + h_18504 + h_18510 + h_18517 + h_18523)/7) %>% mutate(avg_c=(c_c3641 + c_pt30 + c_pt91 + c_3610 + c_3659 + c_3622 + c_18358 + c_18359)/8)
+```
+
+```{r}
+plot(alive_e$avg_h, xlab="Day", ylim=c(50,100), ylab="Percent living", main="Human perc living by day")
+lines(alive_e$h_18486, col="red")
+lines(alive_e$h_18499, col="orange")
+lines(alive_e$h_18502, col="yellow")
+lines(alive_e$h_18504, col="green")
+lines(alive_e$h_18510, col= "blue")
+lines(alive_e$h_18517, col="purple")
+lines(alive_e$h_18523, col="pink")
+```
+
+```{r}
+plot(alive_e$avg_c, xlab="Day", ylim=c(0,100), ylab="Percent living", main="Chimp perc living by day")
+lines(alive_e$c_c3641, col="red")
+lines(alive_e$c_pt30, col="orange")
+lines(alive_e$c_pt91, col="yellow")
+lines(alive_e$c_3610, col="green")
+lines(alive_e$c_3659, col= "blue")
+lines(alive_e$c_18358, col="purple")
+lines(alive_e$c_18359, col="pink")
+lines(alive_e$c_3622, col="black")
+```
+
+Transpose so I can look at percent alive vs the concentrations:  
+
+```{r}
+alive_e_t= alive_e %>% t
+colnames(alive_e_t)= c(1:6)
+growth_e_t=growth_e %>% t
+colnames(growth_e_t) = c(1:6)
+```
+
+
+```{r}
+plot(alive_e$avg_h ~ growth_e$avg_h, ylab="Percent living", xlab="Concentration", ylim=c(50,100), pch=16, main="Human Percent living vs Concentration")
+points(alive_e$h_18486 ~ growth_e$h_18486, col="red", pch=16)
+points(alive_e$h_18499 ~ growth_e$h_18499, col="orange", pch=16)
+points(alive_e$h_18502 ~ growth_e$h_18502, col="yellow", pch=16)
+points(alive_e$h_18504 ~ growth_e$h_18504, col="green", pch=16)
+points(alive_e$h_18510 ~ growth_e$h_18510, col="blue", pch=16)
+points(alive_e$h_18517 ~ growth_e$h_18517, col="purple", pch=16)
+points(alive_e$h_18523 ~ growth_e$h_18523, col="pink", pch=16)
+
+```
+```{r}
+plot(alive_e$avg_c ~ growth_e$avg_c, ylab="Percent living", xlab="Concentration", ylim=c(0,100), pch=16, main="Chimp Percent living vs Concentration")
+points(alive_e$c_c3641 ~ growth_e$c_c3641, col="red", pch=16)
+points(alive_e$c_pt30 ~ growth_e$c_pt30, col="orange", pch=16)
+points(alive_e$c_pt91 ~ growth_e$c_pt91, col="yellow", pch=16)
+points(alive_e$c_3610 ~ growth_e$c_3610, col="green", pch=16)
+points(alive_e$c_3659 ~ growth_e$c_3659, col="blue", pch=16)
+points(alive_e$c_18358 ~ growth_e$c_18358, col="purple", pch=16)
+points(alive_e$c_18359 ~ growth_e$c_18359, col="pink", pch=16)
+points(alive_e$c_3622 ~ growth_e$c_3622, col="grey", pch=16)
+```
+days: 
+
+* 1: saturday  
+
+* 2: sunday  
+
+* 3: monday  
+
+* 4: tuesday
+
+* 5: wednesday  
+
+* 6: thursday 
+
+Before feeding was saturday through monday.  
+
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```

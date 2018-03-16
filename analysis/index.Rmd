@@ -46,6 +46,10 @@ Net-pilot analysis:
 * [Create blacklist to filter reads](create_blacklist.html)  
 
 
+Cell Growth analysis: 
+
+* [Initial plots on growth](LCL_growth.html)
+
 Exploration of the 3` seq and ApA sites:  
 
 * [Look for read enrichment at ApA sites](three_prime_UTR.html) 
