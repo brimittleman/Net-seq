@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-03-16</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 1707538</p>
+<p><strong>Code version:</strong> b7db3f0</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(dplyr)</code></pre>
 <pre><code>
@@ -362,7 +362,8 @@ lines(alive_e$h_18502, col=&quot;yellow&quot;)
 lines(alive_e$h_18504, col=&quot;green&quot;)
 lines(alive_e$h_18510, col= &quot;blue&quot;)
 lines(alive_e$h_18517, col=&quot;purple&quot;)
-lines(alive_e$h_18523, col=&quot;pink&quot;)</code></pre>
+lines(alive_e$h_18523, col=&quot;pink&quot;)
+abline(v=3,lwd=3, lty=2)</code></pre>
 <p><img src="figure/LCL_growth.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(alive_e$avg_c, xlab=&quot;Day&quot;, ylim=c(0,100), ylab=&quot;Percent living&quot;, main=&quot;Chimp perc living by day&quot;)
 lines(alive_e$c_c3641, col=&quot;red&quot;)
@@ -372,13 +373,9 @@ lines(alive_e$c_3610, col=&quot;green&quot;)
 lines(alive_e$c_3659, col= &quot;blue&quot;)
 lines(alive_e$c_18358, col=&quot;purple&quot;)
 lines(alive_e$c_18359, col=&quot;pink&quot;)
-lines(alive_e$c_3622, col=&quot;black&quot;)</code></pre>
+lines(alive_e$c_3622, col=&quot;black&quot;)
+abline(v=3,lwd=3, lty=2)</code></pre>
 <p><img src="figure/LCL_growth.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Transpose so I can look at percent alive vs the concentrations:</p>
-<pre class="r"><code>alive_e_t= alive_e %&gt;% t
-colnames(alive_e_t)= c(1:6)
-growth_e_t=growth_e %&gt;% t
-colnames(growth_e_t) = c(1:6)</code></pre>
 <pre class="r"><code>plot(alive_e$avg_h ~ growth_e$avg_h, ylab=&quot;Percent living&quot;, xlab=&quot;Concentration&quot;, ylim=c(50,100), pch=16, main=&quot;Human Percent living vs Concentration&quot;)
 points(alive_e$h_18486 ~ growth_e$h_18486, col=&quot;red&quot;, pch=16)
 points(alive_e$h_18499 ~ growth_e$h_18499, col=&quot;orange&quot;, pch=16)
@@ -386,8 +383,14 @@ points(alive_e$h_18502 ~ growth_e$h_18502, col=&quot;yellow&quot;, pch=16)
 points(alive_e$h_18504 ~ growth_e$h_18504, col=&quot;green&quot;, pch=16)
 points(alive_e$h_18510 ~ growth_e$h_18510, col=&quot;blue&quot;, pch=16)
 points(alive_e$h_18517 ~ growth_e$h_18517, col=&quot;purple&quot;, pch=16)
-points(alive_e$h_18523 ~ growth_e$h_18523, col=&quot;pink&quot;, pch=16)</code></pre>
-<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+points(alive_e$h_18523 ~ growth_e$h_18523, col=&quot;pink&quot;, pch=16)
+
+reg= lm(alive_e$avg_h~ growth_e$avg_h)
+coeff=coefficients(reg)
+eq = paste0(&quot;y = &quot;, round(coeff[2],1), &quot;*x +&quot;, round(coeff[1],1))
+abline(reg)
+mtext(eq, side=4)</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(alive_e$avg_c ~ growth_e$avg_c, ylab=&quot;Percent living&quot;, xlab=&quot;Concentration&quot;, ylim=c(0,100), pch=16, main=&quot;Chimp Percent living vs Concentration&quot;)
 points(alive_e$c_c3641 ~ growth_e$c_c3641, col=&quot;red&quot;, pch=16)
 points(alive_e$c_pt30 ~ growth_e$c_pt30, col=&quot;orange&quot;, pch=16)
@@ -396,8 +399,13 @@ points(alive_e$c_3610 ~ growth_e$c_3610, col=&quot;green&quot;, pch=16)
 points(alive_e$c_3659 ~ growth_e$c_3659, col=&quot;blue&quot;, pch=16)
 points(alive_e$c_18358 ~ growth_e$c_18358, col=&quot;purple&quot;, pch=16)
 points(alive_e$c_18359 ~ growth_e$c_18359, col=&quot;pink&quot;, pch=16)
-points(alive_e$c_3622 ~ growth_e$c_3622, col=&quot;grey&quot;, pch=16)</code></pre>
-<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /> days:</p>
+points(alive_e$c_3622 ~ growth_e$c_3622, col=&quot;grey&quot;, pch=16)
+reg= lm(alive_e$avg_c~ growth_e$avg_c)
+coeff=coefficients(reg)
+eq = paste0(&quot;y = &quot;, round(coeff[2],1), &quot;*x +&quot;, round(coeff[1],1))
+abline(reg)
+mtext(eq, side=4)</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /> days:</p>
 <ul>
 <li><p>1: saturday</p></li>
 <li><p>2: sunday</p></li>
@@ -406,7 +414,33 @@ points(alive_e$c_3622 ~ growth_e$c_3622, col=&quot;grey&quot;, pch=16)</code></p
 <li><p>5: wednesday</p></li>
 <li><p>6: thursday</p></li>
 </ul>
-<p>Before feeding was saturday through monday.</p>
+<p>Before feeding was Feeding happend monday. I will add a verticle line this day.</p>
+<pre class="r"><code>plot(growth_e$avg_h, xlab=&quot;Day&quot;, ylim=c(0,2), ylab=&quot;cells/ml 10^6&quot;, main=&quot;Human growth by day&quot;)
+lines(growth_e$h_18486, col=&quot;red&quot;)
+lines(growth_e$h_18499, col=&quot;orange&quot;)
+lines(growth_e$h_18502, col=&quot;yellow&quot;)
+lines(growth_e$h_18504, col=&quot;green&quot;)
+lines(growth_e$h_18510, col= &quot;blue&quot;)
+lines(growth_e$h_18517, col=&quot;purple&quot;)
+lines(growth_e$h_18523, col=&quot;pink&quot;)
+abline(v=3, lwd=3, lty=2)</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(growth_e$avg_c, xlab=&quot;Day&quot;, ylim=c(0,3), ylab=&quot;cells/ml 10^6&quot;, main=&quot;Chimp Growth by day&quot;)
+lines(growth_e$c_c3641, col=&quot;red&quot;)
+lines(growth_e$c_pt30, col=&quot;orange&quot;)
+lines(growth_e$c_pt91, col=&quot;yellow&quot;)
+lines(growth_e$c_3610, col=&quot;green&quot;)
+lines(growth_e$c_3659, col= &quot;blue&quot;)
+lines(growth_e$c_18358, col=&quot;purple&quot;)
+lines(growth_e$c_18359, col=&quot;pink&quot;)
+lines(growth_e$c_3622, col=&quot;black&quot;)
+abline(v=3,lwd=3, lty=2)</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>add a day post split / feed column so I can plot by this:</p>
+<pre class="r"><code>days_post=c(1,2,3,1,2,3)
+days_post= as.factor(days_post)
+
+growth_e_DP= cbind(days_post,growth_e)</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
