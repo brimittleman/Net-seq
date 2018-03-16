@@ -80,6 +80,7 @@ lines(alive_e$h_18504, col="green")
 lines(alive_e$h_18510, col= "blue")
 lines(alive_e$h_18517, col="purple")
 lines(alive_e$h_18523, col="pink")
+abline(v=3,lwd=3, lty=2)
 ```
 
 ```{r}
@@ -92,17 +93,8 @@ lines(alive_e$c_3659, col= "blue")
 lines(alive_e$c_18358, col="purple")
 lines(alive_e$c_18359, col="pink")
 lines(alive_e$c_3622, col="black")
+abline(v=3,lwd=3, lty=2)
 ```
-
-Transpose so I can look at percent alive vs the concentrations:  
-
-```{r}
-alive_e_t= alive_e %>% t
-colnames(alive_e_t)= c(1:6)
-growth_e_t=growth_e %>% t
-colnames(growth_e_t) = c(1:6)
-```
-
 
 ```{r}
 plot(alive_e$avg_h ~ growth_e$avg_h, ylab="Percent living", xlab="Concentration", ylim=c(50,100), pch=16, main="Human Percent living vs Concentration")
@@ -114,6 +106,11 @@ points(alive_e$h_18510 ~ growth_e$h_18510, col="blue", pch=16)
 points(alive_e$h_18517 ~ growth_e$h_18517, col="purple", pch=16)
 points(alive_e$h_18523 ~ growth_e$h_18523, col="pink", pch=16)
 
+reg= lm(alive_e$avg_h~ growth_e$avg_h)
+coeff=coefficients(reg)
+eq = paste0("y = ", round(coeff[2],1), "*x +", round(coeff[1],1))
+abline(reg)
+mtext(eq, side=4)
 ```
 ```{r}
 plot(alive_e$avg_c ~ growth_e$avg_c, ylab="Percent living", xlab="Concentration", ylim=c(0,100), pch=16, main="Chimp Percent living vs Concentration")
@@ -125,6 +122,11 @@ points(alive_e$c_3659 ~ growth_e$c_3659, col="blue", pch=16)
 points(alive_e$c_18358 ~ growth_e$c_18358, col="purple", pch=16)
 points(alive_e$c_18359 ~ growth_e$c_18359, col="pink", pch=16)
 points(alive_e$c_3622 ~ growth_e$c_3622, col="grey", pch=16)
+reg= lm(alive_e$avg_c~ growth_e$avg_c)
+coeff=coefficients(reg)
+eq = paste0("y = ", round(coeff[2],1), "*x +", round(coeff[1],1))
+abline(reg)
+mtext(eq, side=4)
 ```
 days: 
 
@@ -140,7 +142,45 @@ days:
 
 * 6: thursday 
 
-Before feeding was saturday through monday.  
+Before feeding was Feeding happend monday. I will add a verticle line this day. 
+
+```{r}
+
+plot(growth_e$avg_h, xlab="Day", ylim=c(0,2), ylab="cells/ml 10^6", main="Human growth by day")
+lines(growth_e$h_18486, col="red")
+lines(growth_e$h_18499, col="orange")
+lines(growth_e$h_18502, col="yellow")
+lines(growth_e$h_18504, col="green")
+lines(growth_e$h_18510, col= "blue")
+lines(growth_e$h_18517, col="purple")
+lines(growth_e$h_18523, col="pink")
+abline(v=3, lwd=3, lty=2)
+
+```
+
+
+```{r}
+plot(growth_e$avg_c, xlab="Day", ylim=c(0,3), ylab="cells/ml 10^6", main="Chimp Growth by day")
+lines(growth_e$c_c3641, col="red")
+lines(growth_e$c_pt30, col="orange")
+lines(growth_e$c_pt91, col="yellow")
+lines(growth_e$c_3610, col="green")
+lines(growth_e$c_3659, col= "blue")
+lines(growth_e$c_18358, col="purple")
+lines(growth_e$c_18359, col="pink")
+lines(growth_e$c_3622, col="black")
+abline(v=3,lwd=3, lty=2)
+```
+
+
+add a day post split / feed column so I can plot by this:  
+```{r}
+days_post=c(1,2,3,1,2,3)
+days_post= as.factor(days_post)
+
+growth_e_DP= cbind(days_post,growth_e)
+
+```
 
 
 
