@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Briana Mittleman" />
+
+<meta name="date" content="2018-03-13" />
+
+<title>Recreate Figures with my data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Net-seq</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/brimittleman/Net-seq">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Recreate Figures with my data</h1>
+<h4 class="author"><em>Briana Mittleman</em></h4>
+<h4 class="date"><em>2018-03-13</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2018-03-18</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 41f9e01</p>
+<!-- Add your analysis here -->
+<p>This analysis is to recreate some of the figures from the Mayer paper using my data.</p>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>
+Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:stats&#39;:
+
+    filter, lag</code></pre>
+<pre><code>The following objects are masked from &#39;package:base&#39;:
+
+    intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(workflowr)</code></pre>
+<pre><code>Loading required package: rmarkdown</code></pre>
+<pre><code>This is workflowr version 0.7.0
+Run ?workflowr for help getting started</code></pre>
+<pre class="r"><code>library(gplots)</code></pre>
+<pre><code>
+Attaching package: &#39;gplots&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:stats&#39;:
+
+    lowess</code></pre>
+<pre class="r"><code>library(RColorBrewer)
+library(scales)
+library(reshape2)</code></pre>
+<pre><code>Warning: package &#39;reshape2&#39; was built under R version 3.4.3</code></pre>
+<div id="fig1d" class="section level3">
+<h3>Fig1D</h3>
+<p>Correlation between 2 biological replicates for netseq gene counts. ‘The data set with higher coverage was randomly downsampled to match the total number of reads of the other data set.’</p>
+<p>First I will do this pre-filtering.</p>
+<pre class="r"><code>gene_cov_18486= read.table(&quot;../data/NET3-18486.gene.coverage.bed&quot;)
+colnames(gene_cov_18486)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;count&quot;)
+gene_cov_18505= read.table(&quot;../data/NET3-18505.gene.coverage.bed&quot;)
+colnames(gene_cov_18505)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;count&quot;)</code></pre>
+<p>Sum for each of the counts:</p>
+<pre class="r"><code>sum(gene_cov_18486$count)</code></pre>
+<pre><code>[1] 166338954</code></pre>
+<pre class="r"><code>sum(gene_cov_18505$count)</code></pre>
+<pre><code>[1] 128882124</code></pre>
+<pre class="r"><code>plot(gene_cov_18486$count~gene_cov_18505$count, ylim=c(0,50000), xlim=c(0,50000))</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Change to RPKM: divide by million of reads in the library and length :</p>
+<p>18486: mapped reads: 65189389 18505: mapped reads: 52507749</p>
+<pre class="r"><code>mapped_18486_mil= 65189389 / 10^6
+mapped_18505_mil= 52507749 / 10^6
+
+
+gene_cov_18486 =gene_cov_18486 %&gt;% mutate(K_length= (end - start)/100) %&gt;% mutate(rpkm=.25 + count/(K_length * mapped_18486_mil)) 
+
+
+
+gene_cov_18505 =gene_cov_18505 %&gt;% mutate(K_length= (end - start)/100) %&gt;% mutate(rpkm= .25 +count/(K_length * mapped_18505_mil))</code></pre>
+<p>Plot again:</p>
+<pre class="r"><code>plot(log10(gene_cov_18486$rpkm) ~log10(gene_cov_18505$rpkm), ylab=&quot;log10 RPKM reads 18486&quot;, xlab=&quot;log10 RPKM reads 18505&quot;, main=&quot;Fig 1D recreation&quot;)
+abline(lm(log10(gene_cov_18486$rpkm) ~ log10(gene_cov_18505$rpkm)), col=&quot;blue&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>correlation:</p>
+<pre class="r"><code>cor(log10(gene_cov_18486$rpkm),log10(gene_cov_18505$rpkm))</code></pre>
+<pre><code>[1] 0.9807117</code></pre>
+</div>
+<div id="fig7b" class="section level3">
+<h3>Fig7b</h3>
+<div id="find-top-exons" class="section level4">
+<h4>Find top exons</h4>
+<p>Create the exon file from gencode.v19.annotation.bed. Filter the exons.</p>
+<pre class="bash"><code>awk &#39;/exon/&#39; gencode.v19.annotation.gtf &gt; gencode.v19.exon.annotation.gtf</code></pre>
+<p>Use featureCounts to quantify counts in these exons for 18486.</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=exon_cov
+#SBATCH --time=8:00:00
+#SBATCH --output=exon_cov.out
+#SBATCH --error=exon_cov.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+#input is a bed file 
+sample=$1
+
+
+describer=$(echo ${sample} | sed -e &#39;s/.*\YG-SP-//&#39; | sed -e &quot;s/_combined_Netpilot-sort.bam$//&quot;)
+
+
+featureCounts -T 5 -a /project2/gilad/briana/genome_anotation_data/gencode.v19.exon.annotation.gtf -t exon -g exon_id -o /project2/gilad/briana/Net-seq-pilot/data/exon_cov/${describer}_combined_Netpilot-sort.exon.cov.txt $1
+</code></pre>
+<p>Run on /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-18486_combined_Netpilot-sort.bam</p>
+<p>Filter the exons I want to use for the analsis:</p>
+<ul>
+<li>convert to RPKM (divide by length of the exon and by library read)</li>
+</ul>
+<pre class="r"><code>exon_cov_18486= read.table(&quot;../data/NET3-18486_combined_Netpilot-sort.exon.cov.txt&quot;, header=TRUE)
+colnames(exon_cov_18486)= c(&quot;ExonID&quot;, &quot;Chr&quot;, &quot;Start&quot;, &quot;End&quot;, &quot;Strand&quot;, &quot;Length&quot;,&quot;Count&quot; )</code></pre>
+<p>Convert to RPKM</p>
+<ul>
+<li>mapped reads from the summary</li>
+</ul>
+<pre class="r"><code>mapped_reads= 40670322 + 9798066 + 14721001
+exon_cov_18486= exon_cov_18486 %&gt;% mutate(RPKM=(Count/(Length/1000))/(mapped_reads/10^6))
+
+exon_cov_18486_no0= exon_cov_18486 %&gt;% filter(RPKM!=0)</code></pre>
+<p>Plot the exon counts in log10(RPKM):</p>
+<pre class="r"><code>plot(log10(sort(exon_cov_18486_no0$RPKM, decreasing = TRUE)), col=ifelse(log10(sort(exon_cov_18486_no0$RPKM, decreasing = TRUE))&gt;.28, &quot;red&quot;, &quot;black&quot;), ylab = &quot;log10 RPKM&quot;, xlab=&quot;Exon&quot;, main= &quot;RPKM expression of exons 18486&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>log10(sort(exon_cov_18486_no0$RPKM, decreasing = TRUE))[1990]</code></pre>
+<pre><code>[1] 0.2804453</code></pre>
+<pre class="r"><code>#39803*.05</code></pre>
+<p>Use top 5% - the top 10.</p>
+<pre class="r"><code>exon_cov_18486_no0_sort= exon_cov_18486_no0[order(exon_cov_18486_no0$RPKM, decreasing = TRUE),]
+exon_cov_18486_no0_sort = exon_cov_18486_no0_sort %&gt;% filter(log10(RPKM) &gt; .28)
+
+exon_list_table= exon_cov_18486_no0_sort[6:1911,1:6 ]
+
+
+#write.table(exon_list_table,&quot;../data/top5_exonlist.txt&quot;, col.names = TRUE, row.names = FALSE, quote = FALSE, sep=&quot;\t&quot; )</code></pre>
+<p>File is: /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486.bed</p>
+</div>
+<div id="extract-covereage-at-these-exon-junctions" class="section level4">
+<h4>Extract covereage at these exon junctions</h4>
+<p>I want to make two seperate files, one for the 3’ SS and one for the 5’ splice site.</p>
+<pre class="bash"><code>less top5_exonlist2_18486.txt | awk &#39; {if($5 == &quot;+&quot;) print($1 &quot;\t&quot; $2 &quot;\t&quot; $3 -40  &quot;\t&quot; $3 +40 &quot;\t&quot; $5 ); else print($1 &quot;\t&quot; $2 &quot;\t&quot;  $4 - 40 &quot;\t&quot; $4 +40  &quot;\t&quot; $5)}&#39; &gt; top5_exonlist_18486_fiveprime.txt 
+
+
+less top5_exonlist2_18486.txt | awk &#39; {if($5 == &quot;+&quot;) print($1 &quot;\t&quot; $2 &quot;\t&quot; $4 -40  &quot;\t&quot; $4 +40 &quot;\t&quot; $5 ); else print($1 &quot;\t&quot; $2 &quot;\t&quot;  $3 - 40 &quot;\t&quot; $3 + 40  &quot;\t&quot; $5)}&#39; &gt; top5_exonlist_18486_threeprime.txt 
+</code></pre>
+<p><strong>Problem: exon list has some exons twice in the same line</strong></p>
+<pre class="bash"><code>cp top5_exonlist_18486.txt test.txt
+awk &#39;{print($2)}&#39; test.txt| cut -d &quot;;&quot; -f1 &gt; test.col2.txt 
+awk &#39;{print($3)}&#39; test.txt| cut -d &quot;;&quot; -f1 &gt; test.col3.txt 
+awk &#39;{print($4)}&#39; test.txt| cut -d &quot;;&quot; -f1 &gt; test.col4.txt
+awk &#39;{print($5)}&#39; test.txt| cut -d &quot;;&quot; -f1 &gt; test.col5.txt
+awk &#39;{print($1)}&#39; test.txt  &gt; test.col1.txt
+awk &#39;{print($6)}&#39; test.txt  &gt; test.col6.txt
+
+
+paste -d &quot;\t&quot;  test.col1.txt test.col2.txt  test.col3.txt test.col4.txt test.col5.txt test.col6.txt &gt; top5_exonlist2_18486.txt</code></pre>
+<p>Rerun aboove to seperate the 3’ and 5’</p>
+<p>Remove the chr so I can match it to the genome coverage file:</p>
+<pre class="bash"><code>cat top5_exonlist_18486_fiveprime.txt | sed &#39;s/chr//&#39; &gt; top5_exonlist_18486_fiveprime_noCHR.txt
+ 
+cat top5_exonlist_18486_threeprime.txt | sed &#39;s/chr//&#39; &gt; top5_exonlist_18486_threeprime_noCHR.txt</code></pre>
+<p>Make a bed file with just the first base of each of my reads from /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort.bed . For positive reads I use the start and the start +1 and for negative reads I use the end -1 and the end. I then will use bedtools coverage -d -s (force strandedness).</p>
+<ul>
+<li>make top5_exonlist_18486_threeprime_noCHR.txt and top5_exonlist_18486_fiveprime_noCHR.txt bed format</li>
+</ul>
+<pre class="bash"><code>awk &#39;{print ($2 &quot;\t&quot; $3 &quot;\t&quot; $4 &quot;\t&quot; $1 &quot;\t.\t&quot; $5)}&#39; top5_exonlist_18486_threeprime_noCHR.txt| sort -k1,1 -k2,2n &gt; top5_exonlist_18486_threeprime_noCHR.bed
+
+
+awk &#39;{print ($2 &quot;\t&quot; $3 &quot;\t&quot; $4 &quot;\t&quot; $1 &quot;\t.\t&quot; $5)}&#39; top5_exonlist_18486_fiveprime_noCHR.txt| sort -k1,1 -k2,2n &gt; top5_exonlist_18486_fiveprime_noCHR.bed
+</code></pre>
+<p>sort YG-SP-NET3-18486_combined_Netpilot-sort.bed the same way to make this easier.</p>
+<pre class="bash"><code>sort -k1,1 -k2,2n YG-SP-NET3-18486_combined_Netpilot-sort.bed &gt; YG-SP-NET3-18486_combined_Netpilot-sort2.bed</code></pre>
+<ul>
+<li>make the YG-SP-NET3-18486_combined_Netpilot-sort2.bed 1 bp resoluton with awk</li>
+</ul>
+<pre class="bash"><code>awk &#39;{if($6 == &quot;+&quot;) print($1 &quot;\t&quot; $2 &quot;\t&quot; $2 + 1  &quot;\t&quot; $4 &quot;\t&quot; $5 &quot;\t&quot; $6 ); else print($1 &quot;\t&quot; $3 -1 &quot;\t&quot; $3 &quot;\t&quot; $4 &quot;\t&quot; $5 &quot;\t&quot; $6 )}&#39; YG-SP-NET3-18486_combined_Netpilot-sort2.bed &gt; YG-SP-NET3-18486_combined_Netpilot-sort2-bp.bed</code></pre>
+<ul>
+<li>bedtools script:</li>
+</ul>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=ss_cov
+#SBATCH --time=8:00:00
+#SBATCH --output=ss_cov.out
+#SBATCH --error=ss_cov.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+bedtools coverage -d -s  -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_threeprime_noCHR.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_threeprime_cov.txt 
+
+
+bedtools coverage -d -s  -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_fiveprime_cov.txt </code></pre>
+</div>
+<div id="import-and-group-by-exon" class="section level4">
+<h4>Import and group by exon</h4>
+<pre class="r"><code>five_prime_cov=read.table(&quot;../data/top5_exonlist_18486_fiveprime_cov.txt&quot;)
+colnames(five_prime_cov)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;, &quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)
+three_prime_cov=read.table(&quot;../data/top5_exonlist_18486_threeprime_cov.txt&quot;)
+colnames(three_prime_cov)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;,&quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)</code></pre>
+<p>summarize on window position to make top plot</p>
+<pre class="r"><code>cov_bypos_pos= five_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
+cov_bypos_neg= five_prime_cov %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
+cov_bypos_neg_vec= rev(as.numeric(unlist(cov_bypos_neg[,2])))
+
+cov_bypos=cbind(cov_bypos_pos, cov_bypos_neg_vec)
+
+cov_bypos_all= cov_bypos %&gt;% mutate(sum_by_pos=sum_pos + cov_bypos_neg_vec )
+cov_bypos_all= cov_bypos_all %&gt;% select(pos, sum_by_pos)</code></pre>
+<p>Plot it:</p>
+<pre class="r"><code>cov_bypos_all_long=melt(cov_bypos_all, id.vars = &#39;pos&#39;, value.name =&#39;count&#39; ) %&gt;% filter(pos &gt; 30 &amp; pos&lt; 50)
+
+ggplot(cov_bypos_all_long,aes(pos,count)) + geom_line() + ggtitle(&quot;5&#39; splice site&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-23-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>3 prime end:</p>
+<pre class="r"><code>cov_bypos_pos_3= three_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
+cov_bypos_neg_3= three_prime_cov %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
+cov_bypos_neg_vec_3= rev(as.numeric(unlist(cov_bypos_neg_3[,2])))
+
+cov_bypos_3=cbind(cov_bypos_pos_3, cov_bypos_neg_vec_3)
+
+cov_bypos_all_3= cov_bypos_3 %&gt;% mutate(sum_by_pos=sum_pos + cov_bypos_neg_vec_3 )
+cov_bypos_all_3= cov_bypos_all_3 %&gt;% select(pos, sum_by_pos)</code></pre>
+<pre class="r"><code>cov_bypos_all_long_3=melt(cov_bypos_all_3, id.vars = &#39;pos&#39;, value.name =&#39;count&#39; ) %&gt;% filter(pos &gt; 20 &amp; pos&lt; 60)
+
+ggplot(cov_bypos_all_long_3,aes(pos,count)) + geom_line() + ggtitle(&quot;3&#39; splice site&quot;) </code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-25-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="try-without-strand-specificity" class="section level4">
+<h4>Try without strand specificity</h4>
+<p>-get rid of the highly expressed bins if one of these exons is in it.</p>
+<p>The script splicesite_cov2.sh is not strand specific on mapping coverage.</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=ss_cov2
+#SBATCH --time=8:00:00
+#SBATCH --output=ss_cov2.out
+#SBATCH --error=ss_cov2.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+bedtools coverage -d  -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_threeprime_noCHR.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_threeprime_cov2.txt 
+
+
+bedtools coverage -d   -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_fiveprime_cov2.txt </code></pre>
+<pre class="r"><code>five_prime_cov2=read.table(&quot;../data/top5_exonlist_18486_fiveprime_cov2.txt&quot;, stringsAsFactors = FALSE)
+colnames(five_prime_cov2)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;, &quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)
+three_prime_cov2=read.table(&quot;../data/top5_exonlist_18486_threeprime_cov2.txt&quot;)
+colnames(three_prime_cov2)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;,&quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)</code></pre>
+<pre class="r"><code>cov_bypos_pos2= five_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
+cov_bypos_neg2= five_prime_cov2 %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
+cov_bypos_neg_vec2= rev(as.numeric(unlist(cov_bypos_neg2[,2])))
+
+cov_bypos2=cbind(cov_bypos_pos2, cov_bypos_neg_vec2)
+
+cov_bypos_all2= cov_bypos2 %&gt;% mutate(sum_by_pos=sum_pos + cov_bypos_neg_vec )
+cov_bypos_all2= cov_bypos_all2 %&gt;% select(pos, sum_by_pos)</code></pre>
+<p>Plot it:</p>
+<pre class="r"><code>cov_bypos_all_long2=melt(cov_bypos_all2, id.vars = &#39;pos&#39;, value.name =&#39;count&#39; )
+
+ggplot(cov_bypos_all_long2,aes(pos,count)) + geom_line() + ggtitle(&quot;5&#39; splice site, not SS&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-29-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>3 prime end:</p>
+<pre class="r"><code>cov_bypos_pos2_3= three_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
+cov_bypos_neg2_3= three_prime_cov2 %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
+cov_bypos_neg_vec2_3= rev(as.numeric(unlist(cov_bypos_neg2_3[,2])))
+
+cov_bypos2_3=cbind(cov_bypos_pos2_3, cov_bypos_neg_vec2_3)
+
+cov_bypos_all2_3= cov_bypos2_3 %&gt;% mutate(sum_by_pos=sum_pos + cov_bypos_neg_vec2_3 )
+cov_bypos_all2_3= cov_bypos_all2_3 %&gt;% select(pos, sum_by_pos)</code></pre>
+<pre class="r"><code>cov_bypos_all_long2_3=melt(cov_bypos_all2_3, id.vars = &#39;pos&#39;, value.name =&#39;count&#39; ) %&gt;% filter(pos &gt; 20 &amp; pos&lt; 60)
+
+ggplot(cov_bypos_all_long2_3,aes(pos,count)) + geom_line() + ggtitle(&quot;3&#39; splice site, not SS&quot;) </code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="filter-out-the-locations-in-bins-and-small-rnas" class="section level4">
+<h4>Filter out the locations in bins and small RNAs</h4>
+<p>I will use the files I created in the create_blacklist analysis to filter the exon regions that fall in those locations. Use bedtools intersect:</p>
+<ul>
+<li><p>/project2/gilad/briana/genome_anotation_data/top5_gen_wind200.tab.nochr.sort.bed</p></li>
+<li><p>project2/gilad/briana/genome_anotation_data/snRNA.gencode.v19.nochr.bed</p></li>
+<li><p>/project2/gilad/briana/genome_anotation_data/snoRNA.gencode.v19.nochr.bed</p></li>
+<li><p>/project2/gilad/briana/genome_anotation_data/rRNA.gencode.v19.nochr.bed</p></li>
+</ul>
+<p>splicesite_cov2_filter.sh</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=filt_exoncov
+#SBATCH --time=8:00:00
+#SBATCH --output=filt_exoncov_sbatch.out
+#SBATCH --error=filt_exoncov_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+bedtools intersect -v -wa -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR.bed -b /project2/gilad/briana/genome_anotation_data/top5_gen_wind200.tab.nochr.sort.bed /project2/gilad/briana/genome_anotation_data/snRNA.gencode.v19.nochr.bed /project2/gilad/briana/genome_anotation_data/snoRNA.gencode.v19.nochr.bed /project2/gilad/briana/genome_anotation_data/rRNA.gencode.v19.nochr.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR_filter.bed
+
+bedtools coverage -d  -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR_filter.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_fiveprime_cov2_filter.txt 
+
+bedtools intersect -v -wa -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_threeprime_noCHR.bed -b /project2/gilad/briana/genome_anotation_data/top5_gen_wind200.tab.nochr.sort.bed /project2/gilad/briana/genome_anotation_data/snRNA.gencode.v19.nochr.bed /project2/gilad/briana/genome_anotation_data/snoRNA.gencode.v19.nochr.bed /project2/gilad/briana/genome_anotation_data/rRNA.gencode.v19.nochr.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_threeprime_noCHR_filter.bed
+
+bedtools coverage -d  -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_threeprime_noCHR_filter.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_threeprime_cov2_filter.txt 
+</code></pre>
+<p>This results in 464 3-prime and 445 5-prime exons.</p>
+<pre class="r"><code>five_prime_cov_F=read.table(&quot;../data/top5_exonlist_18486_fiveprime_cov2_filter.txt&quot;)
+colnames(five_prime_cov_F)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;, &quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)
+three_prime_cov_F=read.table(&quot;../data/top5_exonlist_18486_threeprime_cov2_filter.txt&quot;)
+colnames(three_prime_cov_F)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;,&quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)</code></pre>
+<pre class="r"><code>cov_bypos_pos_F= five_prime_cov_F %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
+cov_bypos_neg2_F= five_prime_cov_F %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
+cov_bypos_neg_vec_F= rev(as.numeric(unlist(cov_bypos_neg2_F[,2])))
+
+cov_bypos_F=cbind(cov_bypos_pos_F, cov_bypos_neg_vec_F)
+
+cov_bypos_all_F= cov_bypos_F %&gt;% mutate(sum_by_pos=sum_pos + cov_bypos_neg_vec )
+cov_bypos_all_F= cov_bypos_all_F %&gt;% select(pos, sum_by_pos)</code></pre>
+<p>Plot it:</p>
+<pre class="r"><code>cov_bypos_all_long_F=melt(cov_bypos_all_F, id.vars = &#39;pos&#39;, value.name =&#39;count&#39; )
+
+ggplot(cov_bypos_all_long_F,aes(pos,count)) + geom_line() + ggtitle(&quot;5&#39; splice site filtered exons&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-35-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>3 prime end:</p>
+<pre class="r"><code>cov_bypos_posF_3= three_prime_cov_F %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
+cov_bypos_negF_3= three_prime_cov_F %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
+cov_bypos_neg_vecF_3= rev(as.numeric(unlist(cov_bypos_negF_3[,2])))
+
+cov_byposF_3=cbind(cov_bypos_posF_3, cov_bypos_neg_vecF_3)
+
+cov_bypos_allF_3= cov_byposF_3 %&gt;% mutate(sum_by_pos=sum_pos + cov_bypos_neg_vec2_3 )
+cov_bypos_allF_3= cov_bypos_allF_3 %&gt;% select(pos, sum_by_pos)</code></pre>
+<pre class="r"><code>cov_bypos_all_longF_3=melt(cov_bypos_allF_3, id.vars = &#39;pos&#39;, value.name =&#39;count&#39; ) 
+
+ggplot(cov_bypos_all_longF_3,aes(pos,count)) + geom_line() + ggtitle(&quot;3&#39; splice site filtered exons&quot;) </code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-37-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="change-data-structure" class="section level4">
+<h4>Change data structure</h4>
+<p>I want the data to be in a matrix exon by position. The row name is the every 80th entry of of the coverage file (1, 81, 161) and there should be 1906 rows. The rows are the 80 counts in the count column of the coverage file. I need to make a for loop through the rows that goes through seq(1,152480,80). I run this on cov_bypos_pos2_small first.</p>
+<pre class="r"><code>#five_prime_cov2_small=five_prime_cov2[1:160,]
+#update data upload to have string at factor =false 
+make_matrix=function(cov_df){
+  matrix2=c(1:80)
+  names2=vector()
+for (i in seq(1,nrow(cov_df),80)){
+  names2= append(names2,cov_df[i,4])
+  row_i=vector()
+  for (ea in seq(0,79,1)){
+    row_i= append(row_i, cov_df[i + ea,8])
+  }
+  matrix2=rbind(matrix2, row_i)
+}
+  return(as.matrix(matrix2[2:nrow(matrix2),]))
+  
+}</code></pre>
+<p>Try this on the five prime coverage2 file. I need to normalize the points in the matrix so some are not super high.</p>
+<pre class="r"><code>five_prime_matrix2=make_matrix(five_prime_cov2)
+five_prime_matrix2_norm=apply(t(five_prime_matrix2), 1, rescale)</code></pre>
+<p>Make an image picture:</p>
+<pre class="r"><code>my_palette &lt;- colorRampPalette(c(&quot;black&quot;, &quot;white&quot;))(n = 10)
+image(five_prime_matrix2_norm,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Maybe this is not the normalization I want. I should try binary. If there is a read make it 1.</p>
+</div>
+<div id="filter-out-first-and-last-exon" class="section level4">
+<h4>Filter out first and last exon</h4>
+<p>This may help us understand the wierd</p>
+</div>
+<div id="extra-codefalse-attempts" class="section level4">
+<h4>Extra code/false attempts</h4>
+<p>Now make a python script that takes this and the genome coverage file in as a data frame. I will then make a list of the base counts corresponding to each exon region from the genome coverage file. Do it for the 5 prime file first.</p>
+<pre class="python"><code>import pandas as pd
+exon_5prime= pd.read_table(&quot;/project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR.txt&quot;, header=None)
+gen_cov= pd.read_table(&quot;/project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed&quot;, header=None)
+#will make a list of lists that I will turn into a matrix later  
+exon_list=[]
+for exon in exon_5prime.iterrows():
+  chr=exon[1]
+  start=exon[2]
+  end=exon[3]
+  
+  </code></pre>
+<p>Test on exon_5prime=pd.read_table(“/project2/gilad/briana/Net-seq-pilot/data/exon_cov/exon_5test.txt”, header=None)</p>
+<pre class="bash"><code>awk &#39;BEGIN {ORS=&quot;,&quot;}; $1==1 &amp;&amp; $2&gt;=11968288 &amp;&amp; $2&lt;=11968368 {print $3}; END {print &quot;\n&quot;}&#39; /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed </code></pre>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.4.2 (2017-09-28)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS Sierra 10.12.6
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] bindrcpp_0.2       reshape2_1.4.3     scales_0.5.0      
+[4] RColorBrewer_1.1-2 gplots_3.0.1       workflowr_0.7.0   
+[7] rmarkdown_1.8.5    ggplot2_2.2.1      dplyr_0.7.4       
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.15       pillar_1.1.0       compiler_3.4.2    
+ [4] git2r_0.21.0       plyr_1.8.4         bindr_0.1         
+ [7] bitops_1.0-6       tools_3.4.2        digest_0.6.14     
+[10] jsonlite_1.5       evaluate_0.10.1    tibble_1.4.2      
+[13] gtable_0.2.0       pkgconfig_2.0.1    rlang_0.1.6       
+[16] yaml_2.1.16        stringr_1.2.0      knitr_1.18        
+[19] gtools_3.5.0       caTools_1.17.1     rprojroot_1.3-2   
+[22] grid_3.4.2         reticulate_1.4     glue_1.2.0        
+[25] R6_2.2.2           gdata_2.18.0       magrittr_1.5      
+[28] backports_1.1.2    htmltools_0.3.6    assertthat_0.2.0  
+[31] colorspace_1.3-2   labeling_0.3       KernSmooth_2.23-15
+[34] stringi_1.1.6      lazyeval_0.2.1     munsell_0.4.3     </code></pre>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
