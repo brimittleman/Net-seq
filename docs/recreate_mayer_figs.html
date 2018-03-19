@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-18</p>
+<p><strong>Last updated:</strong> 2018-03-19</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 41f9e01</p>
+<p><strong>Code version:</strong> 3aa98a8</p>
 <!-- Add your analysis here -->
 <p>This analysis is to recreate some of the figures from the Mayer paper using my data.</p>
 <pre class="r"><code>library(dplyr)</code></pre>
@@ -561,7 +561,7 @@ bedtools coverage -d  -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5
 bedtools coverage -d   -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top5_exonlist_18486_fiveprime_noCHR.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-sort2-bp2.bed &gt; /project2/gilad/briana/Net-seq-pilot/data/ss_cov/top5_exonlist_18486_fiveprime_cov2.txt </code></pre>
 <pre class="r"><code>five_prime_cov2=read.table(&quot;../data/top5_exonlist_18486_fiveprime_cov2.txt&quot;, stringsAsFactors = FALSE)
 colnames(five_prime_cov2)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;, &quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)
-three_prime_cov2=read.table(&quot;../data/top5_exonlist_18486_threeprime_cov2.txt&quot;)
+three_prime_cov2=read.table(&quot;../data/top5_exonlist_18486_threeprime_cov2.txt&quot;, stringsAsFactors = FALSE)
 colnames(three_prime_cov2)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;exon&quot;,&quot;score&quot;,&quot;strand&quot;, &quot;pos&quot;, &quot;count&quot;)</code></pre>
 <pre class="r"><code>cov_bypos_pos2= five_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count)) 
 cov_bypos_neg2= five_prime_cov2 %&gt;% filter(strand==&quot;-&quot;) %&gt;% group_by(pos) %&gt;% summarise(sum_pos=sum(count))
@@ -678,10 +678,80 @@ for (i in seq(1,nrow(cov_df),80)){
 <pre class="r"><code>five_prime_matrix2=make_matrix(five_prime_cov2)
 five_prime_matrix2_norm=apply(t(five_prime_matrix2), 1, rescale)</code></pre>
 <p>Make an image picture:</p>
-<pre class="r"><code>my_palette &lt;- colorRampPalette(c(&quot;black&quot;, &quot;white&quot;))(n = 10)
+<pre class="r"><code>my_palette &lt;- colorRampPalette(c(&quot;white&quot;, &quot;black&quot;))(n = 100)
 image(five_prime_matrix2_norm,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-40-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Maybe this is not the normalization I want. I should try binary. If there is a read make it 1.</p>
+<p>Try on 3prime:</p>
+<pre class="r"><code>three_prime_matrix2=make_matrix(three_prime_cov2)
+three_prime_matrix2_norm=apply(t(three_prime_matrix2), 1, rescale)
+image(three_prime_matrix2_norm,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-41-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Try with a binary matrix:</p>
+<pre class="r"><code>make_binary=function(matrix){
+  new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for(row in 1:nrow(matrix)) {
+    for(col in 1:ncol(matrix)) {
+        if(matrix[row,col]!= 0){
+          new_matrix[row,col]= 1
+        }
+        else{
+            new_matrix[row,col] = 0
+        }
+    }
+  }
+  return(new_matrix)
+}
+
+five_prime_matrix2_bin=make_binary(five_prime_matrix2)
+three_prime_matrix2_bin= make_binary(three_prime_matrix2)</code></pre>
+<p>Try image with these:</p>
+<pre class="r"><code>image(three_prime_matrix2_bin,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Three prime coverage&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-43-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>image(five_prime_matrix2_bin,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Five prime coverage&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-43-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Try to find a natural cuttoff to change the highest reads:</p>
+<pre class="r"><code>vec_five_prime_matrix2=vector(&quot;numeric&quot;, length = 152480)
+for(row in 1:nrow(five_prime_matrix2)) {
+    for(col in 1:ncol(five_prime_matrix2)) {
+      vec_five_prime_matrix2[(row*col)]=five_prime_matrix2[row,col]
+    }
+}</code></pre>
+<pre class="r"><code>summary(vec_five_prime_matrix2)</code></pre>
+<pre><code>     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+     0.00      0.00      0.00      2.06      0.00 128251.00 </code></pre>
+<pre class="r"><code>plot(log10(vec_five_prime_matrix2))
+abline(h=2, col=&quot;red&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>quantile(vec_five_prime_matrix2,c(.995, .998, .999))</code></pre>
+<pre><code>  99.5%   99.8%   99.9% 
+  6.000  36.000 125.042 </code></pre>
+<p>Make any value above top .2% value (36)==36</p>
+<pre class="r"><code>cut_top=function(matrix){
+  new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for(row in 1:nrow(matrix)) {
+    for(col in 1:ncol(matrix)) {
+        if(matrix[row,col]&gt;= 36){
+          new_matrix[row,col]= 36
+        }
+        else{
+            new_matrix[row,col] = matrix[row,col]
+        }
+    }
+  }
+  return(new_matrix)
+}</code></pre>
+<pre class="r"><code>three_prime_matrix2_998=cut_top(three_prime_matrix2)
+five_prime_matrix2_998=cut_top(five_prime_matrix2)</code></pre>
+<p>Create the image:</p>
+<pre class="r"><code>image(three_prime_matrix2_998,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Three prime coverage&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>image(five_prime_matrix2_998,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Five prime coverage&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-48-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Try to make the top plots with mean and sd:</p>
+<pre class="r"><code>image(three_prime_matrix2_bin,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Three prime coverage&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>image(five_prime_matrix2_bin,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Five prime coverage&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="filter-out-first-and-last-exon" class="section level4">
 <h4>Filter out first and last exon</h4>
