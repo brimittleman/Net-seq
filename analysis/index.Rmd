@@ -45,6 +45,8 @@ Net-pilot analysis:
 
 * [Create blacklist to filter reads](create_blacklist.html)  
 
+* [Recreate figures from Mayer](recreate_mayer_figs.html)
+
 
 Cell Growth analysis: 
 

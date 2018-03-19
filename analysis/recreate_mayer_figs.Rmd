@@ -370,7 +370,7 @@ bedtools coverage -d   -a /project2/gilad/briana/Net-seq-pilot/data/exon_cov/top
 ```{r}
 five_prime_cov2=read.table("../data/top5_exonlist_18486_fiveprime_cov2.txt", stringsAsFactors = FALSE)
 colnames(five_prime_cov2)= c("chr", "start", "end", "exon", "score","strand", "pos", "count")
-three_prime_cov2=read.table("../data/top5_exonlist_18486_threeprime_cov2.txt")
+three_prime_cov2=read.table("../data/top5_exonlist_18486_threeprime_cov2.txt", stringsAsFactors = FALSE)
 colnames(three_prime_cov2)= c("chr", "start", "end", "exon","score","strand", "pos", "count")
 ```
 
@@ -549,17 +549,112 @@ five_prime_matrix2_norm=apply(t(five_prime_matrix2), 1, rescale)
 Make an image picture:  
 
 ```{r}
-my_palette <- colorRampPalette(c("black", "white"))(n = 10)
+my_palette <- colorRampPalette(c("white", "black"))(n = 100)
 image(five_prime_matrix2_norm,col=my_palette, ylab="exon", xlab="Position")
 
 ```
 
-Maybe this is not the normalization I want. I should try binary. If there is a read make it 1.
+Try on 3prime:  
+```{r}
+
+three_prime_matrix2=make_matrix(three_prime_cov2)
+three_prime_matrix2_norm=apply(t(three_prime_matrix2), 1, rescale)
+image(three_prime_matrix2_norm,col=my_palette, ylab="exon", xlab="Position")
 
 
+```
+
+Try with a binary matrix:  
+
+```{r}
+make_binary=function(matrix){
+  new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for(row in 1:nrow(matrix)) {
+    for(col in 1:ncol(matrix)) {
+        if(matrix[row,col]!= 0){
+          new_matrix[row,col]= 1
+        }
+        else{
+            new_matrix[row,col] = 0
+        }
+    }
+  }
+  return(new_matrix)
+}
+
+five_prime_matrix2_bin=make_binary(five_prime_matrix2)
+three_prime_matrix2_bin= make_binary(three_prime_matrix2)
 
 
+```
 
+Try image with these:  
+```{r}
+image(three_prime_matrix2_bin,col=my_palette, ylab="exon", xlab="Position", main="Three prime coverage")
+image(five_prime_matrix2_bin,col=my_palette, ylab="exon", xlab="Position", main="Five prime coverage")
+```
+
+Try to find a natural cuttoff to change the highest reads:  
+
+```{r}
+
+vec_five_prime_matrix2=vector("numeric", length = 152480)
+for(row in 1:nrow(five_prime_matrix2)) {
+    for(col in 1:ncol(five_prime_matrix2)) {
+      vec_five_prime_matrix2[(row*col)]=five_prime_matrix2[row,col]
+    }
+}
+
+```
+
+
+```{r}
+summary(vec_five_prime_matrix2)
+plot(log10(vec_five_prime_matrix2))
+abline(h=2, col="red")
+quantile(vec_five_prime_matrix2,c(.995, .998, .999))
+
+```
+Make any value above top .2% value (36)==36  
+
+```{r}
+cut_top=function(matrix){
+  new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for(row in 1:nrow(matrix)) {
+    for(col in 1:ncol(matrix)) {
+        if(matrix[row,col]>= 36){
+          new_matrix[row,col]= 36
+        }
+        else{
+            new_matrix[row,col] = matrix[row,col]
+        }
+    }
+  }
+  return(new_matrix)
+}
+
+```
+
+
+```{r}
+three_prime_matrix2_998=cut_top(three_prime_matrix2)
+five_prime_matrix2_998=cut_top(five_prime_matrix2)
+```
+
+Create the image:  
+
+```{r}
+image(three_prime_matrix2_998,col=my_palette, ylab="exon", xlab="Position", main="Three prime coverage")
+image(five_prime_matrix2_998,col=my_palette, ylab="exon", xlab="Position", main="Five prime coverage")
+```
+
+
+Try to make the top plots with mean and sd:  
+
+```{r}
+image(three_prime_matrix2_bin,col=my_palette, ylab="exon", xlab="Position", main="Three prime coverage")
+image(five_prime_matrix2_bin,col=my_palette, ylab="exon", xlab="Position", main="Five prime coverage")
+```
 
 
 
