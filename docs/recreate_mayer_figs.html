@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-19</p>
+<p><strong>Last updated:</strong> 2018-03-20</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 3aa98a8</p>
+<p><strong>Code version:</strong> 9374de6</p>
 <!-- Add your analysis here -->
 <p>This analysis is to recreate some of the figures from the Mayer paper using my data.</p>
 <pre class="r"><code>library(dplyr)</code></pre>
@@ -747,11 +747,74 @@ five_prime_matrix2_998=cut_top(five_prime_matrix2)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-48-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>image(five_prime_matrix2_998,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Five prime coverage&quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-48-2.png" width="672" style="display: block; margin: auto;" /></p>
-<p>Try to make the top plots with mean and sd:</p>
-<pre class="r"><code>image(three_prime_matrix2_bin,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Three prime coverage&quot;)</code></pre>
+<p><strong>I need to pull the data frames in pos and neg seperatly!! these images do not have flipped rows for neg strand</strong></p>
+<p>Run on just the positive strand first:</p>
+<pre class="r"><code>cov_bypos_pos2_matrix= five_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() %&gt;% make_binary()
+
+image(cov_bypos_pos2_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Positive 5 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>image(five_prime_matrix2_bin,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Five prime coverage&quot;)</code></pre>
+<pre class="r"><code>cov_bypos_pos2_3_matrix = three_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() %&gt;% make_binary()
+image(cov_bypos_pos2_3_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Positive 3 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Do the same with the negative:</p>
+<pre class="r"><code>cov_bypos_neg2_matrix= five_prime_cov2 %&gt;% filter(strand==&quot;-&quot;)  %&gt;% make_matrix() %&gt;% make_binary()
+image(cov_bypos_neg2_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Negative 5 prime &quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>cov_bypos_neg2_3_matrix= three_prime_cov2 %&gt;% filter(strand==&quot;-&quot;) %&gt;% make_matrix() %&gt;% make_binary()
+image(cov_bypos_neg2_3_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Negative 3 prime &quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-50-2.png" width="672" style="display: block; margin: auto;" /> Make a function to reverse each row of the negative matricies:</p>
+<pre class="r"><code>rev_rows=function(matrix){
+  new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for (row in 1:nrow(matrix)){
+    x= rev(matrix[row,])
+    new_matrix[row,]=x
+  }
+  return(new_matrix)
+}</code></pre>
+<p>Use this function to flip the negative matrix then bind it to the original. I will also cut the top to better the vizualization.</p>
+<pre class="r"><code>flip_neg2_5prime=rev_rows(cov_bypos_neg2_matrix)
+full_5prime_matrix_cut= rbind(cov_bypos_pos2_matrix,flip_neg2_5prime) %&gt;% cut_top()
+
+
+flip_neg2_3prime=rev_rows(cov_bypos_neg2_3_matrix)
+full_3prime_matrix_cut=rbind(cov_bypos_pos2_3_matrix, flip_neg2_3prime) %&gt;% cut_top()</code></pre>
+<p>Images</p>
+<pre class="r"><code>image(full_5prime_matrix_cut,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;5&#39; all exons&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-53-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>image(full_3prime_matrix_cut,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;3&#39; all exons&quot;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-53-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Make these with the ggplot version:</p>
+<pre class="r"><code>heatmap.2(full_5prime_matrix_cut,dendrogram=&#39;none&#39;, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Try to make the top plots with mean and sd:</p>
+<pre class="r"><code>full_5prime_matrix= rbind(cov_bypos_pos2_matrix,flip_neg2_5prime) 
+
+means_5prime=apply(full_5prime_matrix, 2, mean)
+sd_5prime=apply(full_5prime_matrix, 2, sd)
+
+
+df_5prime=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_5prime, SD=sd_5prime))
+df_5prime_long= melt(df_5prime, id.vars=&quot;pos&quot;, measure.vars = c(&quot;mean&quot;, &quot;SD&quot;),  varnames =c(&quot;mean&quot;, &quot;SD&quot;))</code></pre>
+<p>Plot the mean at each position:</p>
+<pre class="r"><code>ggplot(df_5prime,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;5&#39; splice site&quot;) + geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20) + xlim(c(-20,20))</code></pre>
+<pre><code>Warning: Removed 39 rows containing missing values (geom_path).</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-56-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Same for 3prime:</p>
+<pre class="r"><code>full_3prime_matrix=rbind(cov_bypos_pos2_3_matrix, flip_neg2_3prime)
+
+
+means_3prime=apply(full_3prime_matrix, 2, mean)
+sd_3prime=apply(full_3prime_matrix, 2, sd)
+
+
+df_3prime=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_3prime, SD=sd_3prime))
+df_3prime_long= melt(df_3prime, id.vars=&quot;pos&quot;, measure.vars = c(&quot;mean&quot;, &quot;SD&quot;),  varnames =c(&quot;mean&quot;, &quot;SD&quot;))
+
+
+ggplot(df_3prime,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;3&#39; splice site mean coverage&quot;)+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20) +
+  xlim(c(-20,20))</code></pre>
+<pre><code>Warning: Removed 39 rows containing missing values (geom_path).</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="filter-out-first-and-last-exon" class="section level4">
 <h4>Filter out first and last exon</h4>
