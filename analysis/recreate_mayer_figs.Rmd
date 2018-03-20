@@ -649,13 +649,112 @@ image(five_prime_matrix2_998,col=my_palette, ylab="exon", xlab="Position", main=
 ```
 
 
-Try to make the top plots with mean and sd:  
+**I need to pull the data frames in pos and neg seperatly!! these images do not have flipped rows for neg strand**  
+
+Run on just the positive strand first:  
 
 ```{r}
-image(three_prime_matrix2_bin,col=my_palette, ylab="exon", xlab="Position", main="Three prime coverage")
-image(five_prime_matrix2_bin,col=my_palette, ylab="exon", xlab="Position", main="Five prime coverage")
+cov_bypos_pos2_matrix= five_prime_cov %>% filter(strand=="+") %>% make_matrix() %>% make_binary()
+
+image(cov_bypos_pos2_matrix,col=my_palette, ylab="exon", xlab="Position", main="Positive 5 prime ")
+
+cov_bypos_pos2_3_matrix = three_prime_cov2 %>% filter(strand=="+") %>% make_matrix() %>% make_binary()
+image(cov_bypos_pos2_3_matrix,col=my_palette, ylab="exon", xlab="Position", main="Positive 3 prime ")
+
 ```
 
+
+Do the same with the negative:  
+
+```{r}
+cov_bypos_neg2_matrix= five_prime_cov2 %>% filter(strand=="-")  %>% make_matrix() %>% make_binary()
+image(cov_bypos_neg2_matrix,col=my_palette, ylab="exon", xlab="Position", main="Negative 5 prime ")
+
+cov_bypos_neg2_3_matrix= three_prime_cov2 %>% filter(strand=="-") %>% make_matrix() %>% make_binary()
+image(cov_bypos_neg2_3_matrix,col=my_palette, ylab="exon", xlab="Position", main="Negative 3 prime ")
+```
+Make a function to reverse each row of the  negative matricies:  
+
+```{r}
+rev_rows=function(matrix){
+  new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for (row in 1:nrow(matrix)){
+    x= rev(matrix[row,])
+    new_matrix[row,]=x
+  }
+  return(new_matrix)
+}
+```
+
+Use this function to flip the negative matrix then bind it to the original.  I will also cut the top to better the vizualization.   
+
+
+```{r}
+flip_neg2_5prime=rev_rows(cov_bypos_neg2_matrix)
+full_5prime_matrix_cut= rbind(cov_bypos_pos2_matrix,flip_neg2_5prime) %>% cut_top()
+
+
+flip_neg2_3prime=rev_rows(cov_bypos_neg2_3_matrix)
+full_3prime_matrix_cut=rbind(cov_bypos_pos2_3_matrix, flip_neg2_3prime) %>% cut_top()
+
+```
+Images
+
+
+```{r}
+image(full_5prime_matrix_cut,col=my_palette, ylab="exon", xlab="Position", main="5' all exons")
+image(full_3prime_matrix_cut,col=my_palette, ylab="exon", xlab="Position", main="3' all exons")
+```
+
+Make these with the ggplot version:  
+
+
+```{r}
+heatmap.2(full_5prime_matrix_cut,dendrogram='none', Rowv=FALSE, Colv=FALSE,trace='none')
+```
+
+
+Try to make the top plots with mean and sd:  
+
+
+```{r}
+full_5prime_matrix= rbind(cov_bypos_pos2_matrix,flip_neg2_5prime) 
+
+means_5prime=apply(full_5prime_matrix, 2, mean)
+sd_5prime=apply(full_5prime_matrix, 2, sd)
+
+
+df_5prime=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_5prime, SD=sd_5prime))
+df_5prime_long= melt(df_5prime, id.vars="pos", measure.vars = c("mean", "SD"),  varnames =c("mean", "SD"))
+```
+
+
+
+Plot the mean at each position: 
+
+```{r}
+
+ggplot(df_5prime,aes(x=pos, y=mean)) + geom_line() + ggtitle("5' splice site") + geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20) + xlim(c(-20,20))
+```
+
+
+Same for 3prime:  
+
+```{r}
+full_3prime_matrix=rbind(cov_bypos_pos2_3_matrix, flip_neg2_3prime)
+
+
+means_3prime=apply(full_3prime_matrix, 2, mean)
+sd_3prime=apply(full_3prime_matrix, 2, sd)
+
+
+df_3prime=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_3prime, SD=sd_3prime))
+df_3prime_long= melt(df_3prime, id.vars="pos", measure.vars = c("mean", "SD"),  varnames =c("mean", "SD"))
+
+
+ggplot(df_3prime,aes(x=pos, y=mean)) + geom_line() + ggtitle("3' splice site mean coverage")+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20) +
+  xlim(c(-20,20))
+```
 
 
 
