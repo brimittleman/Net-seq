@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-16</p>
+<p><strong>Last updated:</strong> 2018-03-21</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> b7db3f0</p>
+<p><strong>Code version:</strong> e234872</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(dplyr)</code></pre>
 <pre><code>
@@ -330,7 +330,14 @@ Attaching package: &#39;dplyr&#39;</code></pre>
 
     intersect, setdiff, setequal, union</code></pre>
 <pre class="r"><code>library(tidyr)
-library(ggplot2)</code></pre>
+library(ggplot2)
+library(reshape2)</code></pre>
+<pre><code>Warning: package &#39;reshape2&#39; was built under R version 3.4.3</code></pre>
+<pre><code>
+Attaching package: &#39;reshape2&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:tidyr&#39;:
+
+    smiths</code></pre>
 <pre class="r"><code>growth=read.csv(&quot;../data/growth_curve_3.16.csv&quot;, header = TRUE)
 #filter out control 
 growth_e= growth %&gt;% filter(control==&quot;e&quot;) %&gt;% mutate(avg_h=(h_18486+ h_18499 + h_18502 + h_18504 + h_18510 + h_18517 + h_18523)/7) %&gt;% mutate(avg_c=(c_c3641 + c_pt30 + c_pt91 + c_3610 + c_3659 + c_3622 + c_18358 + c_18359)/8)</code></pre>
@@ -441,6 +448,58 @@ abline(v=3,lwd=3, lty=2)</code></pre>
 days_post= as.factor(days_post)
 
 growth_e_DP= cbind(days_post,growth_e)</code></pre>
+<div id="redo-analysis-on-321" class="section level3">
+<h3>Redo analysis on 3/21</h3>
+<pre class="r"><code>growth_3.21=read.csv(&quot;../data/cell_growth_3.21.18.csv&quot;, stringsAsFactors = FALSE)
+
+growth_e1=growth_3.21 %&gt;% filter(Type==&quot;e1&quot;)
+
+growth_e2=growth_3.21 %&gt;% filter(Type==&quot;e2&quot;)</code></pre>
+<p>Melt the data:</p>
+<pre class="r"><code>growth_e2_long=melt(growth_e2, variable.name = &quot;key&quot;,value.names = &quot;value&quot;, id.vars = c(&quot;Line&quot;, &quot;Day&quot;)) %&gt;% filter(key != &quot;Type&quot;)</code></pre>
+<p>Plot day vs allive:</p>
+<pre class="r"><code>growth_e2_long_live=growth_e2_long %&gt;% filter(key==&quot;X..Live.average&quot;)
+ggplot(growth_e2_long, aes(x=as.factor(Day), y=as.numeric(value), group_by(Line)))+ geom_violin()</code></pre>
+<pre><code>Warning in fun(x, ...): NAs introduced by coercion</code></pre>
+<pre><code>Warning in FUN(X[[i]], ...): NAs introduced by coercion</code></pre>
+<pre><code>Warning: Removed 168 rows containing non-finite values (stat_ydensity).</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>growth_e1_day_group=growth_e1[order(growth_e1$Day),]
+
+growth_e2_day_group=growth_e2[order(growth_e2$Day),]</code></pre>
+<pre class="r"><code>par(mfrow=c(1,2))
+
+plot(as.factor(growth_e1_day_group$Day),as.numeric(growth_e1_day_group$X..Live.average), main=&quot;Percent living by day, E1&quot;, ylab=&quot;Percent alive&quot; )</code></pre>
+<pre><code>Warning in is.factor(y): NAs introduced by coercion</code></pre>
+<pre class="r"><code>plot(as.factor(growth_e2_day_group$Day),as.numeric(growth_e2_day_group$X..Live.average), main=&quot;Percent living by day, E2&quot;, ylab=&quot;Percent alive&quot;)</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-17-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>growth_e1_long_av=melt(growth_e1, variable.name = &quot;key&quot;,value.names = &quot;value&quot;, id.vars = c(&quot;Line&quot;, &quot;Day&quot;)) %&gt;% filter(key==&quot;Average&quot;)
+
+
+ggplot(growth_e1_long_av,aes(x=as.factor(Day), y=as.numeric(value))) + geom_point(aes(col=Line)) + labs(x=&quot;Day&quot;, y=&quot;cells/ml in 10^6&quot;) + ggtitle(&quot;Cell density&quot;)</code></pre>
+<pre><code>Warning in fun(x, ...): NAs introduced by coercion</code></pre>
+<pre><code>Warning in FUN(X[[i]], ...): NAs introduced by coercion</code></pre>
+<pre><code>Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>growth_e1_long_live=melt(growth_e1, variable.name = &quot;key&quot;,value.names = &quot;value&quot;, id.vars = c(&quot;Line&quot;, &quot;Day&quot;)) %&gt;% filter(key==&quot;X..Live.average&quot;)
+
+
+ggplot(growth_e1_long_live,aes(x=as.factor(Day), y=as.numeric(value))) + geom_point(aes(col=Line)) + labs(x=&quot;Day&quot;, y=&quot;Percent Alive&quot;) + ggtitle(&quot;% Alive by day and line&quot;)</code></pre>
+<pre><code>Warning in fun(x, ...): NAs introduced by coercion</code></pre>
+<pre><code>Warning in FUN(X[[i]], ...): NAs introduced by coercion</code></pre>
+<pre><code>Warning: Removed 1 rows containing missing values (geom_point).</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-19-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>species=c(rep(&quot;H&quot;, 84), rep(&quot;C&quot;, 84))
+palette(c(&quot;red&quot;, &quot;blue&quot;))
+growth_e1=cbind(growth_e1, species)
+plot(as.numeric(growth_e1$Average)~as.numeric(growth_e1$X..Live.average),col=as.factor(growth_e1$species),pch=16, main=&quot;Density vs Percent alive&quot;, ylab=&quot;Density&quot;, xlab=&quot;Percent Alive&quot;)</code></pre>
+<pre><code>Warning in eval(predvars, data, env): NAs introduced by coercion
+
+Warning in eval(predvars, data, env): NAs introduced by coercion</code></pre>
+<pre class="r"><code>legend(&quot;topleft&quot;, legend=c(&quot;Humans&quot;, &quot;Chimps&quot;),
+       col=c(&quot;red&quot;, &quot;blue&quot;), pch=16, cex=1, title=&quot;Species&quot;)</code></pre>
+<p><img src="figure/LCL_growth.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
@@ -460,7 +519,8 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] bindrcpp_0.2  ggplot2_2.2.1 tidyr_0.7.2   dplyr_0.7.4  
+[1] bindrcpp_0.2   reshape2_1.4.3 ggplot2_2.2.1  tidyr_0.7.2   
+[5] dplyr_0.7.4   
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.15     knitr_1.18       bindr_0.1        magrittr_1.5    
@@ -469,8 +529,8 @@ loaded via a namespace (and not attached):
 [13] gtable_0.2.0     git2r_0.21.0     htmltools_0.3.6  lazyeval_0.2.1  
 [17] yaml_2.1.16      rprojroot_1.3-2  digest_0.6.14    assertthat_0.2.0
 [21] tibble_1.4.2     purrr_0.2.4      glue_1.2.0       evaluate_0.10.1 
-[25] rmarkdown_1.8.5  stringi_1.1.6    compiler_3.4.2   pillar_1.1.0    
-[29] scales_0.5.0     backports_1.1.2  pkgconfig_2.0.1 </code></pre>
+[25] rmarkdown_1.8.5  labeling_0.3     stringi_1.1.6    compiler_3.4.2  
+[29] pillar_1.1.0     scales_0.5.0     backports_1.1.2  pkgconfig_2.0.1 </code></pre>
 </div>
 
 <hr>
