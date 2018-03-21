@@ -654,11 +654,11 @@ image(five_prime_matrix2_998,col=my_palette, ylab="exon", xlab="Position", main=
 Run on just the positive strand first:  
 
 ```{r}
-cov_bypos_pos2_matrix= five_prime_cov %>% filter(strand=="+") %>% make_matrix() %>% make_binary()
+cov_bypos_pos2_matrix= five_prime_cov %>% filter(strand=="+") %>% make_matrix() 
 
 image(cov_bypos_pos2_matrix,col=my_palette, ylab="exon", xlab="Position", main="Positive 5 prime ")
 
-cov_bypos_pos2_3_matrix = three_prime_cov2 %>% filter(strand=="+") %>% make_matrix() %>% make_binary()
+cov_bypos_pos2_3_matrix = three_prime_cov2 %>% filter(strand=="+") %>% make_matrix() 
 image(cov_bypos_pos2_3_matrix,col=my_palette, ylab="exon", xlab="Position", main="Positive 3 prime ")
 
 ```
@@ -667,10 +667,10 @@ image(cov_bypos_pos2_3_matrix,col=my_palette, ylab="exon", xlab="Position", main
 Do the same with the negative:  
 
 ```{r}
-cov_bypos_neg2_matrix= five_prime_cov2 %>% filter(strand=="-")  %>% make_matrix() %>% make_binary()
+cov_bypos_neg2_matrix= five_prime_cov2 %>% filter(strand=="-")  %>% make_matrix() 
 image(cov_bypos_neg2_matrix,col=my_palette, ylab="exon", xlab="Position", main="Negative 5 prime ")
 
-cov_bypos_neg2_3_matrix= three_prime_cov2 %>% filter(strand=="-") %>% make_matrix() %>% make_binary()
+cov_bypos_neg2_3_matrix= three_prime_cov2 %>% filter(strand=="-") %>% make_matrix() 
 image(cov_bypos_neg2_3_matrix,col=my_palette, ylab="exon", xlab="Position", main="Negative 3 prime ")
 ```
 Make a function to reverse each row of the  negative matricies:  
@@ -757,25 +757,82 @@ ggplot(df_3prime,aes(x=pos, y=mean)) + geom_line() + ggtitle("3' splice site mea
 ```
 
 
+Normalize per exon with my own function and recreate this with the means of the normalized values. I will write the normalization function for rows then use apply for the matrix.  
 
-####Filter out first and last exon 
-This may help us understand the wierd 
+```{r}
+normalize_row=function(row){
+  new_row=c()
+  min= as.numeric(min(row))
+  max= as.numeric(max(row))
+  for (val in row){
+    newval= (val-min)/(max-min)
+    new_row=append(new_row, newval)
+  }
+  return(new_row)
+}
+
+
+apply_row= function(matrix){
+   new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for (row in 1:nrow(matrix)){
+    x=normalize_row(matrix[row,])
+    new_matrix[row,]=x
+  }
+   return(new_matrix)
+   }
+```
+
+
+
+```{r}
+ 
+full_3prime_matrix_norm= apply_row(full_3prime_matrix) 
+full_3prime_matrix_norm= na.omit(full_3prime_matrix_norm)
+means_3prime_norm=apply(full_3prime_matrix_norm, 2, mean)
+sd_3prime_norm=apply(full_3prime_matrix_norm, 2, sd)
+df_3prime_norm=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_3prime_norm, SD=sd_3prime_norm))
+norm_mean_plot3=ggplot(df_3prime_norm,aes(x=pos, y=mean)) + geom_line() + ggtitle("3' splice site mean coverage normalized")+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)
+```
+
+
+
+```{r}
+full_5prime_matrix_norm= apply_row(full_5prime_matrix) 
+full_5prime_matrix_norm= na.omit(full_5prime_matrix_norm)
+means_5prime_norm=apply(full_3prime_matrix_norm, 2, mean)
+sd_5prime_norm=apply(full_5prime_matrix_norm, 2, sd)
+df_5prime_norm=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_5prime_norm, SD=sd_5prime_norm))
+norm_mean_plot5=ggplot(df_5prime_norm,aes(x=pos, y=mean)) + geom_line() + ggtitle("5' splice site mean coverage normalized")+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)
+```
 
 
 
 
+ 
+```{r}
+#heatmap_norm5prime=heatmap.2(full_5prime_matrix_norm,dendrogram='none', col=my_palette, Rowv=FALSE, Colv=FALSE,trace='none')
+#heatmap_norm3prime=heatmap.2(full_3prime_matrix_norm,dendrogram='none', col=my_palette, Rowv=FALSE, Colv=FALSE,trace='none')
+```
 
+Plot the plots together:  
 
+```{r}
+par(mfrow=c(2,2))
+heatmap.2(full_5prime_matrix_norm,dendrogram='none', col=my_palette, Rowv=FALSE, Colv=FALSE,trace='none')
+heatmap.2(full_3prime_matrix_norm,dendrogram='none', col=my_palette, Rowv=FALSE, Colv=FALSE,trace='none')
+norm_mean_plot5
+norm_mean_plot3
 
-
-
+```
 
 
 
 
 
 ####Extra code/false attempts
-Now make a python script that takes this and the genome coverage file in as a data frame. I will then make a list of the base counts corresponding to each exon region from the genome coverage file. Do it for the 5 prime file first.  
+Now make a python script that takes this and the genome coverage file in as a data frame. I will then make a list of the base counts corresponding to each exon region from the genome coverage file. Do it for the 5 prime file first. 
+
+
 
 ```{python, eval=FALSE}
 import pandas as pd
