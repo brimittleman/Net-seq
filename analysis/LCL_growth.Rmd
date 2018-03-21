@@ -29,6 +29,7 @@ knitr::read_chunk("chunks.R")
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(reshape2)
 ```
 
 
@@ -181,6 +182,71 @@ days_post= as.factor(days_post)
 growth_e_DP= cbind(days_post,growth_e)
 
 ```
+
+###Redo analysis on 3/21
+
+```{r}
+growth_3.21=read.csv("../data/cell_growth_3.21.18.csv", stringsAsFactors = FALSE)
+
+growth_e1=growth_3.21 %>% filter(Type=="e1")
+
+growth_e2=growth_3.21 %>% filter(Type=="e2")
+```
+
+
+Melt the data:  
+
+
+```{r}
+growth_e2_long=melt(growth_e2, variable.name = "key",value.names = "value", id.vars = c("Line", "Day")) %>% filter(key != "Type")
+```
+
+Plot day vs allive:  
+
+
+```{r}
+growth_e2_long_live=growth_e2_long %>% filter(key=="X..Live.average")
+ggplot(growth_e2_long, aes(x=as.factor(Day), y=as.numeric(value), group_by(Line)))+ geom_violin()
+```
+```{r}
+growth_e1_day_group=growth_e1[order(growth_e1$Day),]
+
+growth_e2_day_group=growth_e2[order(growth_e2$Day),]
+
+
+```
+
+```{r}
+par(mfrow=c(1,2))
+
+plot(as.factor(growth_e1_day_group$Day),as.numeric(growth_e1_day_group$X..Live.average), main="Percent living by day, E1", ylab="Percent alive" )
+
+plot(as.factor(growth_e2_day_group$Day),as.numeric(growth_e2_day_group$X..Live.average), main="Percent living by day, E2", ylab="Percent alive")
+```
+
+```{r}
+growth_e1_long_av=melt(growth_e1, variable.name = "key",value.names = "value", id.vars = c("Line", "Day")) %>% filter(key=="Average")
+
+
+ggplot(growth_e1_long_av,aes(x=as.factor(Day), y=as.numeric(value))) + geom_point(aes(col=Line)) + labs(x="Day", y="cells/ml in 10^6") + ggtitle("Cell density")
+```
+```{r}
+growth_e1_long_live=melt(growth_e1, variable.name = "key",value.names = "value", id.vars = c("Line", "Day")) %>% filter(key=="X..Live.average")
+
+
+ggplot(growth_e1_long_live,aes(x=as.factor(Day), y=as.numeric(value))) + geom_point(aes(col=Line)) + labs(x="Day", y="Percent Alive") + ggtitle("% Alive by day and line")
+```
+
+```{r}
+species=c(rep("H", 84), rep("C", 84))
+palette(c("red", "blue"))
+growth_e1=cbind(growth_e1, species)
+plot(as.numeric(growth_e1$Average)~as.numeric(growth_e1$X..Live.average),col=as.factor(growth_e1$species),pch=16, main="Density vs Percent alive", ylab="Density", xlab="Percent Alive")
+legend("topleft", legend=c("Humans", "Chimps"),
+       col=c("red", "blue"), pch=16, cex=1, title="Species")
+
+```
+
 
 
 
