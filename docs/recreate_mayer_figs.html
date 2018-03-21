@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-20</p>
+<p><strong>Last updated:</strong> 2018-03-21</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 9374de6</p>
+<p><strong>Code version:</strong> 5cacd16</p>
 <!-- Add your analysis here -->
 <p>This analysis is to recreate some of the figures from the Mayer paper using my data.</p>
 <pre class="r"><code>library(dplyr)</code></pre>
@@ -749,18 +749,18 @@ five_prime_matrix2_998=cut_top(five_prime_matrix2)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-48-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p><strong>I need to pull the data frames in pos and neg seperatly!! these images do not have flipped rows for neg strand</strong></p>
 <p>Run on just the positive strand first:</p>
-<pre class="r"><code>cov_bypos_pos2_matrix= five_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() %&gt;% make_binary()
+<pre class="r"><code>cov_bypos_pos2_matrix= five_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() 
 
 image(cov_bypos_pos2_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Positive 5 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>cov_bypos_pos2_3_matrix = three_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() %&gt;% make_binary()
+<pre class="r"><code>cov_bypos_pos2_3_matrix = three_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() 
 image(cov_bypos_pos2_3_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Positive 3 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Do the same with the negative:</p>
-<pre class="r"><code>cov_bypos_neg2_matrix= five_prime_cov2 %&gt;% filter(strand==&quot;-&quot;)  %&gt;% make_matrix() %&gt;% make_binary()
+<pre class="r"><code>cov_bypos_neg2_matrix= five_prime_cov2 %&gt;% filter(strand==&quot;-&quot;)  %&gt;% make_matrix() 
 image(cov_bypos_neg2_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Negative 5 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-50-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>cov_bypos_neg2_3_matrix= three_prime_cov2 %&gt;% filter(strand==&quot;-&quot;) %&gt;% make_matrix() %&gt;% make_binary()
+<pre class="r"><code>cov_bypos_neg2_3_matrix= three_prime_cov2 %&gt;% filter(strand==&quot;-&quot;) %&gt;% make_matrix() 
 image(cov_bypos_neg2_3_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Negative 3 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-50-2.png" width="672" style="display: block; margin: auto;" /> Make a function to reverse each row of the negative matricies:</p>
 <pre class="r"><code>rev_rows=function(matrix){
@@ -815,10 +815,51 @@ ggplot(df_3prime,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;3&#39; splice
   xlim(c(-20,20))</code></pre>
 <pre><code>Warning: Removed 39 rows containing missing values (geom_path).</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-57-1.png" width="672" style="display: block; margin: auto;" /></p>
-</div>
-<div id="filter-out-first-and-last-exon" class="section level4">
-<h4>Filter out first and last exon</h4>
-<p>This may help us understand the wierd</p>
+<p>Normalize per exon with my own function and recreate this with the means of the normalized values. I will write the normalization function for rows then use apply for the matrix.</p>
+<pre class="r"><code>normalize_row=function(row){
+  new_row=c()
+  min= as.numeric(min(row))
+  max= as.numeric(max(row))
+  for (val in row){
+    newval= (val-min)/(max-min)
+    new_row=append(new_row, newval)
+  }
+  return(new_row)
+}
+
+
+apply_row= function(matrix){
+   new_matrix= matrix(NA, nrow = nrow(matrix), ncol = ncol(matrix))
+  for (row in 1:nrow(matrix)){
+    x=normalize_row(matrix[row,])
+    new_matrix[row,]=x
+  }
+   return(new_matrix)
+   }</code></pre>
+<pre class="r"><code>full_3prime_matrix_norm= apply_row(full_3prime_matrix) 
+full_3prime_matrix_norm= na.omit(full_3prime_matrix_norm)
+means_3prime_norm=apply(full_3prime_matrix_norm, 2, mean)
+sd_3prime_norm=apply(full_3prime_matrix_norm, 2, sd)
+df_3prime_norm=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_3prime_norm, SD=sd_3prime_norm))
+norm_mean_plot3=ggplot(df_3prime_norm,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;3&#39; splice site mean coverage normalized&quot;)+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)</code></pre>
+<pre class="r"><code>full_5prime_matrix_norm= apply_row(full_5prime_matrix) 
+full_5prime_matrix_norm= na.omit(full_5prime_matrix_norm)
+means_5prime_norm=apply(full_3prime_matrix_norm, 2, mean)
+sd_5prime_norm=apply(full_5prime_matrix_norm, 2, sd)
+df_5prime_norm=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_5prime_norm, SD=sd_5prime_norm))
+norm_mean_plot5=ggplot(df_5prime_norm,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;5&#39; splice site mean coverage normalized&quot;)+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)</code></pre>
+<pre class="r"><code>#heatmap_norm5prime=heatmap.2(full_5prime_matrix_norm,dendrogram=&#39;none&#39;, col=my_palette, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)
+#heatmap_norm3prime=heatmap.2(full_3prime_matrix_norm,dendrogram=&#39;none&#39;, col=my_palette, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)</code></pre>
+<p>Plot the plots together:</p>
+<pre class="r"><code>par(mfrow=c(2,2))
+heatmap.2(full_5prime_matrix_norm,dendrogram=&#39;none&#39;, col=my_palette, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-62-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>heatmap.2(full_3prime_matrix_norm,dendrogram=&#39;none&#39;, col=my_palette, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-62-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>norm_mean_plot5</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-62-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>norm_mean_plot3</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-62-4.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="extra-codefalse-attempts" class="section level4">
 <h4>Extra code/false attempts</h4>
