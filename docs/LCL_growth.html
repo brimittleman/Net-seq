@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-03-21</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> e234872</p>
+<p><strong>Code version:</strong> 93a4722</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(dplyr)</code></pre>
 <pre><code>
@@ -492,7 +492,7 @@ ggplot(growth_e1_long_live,aes(x=as.factor(Day), y=as.numeric(value))) + geom_po
 <pre class="r"><code>species=c(rep(&quot;H&quot;, 84), rep(&quot;C&quot;, 84))
 palette(c(&quot;red&quot;, &quot;blue&quot;))
 growth_e1=cbind(growth_e1, species)
-plot(as.numeric(growth_e1$Average)~as.numeric(growth_e1$X..Live.average),col=as.factor(growth_e1$species),pch=16, main=&quot;Density vs Percent alive&quot;, ylab=&quot;Density&quot;, xlab=&quot;Percent Alive&quot;)</code></pre>
+plot(as.numeric(growth_e1$Average)~as.numeric(growth_e1$X..Live.average),col=as.factor(growth_e1$species),pch=16, main=&quot;Density vs Percent alive&quot;, ylab=&quot;Cells/ML in 10^6&quot;, xlab=&quot;Percent Alive&quot;)</code></pre>
 <pre><code>Warning in eval(predvars, data, env): NAs introduced by coercion
 
 Warning in eval(predvars, data, env): NAs introduced by coercion</code></pre>
