@@ -241,7 +241,7 @@ ggplot(growth_e1_long_live,aes(x=as.factor(Day), y=as.numeric(value))) + geom_po
 species=c(rep("H", 84), rep("C", 84))
 palette(c("red", "blue"))
 growth_e1=cbind(growth_e1, species)
-plot(as.numeric(growth_e1$Average)~as.numeric(growth_e1$X..Live.average),col=as.factor(growth_e1$species),pch=16, main="Density vs Percent alive", ylab="Density", xlab="Percent Alive")
+plot(as.numeric(growth_e1$Average)~as.numeric(growth_e1$X..Live.average),col=as.factor(growth_e1$species),pch=16, main="Density vs Percent alive", ylab="Cells/ML in 10^6", xlab="Percent Alive")
 legend("topleft", legend=c("Humans", "Chimps"),
        col=c("red", "blue"), pch=16, cex=1, title="Species")
 
