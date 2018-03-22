@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Briana Mittleman" />
 
+<meta name="date" content="2018-03-22" />
 
-<title>Home</title>
+<title>Strand Specificity of Net seq data</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -164,6 +169,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -204,49 +304,57 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">Strand Specificity of Net seq data</h1>
+<h4 class="author"><em>Briana Mittleman</em></h4>
+<h4 class="date"><em>2018-03-22</em></h4>
 
 </div>
 
 
-<p>This is the workflowr site for my Net-seq project. I will have all of the data, code, and analysis here.</p>
-<p>Set-up for mappping my libraries:</p>
-<ul>
-<li><p><a href="conda.environment.html">Setting up conda environment</a></p></li>
-<li><p><a href="config.snake.setup.html">Setting up config and snake files</a></p></li>
-</ul>
-<p>Initial data exploration:</p>
-<ul>
-<li><p><a href="initial.data.exploration.html">Initial data exploration for NetSeq1 libary</a></p></li>
-<li><p><a href="map_stats_from_bam.html">Explore read lengths that are mapping</a></p></li>
-<li><p><a href="explore_umi_usage.html">Explore the UMI usage in the NetSeq1 library</a></p></li>
-<li><p><a href="visualize_genomefeatures.html">Use the genomation package to vizualize genome features and see overlap with Net-seq1</a></p></li>
-<li><p><a href="reads_in_genes.html">Exploration of read counts per gene</a></p></li>
-<li><p><a href="data_for_ggplot.html">Reformat gene counts for ggplot2 data analysis</a></p></li>
-<li><p><a href="bin_windows.html">Explore read counts per genome bin</a></p></li>
-<li><p><a href="gviz_plots.html">Create IGV browser style plots</a></p></li>
-</ul>
-<p>Initial analysis for Net-3:</p>
-<ul>
-<li><a href="Net_3_explore.html">Net-3 Initial exploration</a></li>
-</ul>
-<p>Net-pilot analysis:</p>
-<ul>
-<li><p><a href="update_snakefile.html">Update snakefile for pilot analysis</a></p></li>
-<li><p><a href="create_blacklist.html">Create blacklist to filter reads</a></p></li>
-<li><p><a href="recreate_mayer_figs.html">Recreate figures from Mayer</a></p></li>
-<li><p><a href="strand_spec.html">Strand specific analysis</a></p></li>
-</ul>
-<p>Cell Growth analysis:</p>
-<ul>
-<li><a href="LCL_growth.html">Initial plots on growth</a></li>
-</ul>
-<p>Exploration of the 3` seq and ApA sites:</p>
-<ul>
-<li><p><a href="three_prime_UTR.html">Look for read enrichment at ApA sites</a></p></li>
-<li><p><a href="UTR_coverage.html">UTR coverage analysis</a></p></li>
-<li><p><a href="use_deeptools.html">Look at enrichment using Deep tools</a></p></li>
-</ul>
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2018-03-22</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 0e50352</p>
+<!-- Add your analysis here -->
+<p>The purpose of this analysis is to explore the strand specificity of my net seq data. Within genes we expect strand specific expression and at TSS we would expect some convergent transcription. I will filter the overlaping genes as done in the Meyer paper.</p>
+<p>Mayer filtering: Pol-II-transcribed genes that do not overlap other genes within 2.5 kb of the TSS and polyadenylation site and are longer than 2 kb</p>
+<div id="filter-the-genes" class="section level3">
+<h3>Filter the genes</h3>
+<p>bedtools closest -N</p>
+<p>Get the protein coding genes:</p>
+<pre class="bash"><code>grep &#39;protein_coding&#39; gencode.v19.annotation.bed  | awk &#39;$8 == &quot;gene&quot;&#39; |cut -f1-6  |sed &#39;s/^chr//&#39; &gt;  gencode.v19.annotation.proteincodinggene.bed </code></pre>
+<p>Only keep genes that are 2kb. I want genes where end (3) - start (2) is greater than 2000</p>
+<pre class="bash"><code>awk &#39;{if( ($3 - $2) &gt; 2000)  print($1 &quot;\t&quot; $2 &quot;\t&quot; $3 &quot;\t&quot; $4 &quot;\t&quot; $5 &quot;\t&quot; $6)}&#39; gencode.v19.annotation.proteincodinggene.bed &gt; gencode.v19.annotation.proteincodinggene.2kb.bed</code></pre>
+<p>Next step is to look for overlab distance with bedtools closest -N.</p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.4.2 (2017-09-28)
+Platform: x86_64-apple-darwin15.6.0 (64-bit)
+Running under: macOS Sierra 10.12.6
+
+Matrix products: default
+BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+loaded via a namespace (and not attached):
+ [1] compiler_3.4.2  backports_1.1.2 magrittr_1.5    rprojroot_1.3-2
+ [5] tools_3.4.2     htmltools_0.3.6 yaml_2.1.16     Rcpp_0.12.15   
+ [9] stringi_1.1.6   rmarkdown_1.8.5 knitr_1.18      git2r_0.21.0   
+[13] stringr_1.2.0   digest_0.6.14   evaluate_0.10.1</code></pre>
+</div>
 
 <hr>
 <p>
@@ -274,6 +382,8 @@ $(document).ready(function () {
 -->
 
 
+</div>
+</div>
 
 </div>
 
