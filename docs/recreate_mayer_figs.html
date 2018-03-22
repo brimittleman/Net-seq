@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-21</p>
+<p><strong>Last updated:</strong> 2018-03-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 5cacd16</p>
+<p><strong>Code version:</strong> c7928e2</p>
 <!-- Add your analysis here -->
 <p>This analysis is to recreate some of the figures from the Mayer paper using my data.</p>
 <pre class="r"><code>library(dplyr)</code></pre>
@@ -749,7 +749,7 @@ five_prime_matrix2_998=cut_top(five_prime_matrix2)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-48-2.png" width="672" style="display: block; margin: auto;" /></p>
 <p><strong>I need to pull the data frames in pos and neg seperatly!! these images do not have flipped rows for neg strand</strong></p>
 <p>Run on just the positive strand first:</p>
-<pre class="r"><code>cov_bypos_pos2_matrix= five_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() 
+<pre class="r"><code>cov_bypos_pos2_matrix= five_prime_cov2 %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() 
 
 image(cov_bypos_pos2_matrix,col=my_palette, ylab=&quot;exon&quot;, xlab=&quot;Position&quot;, main=&quot;Positive 5 prime &quot;)</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-49-1.png" width="672" style="display: block; margin: auto;" /></p>
@@ -860,6 +860,50 @@ heatmap.2(full_5prime_matrix_norm,dendrogram=&#39;none&#39;, col=my_palette, Row
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-62-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>norm_mean_plot3</code></pre>
 <p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-62-4.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="strand-specificity" class="section level4">
+<h4>Strand Specificity</h4>
+<p>I am going to go back to the strand specific data and use the final processing steps I used for this data:</p>
+<pre class="r"><code>cov_bypos_neg_matrix_ss= five_prime_cov %&gt;% filter(strand==&quot;-&quot;)  %&gt;% make_matrix() 
+cov_bypos_pos_matrix_ss= five_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix() 
+
+
+cov_bypos_neg_3_matrix_ss= three_prime_cov %&gt;% filter(strand==&quot;-&quot;) %&gt;% make_matrix() 
+cov_bypos_pos_3_matrix_ss= three_prime_cov %&gt;% filter(strand==&quot;+&quot;) %&gt;% make_matrix()  
+
+
+flip_neg_5prime_ss=rev_rows(cov_bypos_neg_matrix_ss)
+full_5prime_matrix_ss= rbind(cov_bypos_pos_matrix_ss,flip_neg_5prime_ss)
+
+
+flip_neg_3prime_ss=rev_rows(cov_bypos_neg_3_matrix_ss)
+full_3prime_matrix_ss=rbind(cov_bypos_pos_3_matrix_ss, flip_neg_3prime_ss)
+
+
+full_3prime_matrix_norm_ss= apply_row(full_3prime_matrix_ss) 
+full_3prime_matrix_norm_ss= na.omit(full_3prime_matrix_norm_ss)
+means_3prime_norm_ss=apply(full_3prime_matrix_norm_ss, 2, mean)
+sd_3prime_norm_ss=apply(full_3prime_matrix_norm_ss, 2, sd)
+df_3prime_norm_ss=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_3prime_norm_ss, SD=sd_3prime_norm_ss))
+norm_mean_plot3_ss=ggplot(df_3prime_norm_ss,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;3&#39; splice site mean coverage SS&quot;)+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)
+
+
+full_5prime_matrix_norm_ss= apply_row(full_5prime_matrix_ss) 
+full_5prime_matrix_norm_ss= na.omit(full_5prime_matrix_norm_ss)
+means_5prime_norm_ss=apply(full_3prime_matrix_norm_ss, 2, mean)
+sd_5prime_norm_ss=apply(full_5prime_matrix_norm_ss, 2, sd)
+df_5prime_norm_ss=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_5prime_norm_ss, SD=sd_5prime_norm_ss))
+norm_mean_plot5_ss=ggplot(df_5prime_norm_ss,aes(x=pos, y=mean)) + geom_line() + ggtitle(&quot;5&#39; splice site mean coverage SS&quot;)+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)</code></pre>
+<pre class="r"><code>par(mfrow=c(2,2))
+heatmap.2(full_5prime_matrix_norm_ss,dendrogram=&#39;none&#39;, col=my_palette, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-64-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>heatmap.2(full_3prime_matrix_norm_ss,dendrogram=&#39;none&#39;, col=my_palette, Rowv=FALSE, Colv=FALSE,trace=&#39;none&#39;)</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-64-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>norm_mean_plot5_ss</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-64-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>norm_mean_plot3_ss</code></pre>
+<p><img src="figure/recreate_mayer_figs.Rmd/unnamed-chunk-64-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p>You lose all signal when you do it this way. The 3prime matrix only has 118 exons remaining and the 5prime matrix only has 148.</p>
 </div>
 <div id="extra-codefalse-attempts" class="section level4">
 <h4>Extra code/false attempts</h4>
