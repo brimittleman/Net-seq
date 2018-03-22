@@ -1,0 +1,59 @@
+---
+title: "Strand Specificity of Net seq data"
+author: "Briana Mittleman"
+date: 2018-03-22
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+The purpose of this analysis is to explore the strand specificity of my net seq data. Within genes we expect strand specific expression and at TSS we would expect some convergent transcription. I  will filter the overlaping genes as done in the Meyer paper.  
+
+Mayer filtering: Pol-II-transcribed genes that do not overlap other genes within 2.5 kb of the TSS and polyadenylation site and are longer than 2 kb
+
+
+###Filter the genes  
+
+bedtools closest -N  
+
+
+Get the protein coding genes:  
+```{bash, eval=FALSE}
+grep 'protein_coding' gencode.v19.annotation.bed  | awk '$8 == "gene"' |cut -f1-6  |sed 's/^chr//' >  gencode.v19.annotation.proteincodinggene.bed 
+```
+
+Only keep genes that are 2kb. I want genes where end (3) - start (2) is greater than 2000
+
+```{bash, eval=FALSE }
+awk '{if( ($3 - $2) > 2000)  print($1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6)}' gencode.v19.annotation.proteincodinggene.bed > gencode.v19.annotation.proteincodinggene.2kb.bed
+```
+
+ 
+Next step is to look for overlab distance with bedtools closest -N.  
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```

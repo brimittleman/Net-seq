@@ -47,6 +47,8 @@ Net-pilot analysis:
 
 * [Recreate figures from Mayer](recreate_mayer_figs.html)
 
+* [Strand specific analysis](strand_spec.html)
+
 
 Cell Growth analysis: 
 
