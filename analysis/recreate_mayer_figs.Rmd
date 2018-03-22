@@ -654,7 +654,7 @@ image(five_prime_matrix2_998,col=my_palette, ylab="exon", xlab="Position", main=
 Run on just the positive strand first:  
 
 ```{r}
-cov_bypos_pos2_matrix= five_prime_cov %>% filter(strand=="+") %>% make_matrix() 
+cov_bypos_pos2_matrix= five_prime_cov2 %>% filter(strand=="+") %>% make_matrix() 
 
 image(cov_bypos_pos2_matrix,col=my_palette, ylab="exon", xlab="Position", main="Positive 5 prime ")
 
@@ -825,8 +825,54 @@ norm_mean_plot3
 
 ```
 
+####Strand Specificity   
+
+I am going to go back to the strand specific data and use the final processing steps I used for this data:  
+
+```{r}
+cov_bypos_neg_matrix_ss= five_prime_cov %>% filter(strand=="-")  %>% make_matrix() 
+cov_bypos_pos_matrix_ss= five_prime_cov %>% filter(strand=="+") %>% make_matrix() 
 
 
+cov_bypos_neg_3_matrix_ss= three_prime_cov %>% filter(strand=="-") %>% make_matrix() 
+cov_bypos_pos_3_matrix_ss= three_prime_cov %>% filter(strand=="+") %>% make_matrix()  
+
+
+flip_neg_5prime_ss=rev_rows(cov_bypos_neg_matrix_ss)
+full_5prime_matrix_ss= rbind(cov_bypos_pos_matrix_ss,flip_neg_5prime_ss)
+
+
+flip_neg_3prime_ss=rev_rows(cov_bypos_neg_3_matrix_ss)
+full_3prime_matrix_ss=rbind(cov_bypos_pos_3_matrix_ss, flip_neg_3prime_ss)
+
+
+full_3prime_matrix_norm_ss= apply_row(full_3prime_matrix_ss) 
+full_3prime_matrix_norm_ss= na.omit(full_3prime_matrix_norm_ss)
+means_3prime_norm_ss=apply(full_3prime_matrix_norm_ss, 2, mean)
+sd_3prime_norm_ss=apply(full_3prime_matrix_norm_ss, 2, sd)
+df_3prime_norm_ss=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_3prime_norm_ss, SD=sd_3prime_norm_ss))
+norm_mean_plot3_ss=ggplot(df_3prime_norm_ss,aes(x=pos, y=mean)) + geom_line() + ggtitle("3' splice site mean coverage SS")+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)
+
+
+full_5prime_matrix_norm_ss= apply_row(full_5prime_matrix_ss) 
+full_5prime_matrix_norm_ss= na.omit(full_5prime_matrix_norm_ss)
+means_5prime_norm_ss=apply(full_3prime_matrix_norm_ss, 2, mean)
+sd_5prime_norm_ss=apply(full_5prime_matrix_norm_ss, 2, sd)
+df_5prime_norm_ss=as.data.frame(cbind(pos=seq(-40,39,1), mean=means_5prime_norm_ss, SD=sd_5prime_norm_ss))
+norm_mean_plot5_ss=ggplot(df_5prime_norm_ss,aes(x=pos, y=mean)) + geom_line() + ggtitle("5' splice site mean coverage SS")+ geom_ribbon(aes(x=pos, ymin=mean - SD,ymax=mean + SD), alpha=0.20)
+
+```
+
+```{r}
+par(mfrow=c(2,2))
+heatmap.2(full_5prime_matrix_norm_ss,dendrogram='none', col=my_palette, Rowv=FALSE, Colv=FALSE,trace='none')
+heatmap.2(full_3prime_matrix_norm_ss,dendrogram='none', col=my_palette, Rowv=FALSE, Colv=FALSE,trace='none')
+norm_mean_plot5_ss
+norm_mean_plot3_ss
+```
+
+
+You lose all signal when you do it this way. The 3prime matrix only has 118 exons remaining and the 5prime matrix only has 148.  
 
 
 ####Extra code/false attempts
