@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-03-23</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> c53715c</p>
+<p><strong>Code version:</strong> fb59ebe</p>
 <!-- Add your analysis here -->
 <p>The purpose of this analysis is to explore the strand specificity of my net seq data. Within genes we expect strand specific expression and at TSS we would expect some convergent transcription. I will filter the overlaping genes as done in the Meyer paper.</p>
 <p>Mayer filtering: Pol-II-transcribed genes that do not overlap other genes within 2.5 kb of the TSS and polyadenylation site and are longer than 2 kb</p>
@@ -391,10 +391,10 @@ Attaching package: &#39;dplyr&#39;</code></pre>
 Run ?workflowr for help getting started</code></pre>
 <pre class="r"><code>library(ggplot2)</code></pre>
 <p>Input data:</p>
-<pre class="r"><code>same_strand=read.table(&quot;../data/same_strand_genecounts_18486.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(same_strand)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;same_count&quot;)
-opp_strand=read.table(&quot;../data/opp_strand_genecounts_18486.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(opp_strand)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;opp_count&quot;)</code></pre>
+<pre class="r"><code>opp_strand=read.table(&quot;../data/same_strand_genecounts_18486.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(opp_strand)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;opp_count&quot;)
+same_strand=read.table(&quot;../data/opp_strand_genecounts_18486.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;same_count&quot;)</code></pre>
 <p>Merge on the gene names:</p>
 <pre class="r"><code>full_strand=inner_join(same_strand,opp_strand, by=c(c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;)))
 full_strand= full_strand %&gt;% mutate(perc_same=(same_count /(same_count + opp_count))) %&gt;% filter(perc_same != &quot;NaN&quot;)</code></pre>
@@ -403,16 +403,15 @@ full_strand= full_strand %&gt;% mutate(perc_same=(same_count /(same_count + opp_
 <h3>Explore data:</h3>
 <pre class="r"><code>summary(full_strand$perc_same)</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-0.00000 0.03889 0.16667 0.30728 0.50000 1.00000 </code></pre>
-<pre class="r"><code>plot(sort(full_strand$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand$perc_same, decreasing = TRUE))&gt;.50, &quot;red&quot;, &quot;black&quot;), ylab=&quot;same strand / gene count&quot;, xlab=&quot;Genes ordered by strand spec percent&quot;, main=&quot;Gene counts strand specificity 18486&quot;)
-legend(&quot;topright&quot;, legend = c(&quot;top 25%&quot;), col=c(&quot;red&quot;), pch=16, cex=1)</code></pre>
+ 0.0000  0.5000  0.8333  0.6927  0.9611  1.0000 </code></pre>
+<pre class="r"><code>plot(sort(full_strand$perc_same, decreasing=TRUE), col=ifelse((sort(full_strand$perc_same, decreasing=TRUE)) &gt;.5, &quot;red&quot;, &quot;black&quot;), ylab=&quot;same strand / gene count&quot;, xlab=&quot;Genes ordered by strand spec percent&quot;, main=&quot;Gene counts strand specificity 18486&quot;)
+legend(&quot;topright&quot;, legend = c(&quot;top 75%&quot;), col=c(&quot;red&quot;), pch=16, cex=1)</code></pre>
 <p><img src="figure/strand_spec.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>boxplot(log10(full_strand$same_count), log10(full_strand$opp_count), names=c(&quot;Same strand&quot;, &quot;Opposite Strand&quot;), ylab=&quot;log10 Gene counts&quot;, main=&quot;Gene counts by strand&quot;)</code></pre>
 <pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
 $group == : Outlier (-Inf) in boxplot 1 is not drawn</code></pre>
 <pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
 $group == : Outlier (-Inf) in boxplot 2 is not drawn</code></pre>
-<pre class="r"><code>mtext(side=4,&quot;Same strand 0s=1209, Opp strand 0s= 601&quot;)</code></pre>
 <p><img src="figure/strand_spec.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>I am going to run the gene counts analysis not strand specific to make sure I am getting a sum of the these counts.</p>
 <pre class="bash"><code>
@@ -450,10 +449,10 @@ bedtools coverage -counts -s -sorted -a /project2/gilad/briana/genome_anotation_
 
 
 bedtools coverage -counts -S -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18505_combined_Netpilot-bedsort.bed  &gt; /project2/gilad/briana/Net-seq-pilot/output/strand_spec/opp_strand_genecounts_18505.txt </code></pre>
-<pre class="r"><code>same_strand_18505=read.table(&quot;../data/same_strand_genecounts_18505.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
-colnames(same_strand_18505)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;same_count&quot;)
-opp_strand_18505=read.table(&quot;../data/opp_strand_genecounts_18505.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+<pre class="r"><code>opp_strand_18505=read.table(&quot;../data/same_strand_genecounts_18505.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
 colnames(opp_strand_18505)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;opp_count&quot;)
+same_strand_18505=read.table(&quot;../data/opp_strand_genecounts_18505.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand_18505)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;same_count&quot;)
 
 
 full_strand_18505=inner_join(same_strand_18505,opp_strand_18505, by=c(c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;)))
@@ -461,9 +460,9 @@ full_strand_18505= full_strand_18505 %&gt;% mutate(perc_same=(same_count /(same_
 
 summary(full_strand_18505$perc_same)</code></pre>
 <pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-0.00000 0.02776 0.16667 0.31502 0.54545 1.00000 </code></pre>
-<pre class="r"><code>plot(sort(full_strand_18505$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18505$perc_same, decreasing = TRUE))&gt;.55, &quot;red&quot;, &quot;black&quot;), ylab=&quot;same strand / gene count&quot;, xlab=&quot;Genes ordered by strand spec percent&quot;, main=&quot;Gene counts strand specificity 18505&quot;)
-legend(&quot;topright&quot;, legend = c(&quot;top 25%&quot;), col=c(&quot;red&quot;), pch=16, cex=1)</code></pre>
+ 0.0000  0.4545  0.8333  0.6850  0.9722  1.0000 </code></pre>
+<pre class="r"><code>plot(sort(full_strand_18505$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18505$perc_same, decreasing = TRUE))&gt;.45, &quot;red&quot;, &quot;black&quot;), ylab=&quot;same strand / gene count&quot;, xlab=&quot;Genes ordered by strand spec percent&quot;, main=&quot;Gene counts strand specificity 18505&quot;)
+legend(&quot;topright&quot;, legend = c(&quot;top 75%&quot;), col=c(&quot;red&quot;), pch=16, cex=1)</code></pre>
 <p><img src="figure/strand_spec.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>boxplot(log10(full_strand_18505$same_count), log10(full_strand_18505$opp_count), names=c(&quot;Same strand&quot;, &quot;Opposite Strand&quot;), ylab=&quot;log10 Gene counts&quot;, main=&quot;Gene counts by strand 18505&quot;)</code></pre>
 <pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
