@@ -50,7 +50,196 @@ awk '{if( ($3 - $2) > 2000)  print($1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6)}'
  
 Next step is to look for overlab distance with bedtools closest -N.  
 
+gene_dist.sh  
 
+```{bash, eval=FALSE}
+
+#!/bin/bash
+
+#SBATCH --job-name=gene_dist
+#SBATCH --time=8:00:00
+#SBATCH --output=gene_dist.out
+#SBATCH --error=gene_dist.err
+#SBATCH --partition=gilad
+#SBATCH --mem=10G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+bedtools closest -N -d -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.proteincodinggene.2kb.bed -b /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.proteincodinggene.2kb.bed > /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.proteincodinggene.2kb.dist.bed
+```
+
+Column 13 of this file must be > 2500  
+
+```{bash, eval=FALSE}
+awk '{if( $13 > 2500)  print($1 "\t" $2 "\t" $3 "\t" $4 "\t" $5 "\t" $6)}' gencode.v19.annotation.proteincodinggene.2kb.dist.bed > gencode.v19.annotation.distfilteredgenes.bed
+```
+This leaves 9367 genes. 
+
+
+###Get strand specific gene counts for these genes 
+
+
+Do this for 18486 first.  
+
+Sort both files with sort -k1,1 -k2,2n  
+
+```{bash, eval=FALSE}
+
+#!/bin/bash
+
+#SBATCH --job-name=strand
+#SBATCH --time=8:00:00
+#SBATCH --output=strand.out
+#SBATCH --error=strnad.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -s -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-bedsort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/same_strand_genecounts_18486.txt 
+
+
+bedtools coverage -counts -S -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-bedsort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/opp_strand_genecounts_18486.txt 
+```
+
+
+###Process data  
+
+Library input:  
+
+```{r}
+library(dplyr)
+library(workflowr)
+library(ggplot2)
+```
+
+
+Input data:  
+```{r}
+same_strand=read.table("../data/same_strand_genecounts_18486.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand)= c("chr", "start", "end", "gene","score", "strand", "same_count")
+opp_strand=read.table("../data/opp_strand_genecounts_18486.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(opp_strand)= c("chr", "start", "end", "gene","score", "strand", "opp_count")
+```
+
+Merge on the gene names:  
+
+```{r}
+full_strand=inner_join(same_strand,opp_strand, by=c(c("chr", "start", "end", "gene","score", "strand")))
+full_strand= full_strand %>% mutate(perc_same=(same_count /(same_count + opp_count))) %>% filter(perc_same != "NaN")
+```
+
+###Explore data:  
+
+```{r}
+summary(full_strand$perc_same)
+plot(sort(full_strand$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand$perc_same, decreasing = TRUE))>.50, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18486")
+legend("topright", legend = c("top 25%"), col=c("red"), pch=16, cex=1)
+```
+```{r}
+boxplot(log10(full_strand$same_count), log10(full_strand$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand")
+mtext(side=4,"Same strand 0s=1209, Opp strand 0s= 601")
+
+
+
+```
+
+I am going to run the gene counts analysis not strand specific to make sure I am getting a sum of the these counts.  
+```{bash, eval=FALSE}
+
+#!/bin/bash
+
+#SBATCH --job-name=all_counts
+#SBATCH --time=8:00:00
+#SBATCH --output=all_strand.out
+#SBATCH --error=all_strnad.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts  -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-bedsort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/all_strand_genecounts_18486.txt 
+
+```
+This file confirmed that the counts without specificity is the sum of the strand information. 
+
+###Try this analysis in another line  
+strand_spec_18505.sh 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=strand_18505
+#SBATCH --time=8:00:00
+#SBATCH --output=strand.out
+#SBATCH --error=strnad.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+bedtools coverage -counts -s -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18505_combined_Netpilot-bedsort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/same_strand_genecounts_18505.txt 
+
+
+bedtools coverage -counts -S -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18505_combined_Netpilot-bedsort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/opp_strand_genecounts_18505.txt 
+```
+
+```{r}
+same_strand_18505=read.table("../data/same_strand_genecounts_18505.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand_18505)= c("chr", "start", "end", "gene","score", "strand", "same_count")
+opp_strand_18505=read.table("../data/opp_strand_genecounts_18505.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(opp_strand_18505)= c("chr", "start", "end", "gene","score", "strand", "opp_count")
+
+
+full_strand_18505=inner_join(same_strand_18505,opp_strand_18505, by=c(c("chr", "start", "end", "gene","score", "strand")))
+full_strand_18505= full_strand_18505 %>% mutate(perc_same=(same_count /(same_count + opp_count))) %>% filter(perc_same != "NaN")
+
+summary(full_strand_18505$perc_same)
+plot(sort(full_strand_18505$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18505$perc_same, decreasing = TRUE))>.55, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18505")
+legend("topright", legend = c("top 25%"), col=c("red"), pch=16, cex=1)
+
+```
+
+```{r}
+boxplot(log10(full_strand_18505$same_count), log10(full_strand_18505$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand 18505")
+
+
+```
+
+###Distribution for genes >1 18486  
+
+
+```{r}
+gene_counts_18486=read.table("../data/all_strand_genecounts_18486.txt", stringsAsFactors = FALSE, header=FALSE)
+colnames(gene_counts_18486)= c("chr", "start", "end", "gene","score", "strand", "count")
+mapped_18486_mil= 65189389 / 10^6
+gene_counts_18486=gene_counts_18486 %>% mutate(K_length= (end - start)/100) %>% mutate(rpkm= + count/(K_length * mapped_18486_mil)) %>% filter(rpkm>=1)
+
+```
+Join this with the strand specific information.  
+
+
+```{r}
+top_genes_strand= inner_join(full_strand, gene_counts_18486, by=c("chr", "start", "end", "gene","score", "strand"))
+```
+
+Plot this distribution:  
+```{r}
+plot(sort(top_genes_strand$perc_same, decreasing = TRUE), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18486 for genes >1 RPKM")
+```
+
+Box plots:  
+
+
+```{r}
+boxplot(log10(top_genes_strand$same_count), log10(top_genes_strand$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand, genes >1 RPKM")
+
+```
 
 ## Session information
 
