@@ -120,10 +120,10 @@ library(ggplot2)
 
 Input data:  
 ```{r}
-same_strand=read.table("../data/same_strand_genecounts_18486.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(same_strand)= c("chr", "start", "end", "gene","score", "strand", "same_count")
-opp_strand=read.table("../data/opp_strand_genecounts_18486.txt", header=FALSE, stringsAsFactors = FALSE)
+opp_strand=read.table("../data/same_strand_genecounts_18486.txt", header=FALSE, stringsAsFactors = FALSE)
 colnames(opp_strand)= c("chr", "start", "end", "gene","score", "strand", "opp_count")
+same_strand=read.table("../data/opp_strand_genecounts_18486.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand)= c("chr", "start", "end", "gene","score", "strand", "same_count")
 ```
 
 Merge on the gene names:  
@@ -137,12 +137,11 @@ full_strand= full_strand %>% mutate(perc_same=(same_count /(same_count + opp_cou
 
 ```{r}
 summary(full_strand$perc_same)
-plot(sort(full_strand$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand$perc_same, decreasing = TRUE))>.50, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18486")
-legend("topright", legend = c("top 25%"), col=c("red"), pch=16, cex=1)
+plot(sort(full_strand$perc_same, decreasing=TRUE), col=ifelse((sort(full_strand$perc_same, decreasing=TRUE)) >.5, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18486")
+legend("topright", legend = c("top 75%"), col=c("red"), pch=16, cex=1)
 ```
 ```{r}
 boxplot(log10(full_strand$same_count), log10(full_strand$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand")
-mtext(side=4,"Same strand 0s=1209, Opp strand 0s= 601")
 
 
 
@@ -190,18 +189,18 @@ bedtools coverage -counts -S -sorted -a /project2/gilad/briana/genome_anotation_
 ```
 
 ```{r}
-same_strand_18505=read.table("../data/same_strand_genecounts_18505.txt", header=FALSE, stringsAsFactors = FALSE)
-colnames(same_strand_18505)= c("chr", "start", "end", "gene","score", "strand", "same_count")
-opp_strand_18505=read.table("../data/opp_strand_genecounts_18505.txt", header=FALSE, stringsAsFactors = FALSE)
+opp_strand_18505=read.table("../data/same_strand_genecounts_18505.txt", header=FALSE, stringsAsFactors = FALSE)
 colnames(opp_strand_18505)= c("chr", "start", "end", "gene","score", "strand", "opp_count")
+same_strand_18505=read.table("../data/opp_strand_genecounts_18505.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand_18505)= c("chr", "start", "end", "gene","score", "strand", "same_count")
 
 
 full_strand_18505=inner_join(same_strand_18505,opp_strand_18505, by=c(c("chr", "start", "end", "gene","score", "strand")))
 full_strand_18505= full_strand_18505 %>% mutate(perc_same=(same_count /(same_count + opp_count))) %>% filter(perc_same != "NaN")
 
 summary(full_strand_18505$perc_same)
-plot(sort(full_strand_18505$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18505$perc_same, decreasing = TRUE))>.55, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18505")
-legend("topright", legend = c("top 25%"), col=c("red"), pch=16, cex=1)
+plot(sort(full_strand_18505$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18505$perc_same, decreasing = TRUE))>.45, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity 18505")
+legend("topright", legend = c("top 75%"), col=c("red"), pch=16, cex=1)
 
 ```
 
@@ -240,6 +239,8 @@ Box plots:
 boxplot(log10(top_genes_strand$same_count), log10(top_genes_strand$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand, genes >1 RPKM")
 
 ```
+
+
 
 ## Session information
 
