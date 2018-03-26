@@ -328,7 +328,12 @@ legend("topright", legend = c("top 75%"), col=c("red"), pch=16, cex=1)
 
 
 boxplot(log10(full_strand_18486_filt$same_count), log10(full_strand_18486_filt$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand 18486 filtered")
+
+
+ hist(full_strand_18486_filt$perc_same, xlab="Same strand/full count for gene", main="18486 strand specificity on filtered genes and filtered bams")
+
 ```
+
 
 
 
