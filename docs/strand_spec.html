@@ -318,7 +318,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-03-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 3cc13ad</p>
+<p><strong>Code version:</strong> 8e2043e</p>
 <!-- Add your analysis here -->
 <p>The purpose of this analysis is to explore the strand specificity of my net seq data. Within genes we expect strand specific expression and at TSS we would expect some convergent transcription. I will filter the overlaping genes as done in the Meyer paper.</p>
 <p>Mayer filtering: Pol-II-transcribed genes that do not overlap other genes within 2.5 kb of the TSS and polyadenylation site and are longer than 2 kb</p>
@@ -567,6 +567,8 @@ $group == : Outlier (-Inf) in boxplot 1 is not drawn</code></pre>
 <pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
 $group == : Outlier (-Inf) in boxplot 2 is not drawn</code></pre>
 <p><img src="figure/strand_spec.Rmd/unnamed-chunk-22-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code> hist(full_strand_18486_filt$perc_same, xlab=&quot;Same strand/full count for gene&quot;, main=&quot;18486 strand specificity on filtered genes and filtered bams&quot;)</code></pre>
+<p><img src="figure/strand_spec.Rmd/unnamed-chunk-22-3.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
