@@ -315,10 +315,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-03-23</p>
+<p><strong>Last updated:</strong> 2018-03-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> fb59ebe</p>
+<p><strong>Code version:</strong> 3cc13ad</p>
 <!-- Add your analysis here -->
 <p>The purpose of this analysis is to explore the strand specificity of my net seq data. Within genes we expect strand specific expression and at TSS we would expect some convergent transcription. I will filter the overlaping genes as done in the Meyer paper.</p>
 <p>Mayer filtering: Pol-II-transcribed genes that do not overlap other genes within 2.5 kb of the TSS and polyadenylation site and are longer than 2 kb</p>
@@ -489,6 +489,84 @@ $group == : Outlier (-Inf) in boxplot 1 is not drawn</code></pre>
 <pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
 $group == : Outlier (-Inf) in boxplot 2 is not drawn</code></pre>
 <p><img src="figure/strand_spec.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="filter-out-the-small-rnas-that-fall-in-these-genes" class="section level3">
+<h3>Filter out the small RNAs that fall in these genes</h3>
+<p>Filter the bams as I did in the create blacklist. filt_smRNA_bam.sh</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=intersect_bam
+#SBATCH --time=8:00:00
+#SBATCH --output=intbam_sbatch.out
+#SBATCH --error=intbam_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e &#39;s/.*\YG-SP-//&#39; | sed -e &quot;s/_combined_Netpilot-sort.bam$//&quot;)
+
+
+bedtools intersect -v -wa -abam $1 -b /project2/gilad/briana/genome_anotation_data/snRNA.gencode.v19.nochr.bed /project2/gilad/briana/genome_anotation_data/snoRNA.gencode.v19.nochr.bed  &gt; /project2/gilad/briana/Net-seq-pilot/data/filter_bam/${describer}.rnafilter.bam
+</code></pre>
+<p>run on: /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-18486_combined_Netpilot-sort.bam</p>
+<p>Now when I look at the bams in IGV I have removed the snoRNA in TPT1.</p>
+</div>
+<div id="rerun-analysis-with-filtered-bam" class="section level3">
+<h3>Rerun analysis with Filtered bam</h3>
+<p>This time I will switch the -s and -S so we get the correct same/opp strand information in the txt files.</p>
+<ol style="list-style-type: decimal">
+<li>Convert the filtered bam file to a bed file and sort it:</li>
+</ol>
+<pre class="bash"><code>bamToBed -i NET3-18486.rnafilter.bam &gt; ../bed/YG-SP-NET3-18486_combined_Netpilot-rnafilt.bed
+
+
+sort -k1,1 -k2,2n YG-SP-NET3-18486_combined_Netpilot-rnafilt.bed &gt; YG-SP-NET3-18486_combined_Netpilot-rnafilt-sort.bed</code></pre>
+<p>strand_filt.sh</p>
+<pre class="bash"><code>#!/bin/bash
+
+#SBATCH --job-name=_filtstrand
+#SBATCH --time=8:00:00
+#SBATCH --output=filtstrand.out
+#SBATCH --error=filtstrnad.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -S -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-rnafilt-sort.bed  &gt; /project2/gilad/briana/Net-seq-pilot/output/strand_spec/same_strand_genecounts_filt_18486.txt 
+
+
+bedtools coverage -counts -s -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-rnafilt-sort.bed  &gt; /project2/gilad/briana/Net-seq-pilot/output/strand_spec/opp_strand_genecounts_filt_18486.txt </code></pre>
+<pre class="r"><code>opp_strand_18486_filt=read.table(&quot;../data/opp_strand_genecounts_filt_18486.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(opp_strand_18486_filt)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;opp_count&quot;)
+same_strand_18486_filt=read.table(&quot;../data/same_strand_genecounts_filt_18486.txt&quot;, header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand_18486_filt)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;, &quot;same_count&quot;)
+
+
+full_strand_18486_filt=inner_join(same_strand_18486_filt, opp_strand_18486_filt, by=c(c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;,&quot;score&quot;, &quot;strand&quot;)))
+full_strand_18486_filt= full_strand_18486_filt %&gt;% mutate(perc_same=(same_count /(same_count + opp_count))) %&gt;% filter(perc_same != &quot;NaN&quot;)
+
+summary(full_strand_18486_filt$perc_same)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+ 0.0000  0.5000  0.8319  0.6927  0.9594  1.0000 </code></pre>
+<pre class="r"><code>plot(sort(full_strand_18486_filt$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18486_filt$perc_same, decreasing = TRUE))&gt;.5, &quot;red&quot;, &quot;black&quot;), ylab=&quot;same strand / gene count&quot;, xlab=&quot;Genes ordered by strand spec percent&quot;, main=&quot;Gene counts strand specificity filtered 18486&quot;)
+legend(&quot;topright&quot;, legend = c(&quot;top 75%&quot;), col=c(&quot;red&quot;), pch=16, cex=1)</code></pre>
+<p><img src="figure/strand_spec.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>boxplot(log10(full_strand_18486_filt$same_count), log10(full_strand_18486_filt$opp_count), names=c(&quot;Same strand&quot;, &quot;Opposite Strand&quot;), ylab=&quot;log10 Gene counts&quot;, main=&quot;Gene counts by strand 18486 filtered&quot;)</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (-Inf) in boxplot 1 is not drawn</code></pre>
+<pre><code>Warning in bplt(at[i], wid = width[i], stats = z$stats[, i], out = z$out[z
+$group == : Outlier (-Inf) in boxplot 2 is not drawn</code></pre>
+<p><img src="figure/strand_spec.Rmd/unnamed-chunk-22-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
