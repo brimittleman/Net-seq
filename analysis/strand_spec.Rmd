@@ -240,6 +240,96 @@ boxplot(log10(top_genes_strand$same_count), log10(top_genes_strand$opp_count), n
 
 ```
 
+###Filter out the small RNAs that fall in these genes  
+
+Filter the bams as I did in the create blacklist. filt_smRNA_bam.sh
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=intersect_bam
+#SBATCH --time=8:00:00
+#SBATCH --output=intbam_sbatch.out
+#SBATCH --error=intbam_sbatch.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+
+module load Anaconda3  
+
+source activate net-seq 
+
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-sort.bam$//")
+
+
+bedtools intersect -v -wa -abam $1 -b /project2/gilad/briana/genome_anotation_data/snRNA.gencode.v19.nochr.bed /project2/gilad/briana/genome_anotation_data/snoRNA.gencode.v19.nochr.bed  > /project2/gilad/briana/Net-seq-pilot/data/filter_bam/${describer}.rnafilter.bam
+
+
+```
+
+run on:  /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-18486_combined_Netpilot-sort.bam
+
+Now when I look at the bams in IGV I have removed the snoRNA in TPT1.  
+
+
+###Rerun analysis with Filtered bam  
+
+
+This time I will switch the -s and -S so we get the correct same/opp strand information in the txt files.  
+
+
+1. Convert the filtered bam file to a bed file and sort it:  
+
+```{bash, eval=FALSE}
+bamToBed -i NET3-18486.rnafilter.bam > ../bed/YG-SP-NET3-18486_combined_Netpilot-rnafilt.bed
+
+
+sort -k1,1 -k2,2n YG-SP-NET3-18486_combined_Netpilot-rnafilt.bed > YG-SP-NET3-18486_combined_Netpilot-rnafilt-sort.bed
+```
+
+strand_filt.sh
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=_filtstrand
+#SBATCH --time=8:00:00
+#SBATCH --output=filtstrand.out
+#SBATCH --error=filtstrnad.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+
+
+bedtools coverage -counts -S -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-rnafilt-sort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/same_strand_genecounts_filt_18486.txt 
+
+
+bedtools coverage -counts -s -sorted -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.sort.bed -b /project2/gilad/briana/Net-seq-pilot/data/bed/YG-SP-NET3-18486_combined_Netpilot-rnafilt-sort.bed  > /project2/gilad/briana/Net-seq-pilot/output/strand_spec/opp_strand_genecounts_filt_18486.txt 
+```
+
+
+```{r}
+opp_strand_18486_filt=read.table("../data/opp_strand_genecounts_filt_18486.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(opp_strand_18486_filt)= c("chr", "start", "end", "gene","score", "strand", "opp_count")
+same_strand_18486_filt=read.table("../data/same_strand_genecounts_filt_18486.txt", header=FALSE, stringsAsFactors = FALSE)
+colnames(same_strand_18486_filt)= c("chr", "start", "end", "gene","score", "strand", "same_count")
+
+
+full_strand_18486_filt=inner_join(same_strand_18486_filt, opp_strand_18486_filt, by=c(c("chr", "start", "end", "gene","score", "strand")))
+full_strand_18486_filt= full_strand_18486_filt %>% mutate(perc_same=(same_count /(same_count + opp_count))) %>% filter(perc_same != "NaN")
+
+summary(full_strand_18486_filt$perc_same)
+plot(sort(full_strand_18486_filt$perc_same, decreasing = TRUE), col=ifelse((sort(full_strand_18486_filt$perc_same, decreasing = TRUE))>.5, "red", "black"), ylab="same strand / gene count", xlab="Genes ordered by strand spec percent", main="Gene counts strand specificity filtered 18486")
+legend("topright", legend = c("top 75%"), col=c("red"), pch=16, cex=1)
+
+
+boxplot(log10(full_strand_18486_filt$same_count), log10(full_strand_18486_filt$opp_count), names=c("Same strand", "Opposite Strand"), ylab="log10 Gene counts", main="Gene counts by strand 18486 filtered")
+```
+
 
 
 ## Session information
