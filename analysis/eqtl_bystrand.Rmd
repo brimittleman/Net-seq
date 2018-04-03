@@ -1,0 +1,261 @@
+---
+title:"eQTL effect by strand"
+author:"Briana Mittleman""
+date:2018-04-02
+output:html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+I will use this analysis to answer the question:  Do eQTLs also equally affect antisense transcriptions? This will take advantage of strand specificity of the net-seq data and the phenominon of convergent and divergent transcription around TSS.  
+
+Workflow:  
+
+*Download eqtls  
+
+*Rank eqtls based on coverage in tss region, this may include seeing if the eqtl genes are in the filtered gene set from the strand specificity analysis  
+
+*Look at some of the top snps
+
+-separate individuals by genome  
+-look at them in IGV  
+-box plots seperated by genotype, forward and reverse transcription 
+
+###Load libraries  
+
+```{r}
+library(workflowr)
+library(tidyr)
+library(dplyr)
+library(reshape2)
+library(ggplot2)
+```
+
+
+###Gene overlaps  
+
+Download eqtls and YRI genotypes from http://eqtl.uchicago.edu/jointLCL/ to /project2/gilad/briana/Net-seq-pilot/data/eqtl  
+
+```{bash, eval=FALSE}
+wget  http://eqtl.uchicago.edu/jointLCL/output_RNAseqGeuvadis_PC14.txt
+wget http://eqtl.uchicago.edu/jointLCL/genotypesYRI.gen.txt.gz
+```
+
+Make a list of the genes that have an eqtl with the effect size (so i can order which to look at) :  
+
+```{bash, eval=FALSE}
+awk '{print $2}' eqtl_RNAseqGeuvadis.txt > eqtl_genes
+awk '{print $1 "\t" $2 "\t" $6}' eqtl_RNAseqGeuvadis.txt > eqtl_genes_effectsize.txt
+```
+
+The filtered genes are in /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.distfilteredgenes.bed  
+
+Pull both of these into R so I can filter the genes by if they have an eqtl. 
+
+```{r}
+eqtl_gene= read.table("../data/eqtl_genes_effectsize.txt", stringsAsFactors = FALSE, header=TRUE)
+filter_genes= read.table("../data/gencode.v19.annotation.distfilteredgenes.bed", stringsAsFactors = FALSE)
+colnames(filter_genes)=c("chr", "start", "end", "gene", "score", "strand")
+```
+
+Use the filter dplyr functions to filter the eqtl genes by genes that are covered in our list of filtered genes.  
+
+```{r}
+eqtl_gene_filter=eqtl_gene %>% semi_join(filter_genes, by="gene") %>% arrange(desc(beta))
+
+eqtl_pergene= eqtl_gene_filter %>% group_by(gene) %>% tally()
+```
+
+
+This shows that 3985 genes in the filter_genes file have at least one eqtl. The eqtl_gene_filter file has all the eqtl genes sorted in descending order by the beta value. Now I need to back filter the bed file to only include the genes in the eqtl genes. This will allow me to get coverage for each of these.  
+
+```{r}
+filter_genes_byeqtl= filter_genes %>% semi_join(eqtl_pergene, by="gene")
+
+#write.table(filter_genes_byeqtl, "../data/gencode.v19.annotation.eqtlfilter.bed",col.names = TRUE, row.names = FALSE, quote = FALSE, sep="\t")
+```
+
+This file is now in /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.eqtlfilter.bed 
+
+###Coverage for TSS 
+
+I need to modify gencode.v19.annotation.eqtlfilter.bed to include the TSS of each of these genes. I am looking at the first 500 basepairs of each gene.  
+
+
+```{bash, eval=FALSE}
+awk '{if($6 == "+") print($1 "\t" $2 -500  "\t" $2 + 500  "\t" $4 "\t" $5 "\t" $6 ); else print($1 "\t" $3 - 500 "\t" $3 +500  "\t" $4 "\t" $5 "\t" $6 )}' gencode.v19.annotation.eqtlfilter.bed  > gencode.v19.annotation.eqtlfilter_TSS.bed 
+```
+
+
+Bam to bed and sort each bedfile with sort -k1,1 -k2,2n 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+#SBATCH --mail-type=END
+
+module load Anaconda3
+source activate net-seq
+
+bamToBed -i YG-SP-NET3-18508_combined_Netpilot-sort.bam | sort -k1,1 -k2,2n > ../sorted_bed/YG-SP-NET3-18508_combined_Netpilot-bedsort.bed
+
+bamToBed -i YG-SP-NET3-19128_combined_Netpilot-sort.bam | sort -k1,1 -k2,2n > ../sorted_bed/YG-SP-NET3-19128_combined_Netpilot-bedsort.bed
+
+bamToBed -i YG-SP-NET3-19141_combined_Netpilot-sort.bam | sort -k1,1 -k2,2n > ../sorted_bed/YG-SP-NET3-19141_combined_Netpilot-bedsort.bed
+
+bamToBed -i YG-SP-NET3-19193_combined_Netpilot-sort.bam | sort -k1,1 -k2,2n > ../sorted_bed/YG-SP-NET3-19193_combined_Netpilot-bedsort.bed
+
+bamToBed -i YG-SP-NET3-19239_combined_Netpilot-sort.bam | sort -k1,1 -k2,2n > ../sorted_bed/YG-SP-NET3-19239_combined_Netpilot-bedsort.bed
+
+bamToBed -i YG-SP-NET3-19257_combined_Netpilot-sort.bam | sort -k1,1 -k2,2n > ../sorted_bed/YG-SP-NET3-19257_combined_Netpilot-bedsort.bed
+```
+
+
+Now I can write a script that counts the coverage for these TSS in a strand specific manner. Remeber that netseq is flipped strand so same strand should be the -S and opp strand is -s. This script is in the code directory and is called  eqtl_stranded.sh. 
+
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=eqtl_strand
+#SBATCH --time=8:00:00
+#SBATCH --output=eqtlstrand.out
+#SBATCH --error=eqtlstrand.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=40G
+#SBATCH --mail-type=END
+
+module load Anaconda3
+source activate net-seq  
+
+sample=$1
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-bedsort.bed$//")
+
+
+bedtools coverage -counts -S -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.eqtlfilter_TSS.bed -b $1 > /project2/gilad/briana/Net-seq-pilot/output/eqtl_strand_spec/${describer}_same_eqtstrandedlTSS.txt
+
+bedtools coverage -counts -s -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.eqtlfilter_TSS.bed -b $1 > /project2/gilad/briana/Net-seq-pilot/output/eqtl_strand_spec/${describer}_opp_eqtstrandedlTSS.txt
+
+```
+
+Create a wrapper to run this on all files:  wrap_eqtl_strand.sh
+```{bash, eval=FALSE}
+#!/bin/bash
+
+#SBATCH --job-name=w_eqtl_strand
+#SBATCH --time=8:00:00
+#SBATCH --output=weqtlstrand.out
+#SBATCH --error=weqtlstrand.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=8G
+#SBATCH --mail-type=END
+
+
+for i in $(ls /project2/gilad/briana/Net-seq-pilot/data/sorted_bed/); do
+            sbatch eqtl_stranded.sh /project2/gilad/briana/Net-seq-pilot/data/sorted_bed/$i 
+        done
+        
+        
+        
+```
+
+need to give more memory to 508, 128, 141, 193, 239  
+
+
+Pull in all files and join them the same strand ones on the first four columns  
+
+```{r}
+same_18486= read.table(file = "../data/eqtl_strand_spec/NET3-18486_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18486"))
+same_18505= read.table(file = "../data/eqtl_strand_spec/NET3-18505_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18505"))
+same_18508= read.table(file = "../data/eqtl_strand_spec/NET3-18508_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18508"))
+same_19128= read.table(file = "../data/eqtl_strand_spec/NET3-19128_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19128"))
+same_19141= read.table(file = "../data/eqtl_strand_spec/NET3-19141_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19141"))
+same_19193= read.table(file = "../data/eqtl_strand_spec/NET3-19193_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19193"))
+same_19239= read.table(file = "../data/eqtl_strand_spec/NET3-19239_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19239"))
+same_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19257"))
+```
+Same strand:
+```{r}
+all_same_strand=cbind(same_18486[,1:7], same_18505$same_18505, same_18508$same_18508, same_19128$same_19128,same_19141$same_19141, same_19193$same_19193, same_19239$same_19239, same_19257$same_19257)
+colnames(all_same_strand)=c("chr", "start", "end", "gene", "score", "strand", "same_18486", "same_18505", "same_18508", "same_19128", "same_19141", "same_19193", "same_19239", "same_19257")
+                      
+```
+Opp strand: 
+
+```{r}
+opp_18486= read.table(file = "../data/eqtl_strand_spec/NET3-18486_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18486"))
+opp_18505= read.table(file = "../data/eqtl_strand_spec/NET3-18505_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18505"))
+opp_18508= read.table(file = "../data/eqtl_strand_spec/NET3-18508_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18508"))
+opp_19128= read.table(file = "../data/eqtl_strand_spec/NET3-19128_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19128"))
+opp_19141= read.table(file = "../data/eqtl_strand_spec/NET3-19141_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19141"))
+opp_19193= read.table(file = "../data/eqtl_strand_spec/NET3-19193_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19193"))
+opp_19239= read.table(file = "../data/eqtl_strand_spec/NET3-19239_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19239"))
+opp_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19257"))
+
+```
+
+
+```{r}
+all_opp_strand=cbind(opp_18486[,1:7], opp_18505$opp_18505, opp_18508$opp_18508, opp_19128$opp_19128,opp_19141$opp_19141, opp_19193$opp_19193, opp_19239$opp_19239, opp_19257$opp_19257)
+colnames(all_opp_strand)=c("chr", "start", "end", "gene", "score", "strand", "opp_18486", "opp_18505", "opp_18508", "opp_19128", "opp_19141", "opp_19193", "opp_19239", "opp_19257")
+```
+
+Calculate the %same:
+
+```{r}
+perc_18486=all_same_strand$same_18486/(all_same_strand$same_18486 + all_opp_strand$opp_18486)
+perc_18505=all_same_strand$same_18505/(all_same_strand$same_18505 + all_opp_strand$opp_18505)
+perc_18508=all_same_strand$same_18508/(all_same_strand$same_18508 + all_opp_strand$opp_18508)
+perc_19128=all_same_strand$same_19128/(all_same_strand$same_19128 + all_opp_strand$opp_19128)
+perc_19141=all_same_strand$same_19141/(all_same_strand$same_19141 + all_opp_strand$opp_19141)
+perc_19193=all_same_strand$same_19193/(all_same_strand$same_19193 + all_opp_strand$opp_19193)
+perc_19239=all_same_strand$same_19239/(all_same_strand$same_19239 + all_opp_strand$opp_19239)
+perc_19257=all_same_strand$same_19257/(all_same_strand$same_19257 + all_opp_strand$opp_19257)
+```
+
+Create a table with these:  
+
+```{r}
+perc_all= cbind(all_same_strand[,1:6],perc_18486, perc_18505,perc_18508,perc_19128,perc_19141,perc_19193,perc_19239,perc_19257)
+
+
+```
+
+Make this tidy to remove NA and to make box plots  
+
+```{r}
+perc_all_long=melt(perc_all, variable.name = "library",  value.name = "perc_same",
+                     id.vars = c("chr", "start", "end", "gene", "score", "strand"), na.rm = TRUE)
+
+```
+
+Make a side by side box plot:
+
+```{r}
+ggplot(perc_all_long, aes(x=library, y=perc_same)) + geom_violin() + ggtitle("Distribution of the precent of reads mapping to the same strand") 
+```
+
+This is good. Expectation is the samples have similar distributions of the 
+
+### Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
