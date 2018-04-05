@@ -48,6 +48,7 @@ library(tidyr)
 library(dplyr)
 library(reshape2)
 library(ggplot2)
+library(plyr)
 ```
 
 
@@ -182,32 +183,47 @@ need to give more memory to 508, 128, 141, 193, 239
 Pull in all files and join them the same strand ones on the first four columns  
 
 ```{r}
-same_18486= read.table(file = "../data/eqtl_strand_spec/NET3-18486_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18486"))
-same_18505= read.table(file = "../data/eqtl_strand_spec/NET3-18505_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18505"))
-same_18508= read.table(file = "../data/eqtl_strand_spec/NET3-18508_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18508"))
-same_19128= read.table(file = "../data/eqtl_strand_spec/NET3-19128_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19128"))
-same_19141= read.table(file = "../data/eqtl_strand_spec/NET3-19141_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19141"))
-same_19193= read.table(file = "../data/eqtl_strand_spec/NET3-19193_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19193"))
-same_19239= read.table(file = "../data/eqtl_strand_spec/NET3-19239_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19239"))
-same_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19257"))
+same_18486= read.table(file = "../data/eqtl_strand_spec/NET3-18486_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18486"), stringsAsFactors = F)
+same_18505= read.table(file = "../data/eqtl_strand_spec/NET3-18505_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18505"),stringsAsFactors = F)
+same_18508= read.table(file = "../data/eqtl_strand_spec/NET3-18508_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_18508"),stringsAsFactors = F)
+same_19128= read.table(file = "../data/eqtl_strand_spec/NET3-19128_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19128"),stringsAsFactors = F)
+same_19141= read.table(file = "../data/eqtl_strand_spec/NET3-19141_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19141"),stringsAsFactors = F)
+same_19193= read.table(file = "../data/eqtl_strand_spec/NET3-19193_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19193"),stringsAsFactors = F)
+same_19239= read.table(file = "../data/eqtl_strand_spec/NET3-19239_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19239"),stringsAsFactors = F)
+same_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_same_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "same_19257"),stringsAsFactors = F)
 ```
 Same strand:
 ```{r}
 all_same_strand=cbind(same_18486[,1:7], same_18505$same_18505, same_18508$same_18508, same_19128$same_19128,same_19141$same_19141, same_19193$same_19193, same_19239$same_19239, same_19257$same_19257)
 colnames(all_same_strand)=c("chr", "start", "end", "gene", "score", "strand", "same_18486", "same_18505", "same_18508", "same_19128", "same_19141", "same_19193", "same_19239", "same_19257")
+
+
+all_same_strand_long=melt(all_same_strand, variable.name = "library",  value.name = "same_count",
+                     id.vars = c("chr", "start", "end", "gene", "score", "strand"))
+
                       
 ```
+plot coverage dist:  
+
+```{r}
+ggplot(all_same_strand_long, aes(x=library, y=log10(same_count + .25))) + geom_violin()
+```
+
+
+
+
+
 Opp strand: 
 
 ```{r}
-opp_18486= read.table(file = "../data/eqtl_strand_spec/NET3-18486_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18486"))
-opp_18505= read.table(file = "../data/eqtl_strand_spec/NET3-18505_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18505"))
-opp_18508= read.table(file = "../data/eqtl_strand_spec/NET3-18508_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18508"))
-opp_19128= read.table(file = "../data/eqtl_strand_spec/NET3-19128_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19128"))
-opp_19141= read.table(file = "../data/eqtl_strand_spec/NET3-19141_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19141"))
-opp_19193= read.table(file = "../data/eqtl_strand_spec/NET3-19193_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19193"))
-opp_19239= read.table(file = "../data/eqtl_strand_spec/NET3-19239_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19239"))
-opp_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19257"))
+opp_18486= read.table(file = "../data/eqtl_strand_spec/NET3-18486_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18486"),stringsAsFactors = F)
+opp_18505= read.table(file = "../data/eqtl_strand_spec/NET3-18505_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18505"),stringsAsFactors = F)
+opp_18508= read.table(file = "../data/eqtl_strand_spec/NET3-18508_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_18508"),stringsAsFactors = F)
+opp_19128= read.table(file = "../data/eqtl_strand_spec/NET3-19128_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19128"),stringsAsFactors = F)
+opp_19141= read.table(file = "../data/eqtl_strand_spec/NET3-19141_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19141"),stringsAsFactors = F)
+opp_19193= read.table(file = "../data/eqtl_strand_spec/NET3-19193_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19193"),stringsAsFactors = F)
+opp_19239= read.table(file = "../data/eqtl_strand_spec/NET3-19239_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19239"),stringsAsFactors = F)
+opp_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_opp_eqtstrandedlTSS.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "opp_19257"),stringsAsFactors = F)
 
 ```
 
@@ -217,23 +233,58 @@ all_opp_strand=cbind(opp_18486[,1:7], opp_18505$opp_18505, opp_18508$opp_18508, 
 colnames(all_opp_strand)=c("chr", "start", "end", "gene", "score", "strand", "opp_18486", "opp_18505", "opp_18508", "opp_19128", "opp_19141", "opp_19193", "opp_19239", "opp_19257")
 ```
 
+
+
+```{r}
+all_opp_strand_long=melt(all_opp_strand, variable.name = "library",  value.name = "opp_count",
+                     id.vars = c("chr", "start", "end", "gene", "score", "strand"))
+ggplot(all_opp_strand_long, aes(x=library, y=log10(opp_count + .25))) + geom_violin()
+```
+
+Combine these to do it together colored by strand.  
+
+```{r}
+colnames(all_same_strand)= c("chr", "start", "end", "gene", "score", "strand", "l_18486", "l_18505", "l_18508", "l_19128", "l_19141", "l_19193", "l_19239", "l_19257")
+all_same_strand_new= all_same_strand %>% mutate(which_strand="same")
+
+
+colnames(all_opp_strand)= c("chr", "start", "end", "gene", "score", "strand", "l_18486", "l_18505", "l_18508", "l_19128", "l_19141", "l_19193", "l_19239", "l_19257")
+all_opp_strand_new=all_opp_strand %>% mutate(which_strand="opp")
+
+all_coverage= rbind(all_same_strand_new, all_opp_strand_new)
+```
+
+
+Make this long:  
+
+
+```{r}
+all_strand_long=melt(all_coverage, variable.name = "library", value.name = "count",
+                     id.vars = c("chr", "start", "end", "gene", "score", "strand", "which_strand"))
+
+
+ggplot(all_strand_long, aes(x=library, y=log10( count+ .25), fill=which_strand)) + geom_violin() + ggtitle("TSS coverage by strand by libary") 
+```
+
+
+
 Calculate the %same:
 
 ```{r}
-perc_18486=all_same_strand$same_18486/(all_same_strand$same_18486 + all_opp_strand$opp_18486)
-perc_18505=all_same_strand$same_18505/(all_same_strand$same_18505 + all_opp_strand$opp_18505)
-perc_18508=all_same_strand$same_18508/(all_same_strand$same_18508 + all_opp_strand$opp_18508)
-perc_19128=all_same_strand$same_19128/(all_same_strand$same_19128 + all_opp_strand$opp_19128)
-perc_19141=all_same_strand$same_19141/(all_same_strand$same_19141 + all_opp_strand$opp_19141)
-perc_19193=all_same_strand$same_19193/(all_same_strand$same_19193 + all_opp_strand$opp_19193)
-perc_19239=all_same_strand$same_19239/(all_same_strand$same_19239 + all_opp_strand$opp_19239)
-perc_19257=all_same_strand$same_19257/(all_same_strand$same_19257 + all_opp_strand$opp_19257)
+perc_18486=all_same_strand$l_18486/(all_same_strand$l_18486 + all_opp_strand$l_18486)
+perc_18505=all_same_strand$l_18505/(all_same_strand$l_18505 + all_opp_strand$l_18505)
+perc_18508=all_same_strand$l_18508/(all_same_strand$l_18508 + all_opp_strand$l_18508)
+perc_19128=all_same_strand$l_19128/(all_same_strand$l_19128 + all_opp_strand$l_19128)
+perc_19141=all_same_strand$l_19141/(all_same_strand$l_19141 + all_opp_strand$l_19141)
+perc_19193=all_same_strand$l_19193/(all_same_strand$l_19193 + all_opp_strand$l_19193)
+perc_19239=all_same_strand$l_19239/(all_same_strand$l_19239 + all_opp_strand$l_19239)
+perc_19257=all_same_strand$l_19257/(all_same_strand$l_19257 + all_opp_strand$l_19257)
 ```
 
 Create a table with these:  
 
 ```{r}
-perc_all= cbind(all_same_strand[,1:6],perc_18486, perc_18505,perc_18508,perc_19128,perc_19141,perc_19193,perc_19239,perc_19257)
+perc_all= cbind(all_same_strand[,1:6],perc_18486,perc_18505,perc_18508,perc_19128,perc_19141,perc_19193, perc_19239,perc_19257)
 
 
 ```
@@ -253,6 +304,96 @@ ggplot(perc_all_long, aes(x=library, y=perc_same)) + geom_violin() + ggtitle("Di
 ```
 
 This is good. Expectation is the samples have similar distributions of the 
+
+###Look at eqtls  
+
+I need to select the genotypes by the individuals i have and the eqtl snps. 
+
+```{r, eval=FALSE}
+geno= read.table("../data/eqtl_strand_spec/genotypesYRI.gen.txt")
+colnames(geno)= c("CHROM",	"POS",	"ID",	"REF",	"ALT",	"QUAL",	"FILTER",	"INFO",	"FORMAT",	"18486",	"18489",	"18498",	"18499",	"18501",	"18502",	"18504",	"18505",	"18507",	"18508",	"18510",	"18511",	"18516",	"18517",	"18519",	"18520",	"18522",	"18523",	"18853",	"18856",	"18858",	"18861",	"18870",	'18871',	"18907",	"18909",	"18912",	"18916",	"19093",	"19098",	"19099",	'19102',	"19108",	"19114",	"19116",	"19119",	"19129",	"19131",	'19137',	"19138",	"19141",	"19143",	"19144",	"19147",	"19152",	"19153",	"19159",	"19160",	"19171",	"19172",	"19190",	"19200",	"19201",	"19204",	"19207",	"19209",	"19210",	"19225",	"19257",	"19175",	"19176",	"19203",	"18855",	"19095",	"19096",	"18867",	"18868",	"18924",	"18923",	"18488",	"19122",	"19121",	"19247",	"19248",	"18933",	"18934",	"19118",	'19117',	'19149',	"19150",	"18487",	"19235",	"19236",	"19226",	"19189",	"18910",	"18917",	"19113",	"19214",	"19213",	"19182",	"19181",	"19179",	"19178",	"19146",	"19107",	"19185",	"19184",	"19256",	"19197",	"19198",	"18873",	"18874",	"19238",	"19239",	"19222",	"19223",	"18862",	"18852",	"19140",	"19127",	"19128",	"19193",	"19192",	"19130",	"19206",	"18913",	'18859',	"19101")
+```
+
+filter by my ind.:  
+
+```{r, eval=FALSE}
+geno_netpilot= geno %>% select("CHROM",	"POS",	"ID",	"REF",	"ALT",	"QUAL",	"FILTER",	"INFO",	"FORMAT", "18486", "18505", "18508", "19128", "19141", "19193", "19239", "19257")
+```
+Write out this filitered data:
+```{r, eval=F}
+write.table(geno_netpilot, "../data/eqtl_strand_spec/genotypesYRI.gen.netpilot.txt", quote=FALSE,strcol.names = c("CHROM",	"POS",	"ID",	"REF",	"ALT",	"QUAL",	"FILTER",	"INFO",	"FORMAT", "18486", "18505", "18508", "19128", "19141", "19193", "19239", "19257"))
+```
+
+
+Pull this in for analysis: 
+
+```{r}
+geno_netpilot= read.table( "../data/eqtl_strand_spec/genotypesYRI.gen.netpilot.txt", header=TRUE, stringsAsFactors = FALSE)
+```
+
+The next step will be to filter this further by the eqtl snps, to do this i will have to process the eqtl snp ids by seperating the chr and the rs ids. I will then be able to filter join with dplyr.  
+
+
+```{r}
+eqtl_gene_filter_rs= eqtl_gene_filter %>% separate(snps,c("CHROM", "ID"))
+
+eqtl_gene_filter_rs$ID=sub("^", "rs", eqtl_gene_filter_rs$ID)
+```
+
+Use semi joing by the CHROM and ID columns. I want to filter the genotypes so that is the x.  
+
+```{r}
+geno_netpilot_eqtl=geno_netpilot %>% semi_join(eqtl_gene_filter_rs, by=c("ID"))
+geno_netpilot_eqtl_round= geno_netpilot_eqtl %>% mutate_if(is.numeric, round)
+```
+
+Create a file with the full count for each gene at its TSS by adding the strand counts:  
+
+```{r}
+all_18486=all_same_strand$l_18486 + all_opp_strand$l_18486
+all_18505=all_same_strand$l_18505+ all_opp_strand$l_18505
+all_18508=all_same_strand$l_18508 + all_opp_strand$l_18508
+all_19128=all_same_strand$l_19128 + all_opp_strand$l_19128
+all_19141=all_same_strand$l_19141 + all_opp_strand$l_19141
+all_19193=all_same_strand$l_19193 + all_opp_strand$l_19193
+all_19239=all_same_strand$l_19239+ all_opp_strand$l_19239
+all_19257=all_same_strand$l_19257+ all_opp_strand$l_19257
+
+
+all_exp_both= cbind(all_same_strand[,1:6],all_18486,all_18505,all_18508, all_19128,all_19141,all_19193, all_19239, all_19257)
+```
+
+
+
+Next step is to create the function that plots the gene coverage by genotype when you give it a qtl snp:  
+```{r}
+by_geno_exp=function(rsID){
+  geno_rs=geno_netpilot_eqtl_round %>% filter(geno_netpilot_eqtl_round$ID==rsID) %>% select(10:17)
+  gene_rs= eqtl_gene_filter_rs  %>% filter(ID==rsID) %>% select(gene) %>% top_n(1) %>% as.character()
+  exp_gene= all_exp_both %>% filter(gene==gene_rs) %>% select(7:14)
+  colnames(exp_gene)= colnames(geno_rs)
+  x=rbind(geno_rs,exp_gene) %>% t
+  x=as.data.frame(x)
+  return(boxplot(x$V2~x$V1, ylab="TSS count", xlab="genotype", main=rsID))
+}
+```
+
+
+Sort the eqtls by effect size and run my function on top 10:  
+
+```{r}
+top_10_effect=eqtl_gene_filter_rs %>% arrange(desc(beta))  %>% semi_join(geno_netpilot_eqtl_round, by="ID") %>%  semi_join(all_exp_both, by="gene") %>% select(ID) %>% top_n(10)
+print(top_10_effect)
+```
+
+```{r}
+for(i in top_10_effect$ID){
+  by_geno_exp(i)
+}
+
+```
+
+
 
 ### Session information
 
