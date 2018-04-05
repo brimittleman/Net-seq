@@ -49,7 +49,7 @@ Net-pilot analysis:
 
 * [Strand specific analysis](strand_spec.html)
 
-* [Connect eQTLs to strand](eqtl_bystrand.Rmd)
+* [Connect eQTLs to strand](eqtl_bystrand.html)
 
 
 Cell Growth analysis: 
