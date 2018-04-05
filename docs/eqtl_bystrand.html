@@ -310,10 +310,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-04-03</p>
+<p><strong>Last updated:</strong> 2018-04-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 0852212</p>
+<p><strong>Code version:</strong> 92cc3f5</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to answer the question: Do eQTLs also equally affect antisense transcriptions? This will take advantage of strand specificity of the net-seq data and the phenominon of convergent and divergent transcription around TSS.</p>
 <p>Workflow:</p>
@@ -346,7 +346,19 @@ Attaching package: &#39;reshape2&#39;</code></pre>
 <pre><code>The following object is masked from &#39;package:tidyr&#39;:
 
     smiths</code></pre>
-<pre class="r"><code>library(ggplot2)</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(plyr)</code></pre>
+<pre><code>-------------------------------------------------------------------------</code></pre>
+<pre><code>You have loaded plyr after dplyr - this is likely to cause problems.
+If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+library(plyr); library(dplyr)</code></pre>
+<pre><code>-------------------------------------------------------------------------</code></pre>
+<pre><code>
+Attaching package: &#39;plyr&#39;</code></pre>
+<pre><code>The following objects are masked from &#39;package:dplyr&#39;:
+
+    arrange, count, desc, failwith, id, mutate, rename, summarise,
+    summarize</code></pre>
 </div>
 <div id="gene-overlaps" class="section level3">
 <h3>Gene overlaps</h3>
@@ -435,46 +447,151 @@ for i in $(ls /project2/gilad/briana/Net-seq-pilot/data/sorted_bed/); do
         </code></pre>
 <p>need to give more memory to 508, 128, 141, 193, 239</p>
 <p>Pull in all files and join them the same strand ones on the first four columns</p>
-<pre class="r"><code>same_18486= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18486_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18486&quot;))
-same_18505= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18505_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18505&quot;))
-same_18508= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18508_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18508&quot;))
-same_19128= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19128_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19128&quot;))
-same_19141= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19141_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19141&quot;))
-same_19193= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19193_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19193&quot;))
-same_19239= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19239_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19239&quot;))
-same_19257= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19257_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19257&quot;))</code></pre>
+<pre class="r"><code>same_18486= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18486_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18486&quot;), stringsAsFactors = F)
+same_18505= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18505_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18505&quot;),stringsAsFactors = F)
+same_18508= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18508_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18508&quot;),stringsAsFactors = F)
+same_19128= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19128_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19128&quot;),stringsAsFactors = F)
+same_19141= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19141_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19141&quot;),stringsAsFactors = F)
+same_19193= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19193_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19193&quot;),stringsAsFactors = F)
+same_19239= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19239_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19239&quot;),stringsAsFactors = F)
+same_19257= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19257_same_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_19257&quot;),stringsAsFactors = F)</code></pre>
 <p>Same strand:</p>
 <pre class="r"><code>all_same_strand=cbind(same_18486[,1:7], same_18505$same_18505, same_18508$same_18508, same_19128$same_19128,same_19141$same_19141, same_19193$same_19193, same_19239$same_19239, same_19257$same_19257)
-colnames(all_same_strand)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18486&quot;, &quot;same_18505&quot;, &quot;same_18508&quot;, &quot;same_19128&quot;, &quot;same_19141&quot;, &quot;same_19193&quot;, &quot;same_19239&quot;, &quot;same_19257&quot;)</code></pre>
+colnames(all_same_strand)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18486&quot;, &quot;same_18505&quot;, &quot;same_18508&quot;, &quot;same_19128&quot;, &quot;same_19141&quot;, &quot;same_19193&quot;, &quot;same_19239&quot;, &quot;same_19257&quot;)
+
+
+all_same_strand_long=melt(all_same_strand, variable.name = &quot;library&quot;,  value.name = &quot;same_count&quot;,
+                     id.vars = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;))</code></pre>
+<p>plot coverage dist:</p>
+<pre class="r"><code>ggplot(all_same_strand_long, aes(x=library, y=log10(same_count + .25))) + geom_violin()</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Opp strand:</p>
-<pre class="r"><code>opp_18486= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18486_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18486&quot;))
-opp_18505= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18505_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18505&quot;))
-opp_18508= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18508_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18508&quot;))
-opp_19128= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19128_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19128&quot;))
-opp_19141= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19141_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19141&quot;))
-opp_19193= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19193_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19193&quot;))
-opp_19239= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19239_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19239&quot;))
-opp_19257= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19257_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19257&quot;))</code></pre>
+<pre class="r"><code>opp_18486= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18486_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18486&quot;),stringsAsFactors = F)
+opp_18505= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18505_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18505&quot;),stringsAsFactors = F)
+opp_18508= read.table(file = &quot;../data/eqtl_strand_spec/NET3-18508_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18508&quot;),stringsAsFactors = F)
+opp_19128= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19128_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19128&quot;),stringsAsFactors = F)
+opp_19141= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19141_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19141&quot;),stringsAsFactors = F)
+opp_19193= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19193_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19193&quot;),stringsAsFactors = F)
+opp_19239= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19239_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19239&quot;),stringsAsFactors = F)
+opp_19257= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19257_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_19257&quot;),stringsAsFactors = F)</code></pre>
 <pre class="r"><code>all_opp_strand=cbind(opp_18486[,1:7], opp_18505$opp_18505, opp_18508$opp_18508, opp_19128$opp_19128,opp_19141$opp_19141, opp_19193$opp_19193, opp_19239$opp_19239, opp_19257$opp_19257)
 colnames(all_opp_strand)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18486&quot;, &quot;opp_18505&quot;, &quot;opp_18508&quot;, &quot;opp_19128&quot;, &quot;opp_19141&quot;, &quot;opp_19193&quot;, &quot;opp_19239&quot;, &quot;opp_19257&quot;)</code></pre>
+<pre class="r"><code>all_opp_strand_long=melt(all_opp_strand, variable.name = &quot;library&quot;,  value.name = &quot;opp_count&quot;,
+                     id.vars = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;))
+ggplot(all_opp_strand_long, aes(x=library, y=log10(opp_count + .25))) + geom_violin()</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>Combine these to do it together colored by strand.</p>
+<pre class="r"><code>colnames(all_same_strand)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;l_18486&quot;, &quot;l_18505&quot;, &quot;l_18508&quot;, &quot;l_19128&quot;, &quot;l_19141&quot;, &quot;l_19193&quot;, &quot;l_19239&quot;, &quot;l_19257&quot;)
+all_same_strand_new= all_same_strand %&gt;% mutate(which_strand=&quot;same&quot;)
+
+
+colnames(all_opp_strand)= c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;l_18486&quot;, &quot;l_18505&quot;, &quot;l_18508&quot;, &quot;l_19128&quot;, &quot;l_19141&quot;, &quot;l_19193&quot;, &quot;l_19239&quot;, &quot;l_19257&quot;)
+all_opp_strand_new=all_opp_strand %&gt;% mutate(which_strand=&quot;opp&quot;)
+
+all_coverage= rbind(all_same_strand_new, all_opp_strand_new)</code></pre>
+<p>Make this long:</p>
+<pre class="r"><code>all_strand_long=melt(all_coverage, variable.name = &quot;library&quot;, value.name = &quot;count&quot;,
+                     id.vars = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;which_strand&quot;))
+
+
+ggplot(all_strand_long, aes(x=library, y=log10( count+ .25), fill=which_strand)) + geom_violin() + ggtitle(&quot;TSS coverage by strand by libary&quot;) </code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Calculate the %same:</p>
-<pre class="r"><code>perc_18486=all_same_strand$same_18486/(all_same_strand$same_18486 + all_opp_strand$opp_18486)
-perc_18505=all_same_strand$same_18505/(all_same_strand$same_18505 + all_opp_strand$opp_18505)
-perc_18508=all_same_strand$same_18508/(all_same_strand$same_18508 + all_opp_strand$opp_18508)
-perc_19128=all_same_strand$same_19128/(all_same_strand$same_19128 + all_opp_strand$opp_19128)
-perc_19141=all_same_strand$same_19141/(all_same_strand$same_19141 + all_opp_strand$opp_19141)
-perc_19193=all_same_strand$same_19193/(all_same_strand$same_19193 + all_opp_strand$opp_19193)
-perc_19239=all_same_strand$same_19239/(all_same_strand$same_19239 + all_opp_strand$opp_19239)
-perc_19257=all_same_strand$same_19257/(all_same_strand$same_19257 + all_opp_strand$opp_19257)</code></pre>
+<pre class="r"><code>perc_18486=all_same_strand$l_18486/(all_same_strand$l_18486 + all_opp_strand$l_18486)
+perc_18505=all_same_strand$l_18505/(all_same_strand$l_18505 + all_opp_strand$l_18505)
+perc_18508=all_same_strand$l_18508/(all_same_strand$l_18508 + all_opp_strand$l_18508)
+perc_19128=all_same_strand$l_19128/(all_same_strand$l_19128 + all_opp_strand$l_19128)
+perc_19141=all_same_strand$l_19141/(all_same_strand$l_19141 + all_opp_strand$l_19141)
+perc_19193=all_same_strand$l_19193/(all_same_strand$l_19193 + all_opp_strand$l_19193)
+perc_19239=all_same_strand$l_19239/(all_same_strand$l_19239 + all_opp_strand$l_19239)
+perc_19257=all_same_strand$l_19257/(all_same_strand$l_19257 + all_opp_strand$l_19257)</code></pre>
 <p>Create a table with these:</p>
-<pre class="r"><code>perc_all= cbind(all_same_strand[,1:6],perc_18486, perc_18505,perc_18508,perc_19128,perc_19141,perc_19193,perc_19239,perc_19257)</code></pre>
+<pre class="r"><code>perc_all= cbind(all_same_strand[,1:6],perc_18486,perc_18505,perc_18508,perc_19128,perc_19141,perc_19193, perc_19239,perc_19257)</code></pre>
 <p>Make this tidy to remove NA and to make box plots</p>
 <pre class="r"><code>perc_all_long=melt(perc_all, variable.name = &quot;library&quot;,  value.name = &quot;perc_same&quot;,
                      id.vars = c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;), na.rm = TRUE)</code></pre>
 <p>Make a side by side box plot:</p>
 <pre class="r"><code>ggplot(perc_all_long, aes(x=library, y=perc_same)) + geom_violin() + ggtitle(&quot;Distribution of the precent of reads mapping to the same strand&quot;) </code></pre>
-<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-18-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-22-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>This is good. Expectation is the samples have similar distributions of the</p>
+</div>
+<div id="look-at-eqtls" class="section level3">
+<h3>Look at eqtls</h3>
+<p>I need to select the genotypes by the individuals i have and the eqtl snps.</p>
+<pre class="r"><code>geno= read.table(&quot;../data/eqtl_strand_spec/genotypesYRI.gen.txt&quot;)
+colnames(geno)= c(&quot;CHROM&quot;,  &quot;POS&quot;,  &quot;ID&quot;,   &quot;REF&quot;,  &quot;ALT&quot;,  &quot;QUAL&quot;, &quot;FILTER&quot;,   &quot;INFO&quot;, &quot;FORMAT&quot;,   &quot;18486&quot;,    &quot;18489&quot;,    &quot;18498&quot;,    &quot;18499&quot;,    &quot;18501&quot;,    &quot;18502&quot;,    &quot;18504&quot;,    &quot;18505&quot;,    &quot;18507&quot;,    &quot;18508&quot;,    &quot;18510&quot;,    &quot;18511&quot;,    &quot;18516&quot;,    &quot;18517&quot;,    &quot;18519&quot;,    &quot;18520&quot;,    &quot;18522&quot;,    &quot;18523&quot;,    &quot;18853&quot;,    &quot;18856&quot;,    &quot;18858&quot;,    &quot;18861&quot;,    &quot;18870&quot;,    &#39;18871&#39;,    &quot;18907&quot;,    &quot;18909&quot;,    &quot;18912&quot;,    &quot;18916&quot;,    &quot;19093&quot;,    &quot;19098&quot;,    &quot;19099&quot;,    &#39;19102&#39;,    &quot;19108&quot;,    &quot;19114&quot;,    &quot;19116&quot;,    &quot;19119&quot;,    &quot;19129&quot;,    &quot;19131&quot;,    &#39;19137&#39;,    &quot;19138&quot;,    &quot;19141&quot;,    &quot;19143&quot;,    &quot;19144&quot;,    &quot;19147&quot;,    &quot;19152&quot;,    &quot;19153&quot;,    &quot;19159&quot;,    &quot;19160&quot;,    &quot;19171&quot;,    &quot;19172&quot;,    &quot;19190&quot;,    &quot;19200&quot;,    &quot;19201&quot;,    &quot;19204&quot;,    &quot;19207&quot;,    &quot;19209&quot;,    &quot;19210&quot;,    &quot;19225&quot;,    &quot;19257&quot;,    &quot;19175&quot;,    &quot;19176&quot;,    &quot;19203&quot;,    &quot;18855&quot;,    &quot;19095&quot;,    &quot;19096&quot;,    &quot;18867&quot;,    &quot;18868&quot;,    &quot;18924&quot;,    &quot;18923&quot;,    &quot;18488&quot;,    &quot;19122&quot;,    &quot;19121&quot;,    &quot;19247&quot;,    &quot;19248&quot;,    &quot;18933&quot;,    &quot;18934&quot;,    &quot;19118&quot;,    &#39;19117&#39;,    &#39;19149&#39;,    &quot;19150&quot;,    &quot;18487&quot;,    &quot;19235&quot;,    &quot;19236&quot;,    &quot;19226&quot;,    &quot;19189&quot;,    &quot;18910&quot;,    &quot;18917&quot;,    &quot;19113&quot;,    &quot;19214&quot;,    &quot;19213&quot;,    &quot;19182&quot;,    &quot;19181&quot;,    &quot;19179&quot;,    &quot;19178&quot;,    &quot;19146&quot;,    &quot;19107&quot;,    &quot;19185&quot;,    &quot;19184&quot;,    &quot;19256&quot;,    &quot;19197&quot;,    &quot;19198&quot;,    &quot;18873&quot;,    &quot;18874&quot;,    &quot;19238&quot;,    &quot;19239&quot;,    &quot;19222&quot;,    &quot;19223&quot;,    &quot;18862&quot;,    &quot;18852&quot;,    &quot;19140&quot;,    &quot;19127&quot;,    &quot;19128&quot;,    &quot;19193&quot;,    &quot;19192&quot;,    &quot;19130&quot;,    &quot;19206&quot;,    &quot;18913&quot;,    &#39;18859&#39;,    &quot;19101&quot;)</code></pre>
+<p>filter by my ind.:</p>
+<pre class="r"><code>geno_netpilot= geno %&gt;% select(&quot;CHROM&quot;, &quot;POS&quot;,  &quot;ID&quot;,   &quot;REF&quot;,  &quot;ALT&quot;,  &quot;QUAL&quot;, &quot;FILTER&quot;,   &quot;INFO&quot;, &quot;FORMAT&quot;, &quot;18486&quot;, &quot;18505&quot;, &quot;18508&quot;, &quot;19128&quot;, &quot;19141&quot;, &quot;19193&quot;, &quot;19239&quot;, &quot;19257&quot;)</code></pre>
+<p>Write out this filitered data:</p>
+<pre class="r"><code>write.table(geno_netpilot, &quot;../data/eqtl_strand_spec/genotypesYRI.gen.netpilot.txt&quot;, quote=FALSE,strcol.names = c(&quot;CHROM&quot;,  &quot;POS&quot;,  &quot;ID&quot;,   &quot;REF&quot;,  &quot;ALT&quot;,  &quot;QUAL&quot;, &quot;FILTER&quot;,   &quot;INFO&quot;, &quot;FORMAT&quot;, &quot;18486&quot;, &quot;18505&quot;, &quot;18508&quot;, &quot;19128&quot;, &quot;19141&quot;, &quot;19193&quot;, &quot;19239&quot;, &quot;19257&quot;))</code></pre>
+<p>Pull this in for analysis:</p>
+<pre class="r"><code>geno_netpilot= read.table( &quot;../data/eqtl_strand_spec/genotypesYRI.gen.netpilot.txt&quot;, header=TRUE, stringsAsFactors = FALSE)</code></pre>
+<p>The next step will be to filter this further by the eqtl snps, to do this i will have to process the eqtl snp ids by seperating the chr and the rs ids. I will then be able to filter join with dplyr.</p>
+<pre class="r"><code>eqtl_gene_filter_rs= eqtl_gene_filter %&gt;% separate(snps,c(&quot;CHROM&quot;, &quot;ID&quot;))
+
+eqtl_gene_filter_rs$ID=sub(&quot;^&quot;, &quot;rs&quot;, eqtl_gene_filter_rs$ID)</code></pre>
+<p>Use semi joing by the CHROM and ID columns. I want to filter the genotypes so that is the x.</p>
+<pre class="r"><code>geno_netpilot_eqtl=geno_netpilot %&gt;% semi_join(eqtl_gene_filter_rs, by=c(&quot;ID&quot;))
+geno_netpilot_eqtl_round= geno_netpilot_eqtl %&gt;% mutate_if(is.numeric, round)</code></pre>
+<p>Create a file with the full count for each gene at its TSS by adding the strand counts:</p>
+<pre class="r"><code>all_18486=all_same_strand$l_18486 + all_opp_strand$l_18486
+all_18505=all_same_strand$l_18505+ all_opp_strand$l_18505
+all_18508=all_same_strand$l_18508 + all_opp_strand$l_18508
+all_19128=all_same_strand$l_19128 + all_opp_strand$l_19128
+all_19141=all_same_strand$l_19141 + all_opp_strand$l_19141
+all_19193=all_same_strand$l_19193 + all_opp_strand$l_19193
+all_19239=all_same_strand$l_19239+ all_opp_strand$l_19239
+all_19257=all_same_strand$l_19257+ all_opp_strand$l_19257
+
+
+all_exp_both= cbind(all_same_strand[,1:6],all_18486,all_18505,all_18508, all_19128,all_19141,all_19193, all_19239, all_19257)</code></pre>
+<p>Next step is to create the function that plots the gene coverage by genotype when you give it a qtl snp:</p>
+<pre class="r"><code>by_geno_exp=function(rsID){
+  geno_rs=geno_netpilot_eqtl_round %&gt;% filter(geno_netpilot_eqtl_round$ID==rsID) %&gt;% select(10:17)
+  gene_rs= eqtl_gene_filter_rs  %&gt;% filter(ID==rsID) %&gt;% select(gene) %&gt;% top_n(1) %&gt;% as.character()
+  exp_gene= all_exp_both %&gt;% filter(gene==gene_rs) %&gt;% select(7:14)
+  colnames(exp_gene)= colnames(geno_rs)
+  x=rbind(geno_rs,exp_gene) %&gt;% t
+  x=as.data.frame(x)
+  return(boxplot(x$V2~x$V1, ylab=&quot;TSS count&quot;, xlab=&quot;genotype&quot;, main=rsID))
+}</code></pre>
+<p>Sort the eqtls by effect size and run my function on top 10:</p>
+<pre class="r"><code>top_10_effect=eqtl_gene_filter_rs %&gt;% arrange(desc(beta))  %&gt;% semi_join(geno_netpilot_eqtl_round, by=&quot;ID&quot;) %&gt;%  semi_join(all_exp_both, by=&quot;gene&quot;) %&gt;% select(ID) %&gt;% top_n(10)</code></pre>
+<pre><code>Selecting by ID</code></pre>
+<pre class="r"><code>print(top_10_effect)</code></pre>
+<pre><code>          ID
+1   rs999837
+2   rs999454
+3  rs9996578
+4  rs9994286
+5  rs9997275
+6  rs9999085
+7   rs999454
+8   rs999837
+9  rs9994709
+10 rs9994709</code></pre>
+<pre class="r"><code>for(i in top_10_effect$ID){
+  by_geno_exp(i)
+}</code></pre>
+<pre><code>Selecting by gene
+Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-6.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-7.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-8.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>Selecting by gene</code></pre>
+<p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-32-9.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
@@ -495,13 +612,13 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] bindrcpp_0.2    ggplot2_2.2.1   reshape2_1.4.3  dplyr_0.7.4    
-[5] tidyr_0.7.2     workflowr_0.7.0 rmarkdown_1.8.5
+[1] bindrcpp_0.2    plyr_1.8.4      ggplot2_2.2.1   reshape2_1.4.3 
+[5] dplyr_0.7.4     tidyr_0.7.2     workflowr_0.7.0 rmarkdown_1.8.5
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.15     knitr_1.18       bindr_0.1        magrittr_1.5    
- [5] munsell_0.4.3    colorspace_1.3-2 R6_2.2.2         rlang_0.1.6     
- [9] plyr_1.8.4       stringr_1.2.0    tools_3.4.2      grid_3.4.2      
+ [5] tidyselect_0.2.3 munsell_0.4.3    colorspace_1.3-2 R6_2.2.2        
+ [9] rlang_0.1.6      stringr_1.2.0    tools_3.4.2      grid_3.4.2      
 [13] gtable_0.2.0     git2r_0.21.0     htmltools_0.3.6  lazyeval_0.2.1  
 [17] yaml_2.1.16      rprojroot_1.3-2  digest_0.6.14    assertthat_0.2.0
 [21] tibble_1.4.2     purrr_0.2.4      glue_1.2.0       evaluate_0.10.1 
