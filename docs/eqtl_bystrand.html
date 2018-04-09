@@ -310,10 +310,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-04-06</p>
+<p><strong>Last updated:</strong> 2018-04-09</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> f480b75</p>
+<p><strong>Code version:</strong> 52ce964</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to answer the question: Do eQTLs also equally affect antisense transcriptions? This will take advantage of strand specificity of the net-seq data and the phenominon of convergent and divergent transcription around TSS.</p>
 <p>Workflow:</p>
@@ -459,14 +459,14 @@ mapreads_19141=98490544
 mapreads_19193=113382430
 mapreads_19239=113178636
 mapreads_19257=74321615</code></pre>
-<pre class="r"><code>same_18486 = same_18486 %&gt;% mutate(same_18486n =s_18486/mapreads_18486)
-same_18505= same_18505 %&gt;% mutate(same_18505n =s_18505/mapreads_18505)
-same_18508=same_18508 %&gt;% mutate(same_18508n =s_18508/mapreads_18508)
-same_19128=same_19128 %&gt;% mutate(same_19128n =s_19128/mapreads_19128)
-same_19141=same_19141 %&gt;% mutate(same_19141n =s_19141/mapreads_19141)
-same_19193 = same_19193%&gt;% mutate(same_19193n =s_19193/mapreads_19193)
-same_19239 =same_19239%&gt;% mutate(same_19239n =s_19239/mapreads_19239)
-same_19257 =same_19257%&gt;% mutate(same_19257n =s_19257/mapreads_19257)</code></pre>
+<pre class="r"><code>same_18486 = same_18486 %&gt;% mutate(same_18486n =(s_18486+1)/mapreads_18486)
+same_18505= same_18505 %&gt;% mutate(same_18505n = (s_18505 +1)/mapreads_18505)
+same_18508=same_18508 %&gt;% mutate(same_18508n =(s_18508 +1)/mapreads_18508)
+same_19128=same_19128 %&gt;% mutate(same_19128n =(s_19128 +1)/mapreads_19128)
+same_19141=same_19141 %&gt;% mutate(same_19141n = (s_19141 +1)/mapreads_19141)
+same_19193 = same_19193%&gt;% mutate(same_19193n =(s_19193 +1)/mapreads_19193)
+same_19239 =same_19239%&gt;% mutate(same_19239n =(s_19239 +1)/mapreads_19239)
+same_19257 =same_19257%&gt;% mutate(same_19257n =(s_19257 +1)/mapreads_19257)</code></pre>
 <p>Same strand:</p>
 <pre class="r"><code>all_same_strand=cbind(same_18486[,1:6],same_18486$same_18486n, same_18505$same_18505n, same_18508$same_18508n, same_19128$same_19128n,same_19141$same_19141n, same_19193$same_19193n, same_19239$same_19239n, same_19257$same_19257n)
 colnames(all_same_strand)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;same_18486&quot;, &quot;same_18505&quot;, &quot;same_18508&quot;, &quot;same_19128&quot;, &quot;same_19141&quot;, &quot;same_19193&quot;, &quot;same_19239&quot;, &quot;same_19257&quot;)
@@ -486,14 +486,14 @@ opp_19141= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19141_opp_eqtst
 opp_19193= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19193_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;o_19193&quot;),stringsAsFactors = F)
 opp_19239= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19239_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;o_19239&quot;),stringsAsFactors = F)
 opp_19257= read.table(file = &quot;../data/eqtl_strand_spec/NET3-19257_opp_eqtstrandedlTSS.txt&quot;, header =F, col.names=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;o_19257&quot;),stringsAsFactors = F)</code></pre>
-<pre class="r"><code>opp_18486 = opp_18486 %&gt;% mutate(opp_18486n =o_18486/mapreads_18486)
-opp_18505= opp_18505 %&gt;% mutate(opp_18505n =o_18505/mapreads_18505)
-opp_18508=opp_18508 %&gt;% mutate(opp_18508n =o_18508/mapreads_18508)
-opp_19128=opp_19128 %&gt;% mutate(opp_19128n =o_19128/mapreads_19128)
-opp_19141=opp_19141 %&gt;% mutate(opp_19141n =o_19141/mapreads_19141)
-opp_19193 = opp_19193%&gt;% mutate(opp_19193n =o_19193/mapreads_19193)
-opp_19239 =opp_19239%&gt;% mutate(opp_19239n =o_19239/mapreads_19239)
-opp_19257 =opp_19257%&gt;% mutate(opp_19257n =o_19257/mapreads_19257)</code></pre>
+<pre class="r"><code>opp_18486 = opp_18486 %&gt;% mutate(opp_18486n = (o_18486 +1) /mapreads_18486)
+opp_18505= opp_18505 %&gt;% mutate(opp_18505n =(o_18505 + 1)/mapreads_18505)
+opp_18508=opp_18508 %&gt;% mutate(opp_18508n =(o_18508 + 1)/mapreads_18508)
+opp_19128=opp_19128 %&gt;% mutate(opp_19128n =(o_19128 +1)/mapreads_19128)
+opp_19141=opp_19141 %&gt;% mutate(opp_19141n =(o_19141 +1)/mapreads_19141)
+opp_19193 = opp_19193%&gt;% mutate(opp_19193n =(o_19193+1)/mapreads_19193)
+opp_19239 =opp_19239%&gt;% mutate(opp_19239n =(o_19239+1)/mapreads_19239)
+opp_19257 =opp_19257%&gt;% mutate(opp_19257n =(o_19257+1)/mapreads_19257)</code></pre>
 <pre class="r"><code>all_opp_strand=cbind(opp_18486[,1:7], opp_18505$opp_18505n, opp_18508$opp_18508n, opp_19128$opp_19128n,opp_19141$opp_19141n, opp_19193$opp_19193n, opp_19239$opp_19239n, opp_19257$opp_19257n)
 colnames(all_opp_strand)=c(&quot;chr&quot;, &quot;start&quot;, &quot;end&quot;, &quot;gene&quot;, &quot;score&quot;, &quot;strand&quot;, &quot;opp_18486&quot;, &quot;opp_18505&quot;, &quot;opp_18508&quot;, &quot;opp_19128&quot;, &quot;opp_19141&quot;, &quot;opp_19193&quot;, &quot;opp_19239&quot;, &quot;opp_19257&quot;)</code></pre>
 <pre class="r"><code>all_opp_strand_long=melt(all_opp_strand, variable.name = &quot;library&quot;,  value.name = &quot;opp_count&quot;,
@@ -575,7 +575,7 @@ all_exp_both= cbind(all_same_strand[,1:6],all_18486,all_18505,all_18508, all_191
   x=rbind(geno_rs,exp_gene) %&gt;% t
   x=as.data.frame(x)
   x$V1=as.factor(x$V1)
-  plot=ggplot(x, aes(y=log10(V2), x=V1)) + geom_boxplot() + geom_jitter(col=&quot;red&quot;) + ggtitle(paste(rsID,&quot;:eqtl beta=&quot;, beta)) + xlab(&quot;Genotype&quot;) + ylab(&quot;log 10 normalized count&quot;)
+  plot=ggplot(x, aes(y=log10(V2), x=V1)) + geom_boxplot() + geom_jitter(col=&quot;red&quot;) + ggtitle(paste(rsID,&quot;:eqtl beta=&quot;,round(as.numeric(beta),2))) + xlab(&quot;Genotype&quot;) + ylab(&quot;log 10 normalized count&quot;)
   return(plot)
 }</code></pre>
 <p>Sort the eqtls by effect size and run my function on top 10:</p>
@@ -612,8 +612,6 @@ Selecting by beta</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
 <pre class="r"><code>plot_grid(rs999837_plot,rs999454_plot,rs9996578_plot,rs9997275_plot,rs9999085_plot,rs9994709_plot)</code></pre>
-<pre><code>Warning: Removed 3 rows containing non-finite values (stat_boxplot).</code></pre>
-<pre><code>Warning: Removed 1 rows containing non-finite values (stat_boxplot).</code></pre>
 <p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>There are 16362 eqtls that we have genotype and expression information for.</p>
 </div>
