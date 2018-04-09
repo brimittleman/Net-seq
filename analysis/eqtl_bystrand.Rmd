@@ -209,14 +209,14 @@ mapreads_19257=74321615
 
 
 ```{r}
-same_18486 = same_18486 %>% mutate(same_18486n =1 + (s_18486/mapreads_18486))
-same_18505= same_18505 %>% mutate(same_18505n =1 + (s_18505/mapreads_18505))
-same_18508=same_18508 %>% mutate(same_18508n =1 +(s_18508/mapreads_18508))
-same_19128=same_19128 %>% mutate(same_19128n =1 +(s_19128/mapreads_19128))
-same_19141=same_19141 %>% mutate(same_19141n = 1 +(s_19141/mapreads_19141))
-same_19193 = same_19193%>% mutate(same_19193n =1 +(s_19193/mapreads_19193))
-same_19239 =same_19239%>% mutate(same_19239n =1 +(s_19239/mapreads_19239))
-same_19257 =same_19257%>% mutate(same_19257n =1 + (s_19257/mapreads_19257))
+same_18486 = same_18486 %>% mutate(same_18486n =(s_18486+1)/mapreads_18486)
+same_18505= same_18505 %>% mutate(same_18505n = (s_18505 +1)/mapreads_18505)
+same_18508=same_18508 %>% mutate(same_18508n =(s_18508 +1)/mapreads_18508)
+same_19128=same_19128 %>% mutate(same_19128n =(s_19128 +1)/mapreads_19128)
+same_19141=same_19141 %>% mutate(same_19141n = (s_19141 +1)/mapreads_19141)
+same_19193 = same_19193%>% mutate(same_19193n =(s_19193 +1)/mapreads_19193)
+same_19239 =same_19239%>% mutate(same_19239n =(s_19239 +1)/mapreads_19239)
+same_19257 =same_19257%>% mutate(same_19257n =(s_19257 +1)/mapreads_19257)
 ```
 
 
@@ -260,14 +260,14 @@ opp_19257= read.table(file = "../data/eqtl_strand_spec/NET3-19257_opp_eqtstrande
 
 
 ```{r}
-opp_18486 = opp_18486 %>% mutate(opp_18486n =1 + (o_18486/mapreads_18486))
-opp_18505= opp_18505 %>% mutate(opp_18505n =1 + (o_18505/mapreads_18505))
-opp_18508=opp_18508 %>% mutate(opp_18508n =1 + (o_18508/mapreads_18508))
-opp_19128=opp_19128 %>% mutate(opp_19128n =1 + (o_19128/mapreads_19128))
-opp_19141=opp_19141 %>% mutate(opp_19141n =1 + (o_19141/mapreads_19141))
-opp_19193 = opp_19193%>% mutate(opp_19193n =1 + (o_19193/mapreads_19193))
-opp_19239 =opp_19239%>% mutate(opp_19239n =1 + (o_19239/mapreads_19239))
-opp_19257 =opp_19257%>% mutate(opp_19257n =1 + (o_19257/mapreads_19257))
+opp_18486 = opp_18486 %>% mutate(opp_18486n = (o_18486 +1) /mapreads_18486)
+opp_18505= opp_18505 %>% mutate(opp_18505n =(o_18505 + 1)/mapreads_18505)
+opp_18508=opp_18508 %>% mutate(opp_18508n =(o_18508 + 1)/mapreads_18508)
+opp_19128=opp_19128 %>% mutate(opp_19128n =(o_19128 +1)/mapreads_19128)
+opp_19141=opp_19141 %>% mutate(opp_19141n =(o_19141 +1)/mapreads_19141)
+opp_19193 = opp_19193%>% mutate(opp_19193n =(o_19193+1)/mapreads_19193)
+opp_19239 =opp_19239%>% mutate(opp_19239n =(o_19239+1)/mapreads_19239)
+opp_19257 =opp_19257%>% mutate(opp_19257n =(o_19257+1)/mapreads_19257)
 ```
 
 
@@ -419,7 +419,7 @@ by_geno_exp=function(rsID){
   x=rbind(geno_rs,exp_gene) %>% t
   x=as.data.frame(x)
   x$V1=as.factor(x$V1)
-  plot=ggplot(x, aes(y=log10(V2), x=V1)) + geom_boxplot() + geom_jitter(col="red") + ggtitle(paste(rsID,":eqtl beta=", round(beta,2))) + xlab("Genotype") + ylab("log 10 normalized count")
+  plot=ggplot(x, aes(y=log10(V2), x=V1)) + geom_boxplot() + geom_jitter(col="red") + ggtitle(paste(rsID,":eqtl beta=",round(as.numeric(beta),2))) + xlab("Genotype") + ylab("log 10 normalized count")
   return(plot)
 }
 ```
