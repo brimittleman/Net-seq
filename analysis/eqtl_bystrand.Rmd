@@ -428,24 +428,24 @@ by_geno_exp=function(rsID){
 Sort the eqtls by effect size and run my function on top 10:  
 
 ```{r}
-top_10_effect=eqtl_gene_filter_rs %>% arrange(desc(beta))  %>% semi_join(geno_netpilot_eqtl_round, by="ID") %>%  semi_join(all_exp_both, by="gene") %>% select(ID) %>% top_n(10)
+top_10_effect=eqtl_gene_filter_rs %>% arrange(desc(beta))  %>% semi_join(geno_netpilot_eqtl_round, by="ID") %>%  semi_join(all_exp_both, by="gene") %>%  top_n(20) %>% select(ID)
 print(top_10_effect)
 ```
 
 ```{r}
-rs999837_plot=by_geno_exp("rs999837")
-rs999454_plot=by_geno_exp("rs999454")
-rs9996578_plot=by_geno_exp("rs9996578")
-rs9997275_plot=by_geno_exp("rs9997275")
-rs9999085_plot=by_geno_exp("rs9999085")
-rs9994709_plot=by_geno_exp("rs9994709")
+rs142833498_plot=by_geno_exp("rs142833498")
+rs583662_plot=by_geno_exp("rs583662")
+rs579627_plot=by_geno_exp("rs579627")
+rs74234805_plot=by_geno_exp("rs74234805")
+rs259304_plot=by_geno_exp("rs259304")
+rs260142plot=by_geno_exp("rs260142")
 
 
 
 ```
 
 ```{r}
-plot_grid(rs999837_plot,rs999454_plot,rs9996578_plot,rs9997275_plot,rs9999085_plot,rs9994709_plot)
+plot_grid(rs142833498_plot,rs583662_plot,rs579627_plot,rs74234805_plot,rs259304_plot,rs260142plot)
 ```
 
 
@@ -597,22 +597,24 @@ by_geno_exp_gene=function(rsID){
 }
 ```
 
+
 ```{r}
-rs999837_plot_g=by_geno_exp_gene("rs999837")
-rs999454_plot_g=by_geno_exp_gene("rs999454")
-rs9996578_plot_g=by_geno_exp_gene("rs9996578")
-rs9997275_plot_g=by_geno_exp_gene("rs9997275")
-rs9999085_plot_g=by_geno_exp_gene("rs9999085")
-rs9994709_plot_g=by_geno_exp_gene("rs9994709")
+rs142833498_plot_g=by_geno_exp_gene("rs142833498")
+rs583662_plot_g=by_geno_exp_gene("rs583662")
+rs579627_plot_g=by_geno_exp_gene("rs579627")
+rs74234805_plot_g=by_geno_exp_gene("rs74234805")
+rs259304_plot_g=by_geno_exp_gene("rs259304")
+rs260142plot_g=by_geno_exp_gene("rs260142")
+
+
 
 ```
 
-
-
 ```{r}
-plot_grid(rs999837_plot_g,rs999454_plot_g,rs9996578_plot_g,rs9997275_plot_g,rs9999085_plot_g,rs9994709_plot_g) + ggtitle("Netseq gene counts for eqtl gene")
-
+plot_grid(rs142833498_plot_g,rs583662_plot_g,rs579627_plot_g,rs74234805_plot_g,rs259304_plot_g,rs260142plot_g)
 ```
+
+
 
 
 
