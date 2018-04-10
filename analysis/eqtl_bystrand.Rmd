@@ -452,6 +452,167 @@ plot_grid(rs999837_plot,rs999454_plot,rs9996578_plot,rs9997275_plot,rs9999085_pl
 
 There are 16362 eqtls that we have genotype and expression information for.  
 
+###Whole gene body analysis  
+
+I need to do this analysis but using the number of reads mapping to each gene rather than just around the TSS. For this I need to make a coverage file with gencode.v19.annotation.eqtlfilter.bed 
+
+I will make this script eqtlcov_fullgene.sh
+
+```{bash, eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=eqtl_full
+#SBATCH --time=8:00:00
+#SBATCH --output=eqtlfull.out
+#SBATCH --error=eqtlfull.err
+#SBATCH --partition=bigmem2
+#SBATCH --mem=80G
+#SBATCH --mail-type=END
+
+module load Anaconda3
+source activate net-seq  
+
+sample=$1
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-bedsort.bed$//")
+
+bedtools coverage -counts -sorted -S -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.eqtlfilter.bed -b $1 > /project2/gilad/briana/Net-seq-pilot/output/eqtl_fullgene/${describer}_same_eqtstranded_fullgene.txt
+
+bedtools coverage -counts -sorted -s -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.eqtlfilter.bed -b $1 > /project2/gilad/briana/Net-seq-pilot/output/eqtl_fullgene/${describer}_opp_eqtstranded_fullgene.txt
+
+
+```
+
+
+I will also create a wrapper to run this on all of the lines:  
+
+```{bash, eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=w_eqtl_full
+#SBATCH --time=8:00:00
+#SBATCH --output=weqtlfull.out
+#SBATCH --error=weqtlfull.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=8G
+#SBATCH --mail-type=END
+
+
+for i in $(ls /project2/gilad/briana/Net-seq-pilot/data/sorted_bed/); do
+            sbatch eqtlcov_fullgene.sh /project2/gilad/briana/Net-seq-pilot/data/sorted_bed/$i  
+        done
+```
+
+Pull in the data and combine the strand to get the full gene count regardless of strand.   
+
+```{r}
+s_18486_gene=read.table("../data/eqtl_fullgene/NET3-18486_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_18486"), stringsAsFactors = F)
+
+s_18505_gene=read.table("../data/eqtl_fullgene/NET3-18505_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_18505"), stringsAsFactors = F)
+
+s_18508_gene=read.table("../data/eqtl_fullgene/NET3-18508_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_18508"), stringsAsFactors = F)
+
+s_19128_gene=read.table("../data/eqtl_fullgene/NET3-19128_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_19128"), stringsAsFactors = F)
+
+s_19141_gene=read.table("../data/eqtl_fullgene/NET3-19141_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_19141"), stringsAsFactors = F)
+
+s_19193_gene=read.table("../data/eqtl_fullgene/NET3-19193_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_19193"), stringsAsFactors = F)
+
+s_19239_gene=read.table("../data/eqtl_fullgene/NET3-19239_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_19239"), stringsAsFactors = F)
+
+s_19257_gene=read.table("../data/eqtl_fullgene/NET3-19257_same_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "s_19257"), stringsAsFactors = F)
+
+
+
+```
+
+```{r}
+o_18486_gene=read.table("../data/eqtl_fullgene/NET3-18486_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_18486"), stringsAsFactors = F)
+
+o_18505_gene=read.table("../data/eqtl_fullgene/NET3-18505_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_18505"), stringsAsFactors = F)
+
+o_18508_gene=read.table("../data/eqtl_fullgene/NET3-18508_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_18508"), stringsAsFactors = F)
+
+o_19128_gene=read.table("../data/eqtl_fullgene/NET3-19128_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_19128"), stringsAsFactors = F)
+
+o_19141_gene=read.table("../data/eqtl_fullgene/NET3-19141_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_19141"), stringsAsFactors = F)
+
+o_19193_gene=read.table("../data/eqtl_fullgene/NET3-19193_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_19193"), stringsAsFactors = F)
+
+o_19239_gene=read.table("../data/eqtl_fullgene/NET3-19239_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_19239"), stringsAsFactors = F)
+
+o_19257_gene=read.table("../data/eqtl_fullgene/NET3-19257_opp_eqtstranded_fullgene.txt", header =F, col.names=c("chr", "start", "end", "gene", "score", "strand", "o_19257"), stringsAsFactors = F)
+
+```
+
+Create a total count dataframe for each line by joining the files, adding a column with 1 + total/mapped reads. 
+
+
+```{r}
+t_18486_gene= s_18486_gene %>% left_join(o_18486_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_18486=(1+ s_18486 + o_18486)/mapreads_18486)
+
+
+t_18505_gene= s_18505_gene %>% left_join(o_18505_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_18505=(1+ s_18505 + o_18505)/mapreads_18505)
+
+t_18508_gene= s_18508_gene %>% left_join(o_18508_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_18508=(1+ s_18508 + o_18508)/mapreads_18508)
+
+t_19128_gene= s_19128_gene %>% left_join(o_19128_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_19128=(1+ s_19128 + o_19128)/mapreads_19128)
+
+t_19141_gene= s_19141_gene %>% left_join(o_19141_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_19141=(1+ s_19141 + o_19141)/mapreads_19141)
+
+t_19193_gene= s_19193_gene %>% left_join(o_19193_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_19193=(1+ s_19193 + o_19193)/mapreads_19193)
+
+t_19239_gene= s_19239_gene %>% left_join(o_19239_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_19239=(1+ s_19239 + o_19239)/mapreads_19239)
+
+
+t_19257_gene= s_19257_gene %>% left_join(o_19257_gene, by=c("chr", "start", "end", "gene", "score", "strand")) %>% mutate(tot_19257=(1+ s_19257 + o_19257)/mapreads_19257)
+
+
+
+```
+
+
+Left join all of these by c("chr", "start", "end", "gene", "score", "strand")
+
+```{r}
+all_exp_gene= cbind(t_18486_gene[1:6], t_18486_gene$tot_18486, t_18505_gene$tot_18505, t_18508_gene$tot_18508, t_19128_gene$tot_19128, t_19141_gene$tot_19141, t_19193_gene$tot_19193, t_19239_gene$tot_19239, t_19257_gene$tot_19257) 
+
+
+```
+
+Create a new function to make the graph.  
+
+```{r}
+by_geno_exp_gene=function(rsID){
+  geno_rs=geno_netpilot_eqtl_round %>% filter(geno_netpilot_eqtl_round$ID==rsID) %>% select(10:17)
+  gene_rs= eqtl_gene_filter_rs  %>% filter(ID==rsID) %>% select(gene) %>% top_n(1) %>% as.character()
+  beta= eqtl_gene_filter_rs  %>% filter(ID==rsID) %>% select(beta) %>% top_n(1) %>% as.character()
+  #chaned to all_exp_gene to include not just TSS 
+  exp_gene= all_exp_gene %>% filter(gene==gene_rs) %>% select(7:14)
+  colnames(exp_gene)= colnames(geno_rs)
+  x=rbind(geno_rs,exp_gene) %>% t
+  x=as.data.frame(x)
+  x$V1=as.factor(x$V1)
+  plot=ggplot(x, aes(y=log10(V2), x=V1)) + geom_boxplot() + geom_jitter(col="red") + ggtitle(paste(rsID,":eqtl beta=",round(as.numeric(beta),2))) + xlab("Genotype") + ylab("log 10 normalized count")
+  return(plot)
+}
+```
+
+```{r}
+rs999837_plot_g=by_geno_exp_gene("rs999837")
+rs999454_plot_g=by_geno_exp_gene("rs999454")
+rs9996578_plot_g=by_geno_exp_gene("rs9996578")
+rs9997275_plot_g=by_geno_exp_gene("rs9997275")
+rs9999085_plot_g=by_geno_exp_gene("rs9999085")
+rs9994709_plot_g=by_geno_exp_gene("rs9994709")
+
+```
+
+
+
+```{r}
+plot_grid(rs999837_plot_g,rs999454_plot_g,rs9996578_plot_g,rs9997275_plot_g,rs9999085_plot_g,rs9994709_plot_g) + ggtitle("Netseq gene counts for eqtl gene")
+
+```
 
 
 
