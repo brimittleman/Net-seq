@@ -313,7 +313,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2018-04-09</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8c47a2b</p>
+<p><strong>Code version:</strong> 9c9ad94</p>
 <!-- Add your analysis here -->
 <p>I will use this analysis to answer the question: Do eQTLs also equally affect antisense transcriptions? This will take advantage of strand specificity of the net-seq data and the phenominon of convergent and divergent transcription around TSS.</p>
 <p>Workflow:</p>
@@ -579,39 +579,50 @@ all_exp_both= cbind(all_same_strand[,1:6],all_18486,all_18505,all_18508, all_191
   return(plot)
 }</code></pre>
 <p>Sort the eqtls by effect size and run my function on top 10:</p>
-<pre class="r"><code>top_10_effect=eqtl_gene_filter_rs %&gt;% arrange(desc(beta))  %&gt;% semi_join(geno_netpilot_eqtl_round, by=&quot;ID&quot;) %&gt;%  semi_join(all_exp_both, by=&quot;gene&quot;) %&gt;% select(ID) %&gt;% top_n(10)</code></pre>
-<pre><code>Selecting by ID</code></pre>
+<pre class="r"><code>top_10_effect=eqtl_gene_filter_rs %&gt;% arrange(desc(beta))  %&gt;% semi_join(geno_netpilot_eqtl_round, by=&quot;ID&quot;) %&gt;%  semi_join(all_exp_both, by=&quot;gene&quot;) %&gt;%  top_n(20) %&gt;% select(ID)</code></pre>
+<pre><code>Selecting by beta</code></pre>
 <pre class="r"><code>print(top_10_effect)</code></pre>
-<pre><code>          ID
-1   rs999837
-2   rs999454
-3  rs9996578
-4  rs9994286
-5  rs9997275
-6  rs9999085
-7   rs999454
-8   rs999837
-9  rs9994709
-10 rs9994709</code></pre>
-<pre class="r"><code>rs999837_plot=by_geno_exp(&quot;rs999837&quot;)</code></pre>
+<pre><code>            ID
+1  rs142833498
+2     rs583662
+3     rs581956
+4     rs579627
+5     rs579713
+6     rs579450
+7     rs577760
+8     rs580388
+9     rs576932
+10    rs573205
+11    rs572878
+12    rs574927
+13    rs575083
+14    rs575159
+15  rs74234805
+16  rs11883894
+17    rs259304
+18    rs260747
+19   rs7268500
+20    rs260142
+21    rs260182</code></pre>
+<pre class="r"><code>rs142833498_plot=by_geno_exp(&quot;rs142833498&quot;)</code></pre>
 <pre><code>Selecting by gene</code></pre>
 <pre><code>Selecting by beta</code></pre>
-<pre class="r"><code>rs999454_plot=by_geno_exp(&quot;rs999454&quot;)</code></pre>
+<pre class="r"><code>rs583662_plot=by_geno_exp(&quot;rs583662&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9996578_plot=by_geno_exp(&quot;rs9996578&quot;)</code></pre>
+<pre class="r"><code>rs579627_plot=by_geno_exp(&quot;rs579627&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9997275_plot=by_geno_exp(&quot;rs9997275&quot;)</code></pre>
+<pre class="r"><code>rs74234805_plot=by_geno_exp(&quot;rs74234805&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9999085_plot=by_geno_exp(&quot;rs9999085&quot;)</code></pre>
+<pre class="r"><code>rs259304_plot=by_geno_exp(&quot;rs259304&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9994709_plot=by_geno_exp(&quot;rs9994709&quot;)</code></pre>
+<pre class="r"><code>rs260142plot=by_geno_exp(&quot;rs260142&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>plot_grid(rs999837_plot,rs999454_plot,rs9996578_plot,rs9997275_plot,rs9999085_plot,rs9994709_plot)</code></pre>
+<pre class="r"><code>plot_grid(rs142833498_plot,rs583662_plot,rs579627_plot,rs74234805_plot,rs259304_plot,rs260142plot)</code></pre>
 <p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-36-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>There are 16362 eqtls that we have genotype and expression information for.</p>
 </div>
@@ -719,25 +730,25 @@ t_19257_gene= s_19257_gene %&gt;% left_join(o_19257_gene, by=c(&quot;chr&quot;, 
   plot=ggplot(x, aes(y=log10(V2), x=V1)) + geom_boxplot() + geom_jitter(col=&quot;red&quot;) + ggtitle(paste(rsID,&quot;:eqtl beta=&quot;,round(as.numeric(beta),2))) + xlab(&quot;Genotype&quot;) + ylab(&quot;log 10 normalized count&quot;)
   return(plot)
 }</code></pre>
-<pre class="r"><code>rs999837_plot_g=by_geno_exp_gene(&quot;rs999837&quot;)</code></pre>
+<pre class="r"><code>rs142833498_plot_g=by_geno_exp_gene(&quot;rs142833498&quot;)</code></pre>
 <pre><code>Selecting by gene</code></pre>
 <pre><code>Selecting by beta</code></pre>
-<pre class="r"><code>rs999454_plot_g=by_geno_exp_gene(&quot;rs999454&quot;)</code></pre>
+<pre class="r"><code>rs583662_plot_g=by_geno_exp_gene(&quot;rs583662&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9996578_plot_g=by_geno_exp_gene(&quot;rs9996578&quot;)</code></pre>
+<pre class="r"><code>rs579627_plot_g=by_geno_exp_gene(&quot;rs579627&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9997275_plot_g=by_geno_exp_gene(&quot;rs9997275&quot;)</code></pre>
+<pre class="r"><code>rs74234805_plot_g=by_geno_exp_gene(&quot;rs74234805&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9999085_plot_g=by_geno_exp_gene(&quot;rs9999085&quot;)</code></pre>
+<pre class="r"><code>rs259304_plot_g=by_geno_exp_gene(&quot;rs259304&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>rs9994709_plot_g=by_geno_exp_gene(&quot;rs9994709&quot;)</code></pre>
+<pre class="r"><code>rs260142plot_g=by_geno_exp_gene(&quot;rs260142&quot;)</code></pre>
 <pre><code>Selecting by gene
 Selecting by beta</code></pre>
-<pre class="r"><code>plot_grid(rs999837_plot_g,rs999454_plot_g,rs9996578_plot_g,rs9997275_plot_g,rs9999085_plot_g,rs9994709_plot_g) + ggtitle(&quot;Netseq gene counts for eqtl gene&quot;)</code></pre>
+<pre class="r"><code>plot_grid(rs142833498_plot_g,rs583662_plot_g,rs579627_plot_g,rs74234805_plot_g,rs259304_plot_g,rs260142plot_g)</code></pre>
 <p><img src="figure/eqtl_bystrand.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level3">
