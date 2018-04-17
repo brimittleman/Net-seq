@@ -1,0 +1,138 @@
+---
+title: "Verify bam"
+author: "Briana Mittleman"
+date: 2018-04-08
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+I will verify the bam ids for the individuals in Net4.  
+
+*add verify bam to conda env  
+*create script to take any bam in the sort folder  
+*run script with vcf in genome annotation directory  
+
+
+
+```{bash, eval=FALSE}
+# add to env. file
+- verifybamid
+#remove chr tag  
+cat snps.hg19.exons.vcf  |sed 's/^chr//' > snps.hg19.exons.no_chr.vcf
+
+
+```
+
+Create the script to take in any bam files from net 4  
+```{bash, eval=FALSE}
+#!/bin/bash
+
+
+#SBATCH --job-name=verify
+#SBATCH --output=verify_sbatch.out
+#SBATCH --error=verify_sbatch.err
+#SBATCH --time=8:00:00
+#SBATCH --partition=broadwl
+#SBATCH --mem=36G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+sample=$1
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/-sort.bam$//")
+
+
+verifyBamID --vcf /project2/gilad/briana/genome_anotation_data/snps.hg19.exons.no_chr.vcf --bam $1 --best --ignoreRG --out /project2/gilad/briana/Net-seq-pilot/output/verifyBAM/${describer}.verify  
+
+
+```
+
+run on :   
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18497-2018-2-26_S3_L008_R1_001-sort.bam 
+
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18500-2018-2-26_S5_L008_R1_001-sort.bam  
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18853-2018-2-26_S8_L008_R1_001-sort.bam
+
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18870-2018-2-26_S6_L008_R1_001-sort.bam
+
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19209-2018-2-26_S4_L008_R1_001-sort.bam
+
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19223-2018-2-26_S2_L008_R1_001-sort.bam
+
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19225-2018-2-26_S7_L008_R1_001-sort.bam
+
+*/project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19238-2018-2-26_S1_L008_R1_001-sort.bam
+
+
+  2 of the jobs timed out:  
+  
+  18853
+  18870
+  
+  
+mismatch: 19238 == 19226
+
+
+Run this on lane 2 lines and see if I get the same results:  
+
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18497-2018-2-26_S1_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18500-2018-2-26_S2_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18853-2018-2-26_S7_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-18870-2018-2-26_S8_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19209-2018-2-26_S3_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19223-2018-2-26_S4_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19225-2018-2-26_S5_L008_R1_001_lane2-sort.bam  
+* /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET4-19238-2018-2-26_S6_L008_R1_001_lane2-sort.bam  
+
+
+More time out issues- Try subseting the bam file  
+
+
+/project2/gilad/briana/Net-seq-pilot/data/sort/tenperc_YG-SP-NET4-18853-2018-2-26_S8_L008_R1_001-sort.bam
+
+/project2/gilad/briana/Net-seq-pilot/data/sort/tenperc_YG-SP-NET4-18870-2018-2-26_S6_L008_R1_001-sort.bam
+
+Try making the lane 2 files smaller to run them:
+
+* /project2/gilad/briana/Net-seq-pilot/data/sort/tenperc_YG-SP-NET4-18853-2018-2-26_S7_L008_R1_001_lane2-sort.bam  
+
+* /project2/gilad/briana/Net-seq-pilot/data/sort/tenperc_YG-SP-NET4-18870-2018-2-26_S8_L008_R1_001_lane2-sort.bam
+
+* /project2/gilad/briana/Net-seq-pilot/data/sort/twentyperc_YG-SP-NET4-18497-2018-2-26_S1_L008_R1_001_lane2-sort.bam
+
+* /project2/gilad/briana/Net-seq-pilot/data/sort/twentyperc_YG-SP-NET4-19209-2018-2-26_S3_L008_R1_001_lane2-sort.bam  
+
+* /project2/gilad/briana/Net-seq-pilot/data/sort/twentyperc_YG-SP-NET4-19223-2018-2-26_S4_L008_R1_001_lane2-sort.bam
+
+Conclusion: The lines are the expected individuals. The most likley explanation is a label swap on the liens in the fridge vs. the lines the core has.  
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
