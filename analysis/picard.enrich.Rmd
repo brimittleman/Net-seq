@@ -1,0 +1,32 @@
+---
+title: "Picard Tools enrichment"
+author: "Briana Mittleman"
+date: "6/14/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Load libraries
+```{r}
+library(workflowr)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+```
+
+
+##Assess enrichment in first 8 lines  
+
+```{r}
+picard=read.csv("../output/picard.accrossgenebodies.netpilot.csv")
+pic.enrich.melt=melt(picard, id.vars="normalized_position") %>% mutate(line=substr(variable,3,7))
+netseq.enrich=ggplot(pic.enrich.melt, aes(x=normalized_position, y=value, col=line)) + geom_line() +  labs(y="Normalized Coverage", title="Net-Seq enrichment at TSS", x="Normalized Position")
+
+ggsave("../output/net.seq.enrich.png", netseq.enrich, width = 10)
+```
+
