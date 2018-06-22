@@ -341,7 +341,7 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/brimittleman/Net-seq/tree/4e3c6796b1363c97c80202e91aeec6f8e5adbcfa" target="_blank">4e3c679</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/brimittleman/Net-seq/tree/0201bd84cd4b123ecff5240b71659f32a7899879" target="_blank">0201bd8</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
@@ -592,6 +592,40 @@ Message
 Rmd
 </td>
 <td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/0201bd84cd4b123ecff5240b71659f32a7899879/analysis/net-4-explore.Rmd" target="_blank">0201bd8</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+<td style="text-align:left;">
+change filter cuttoff
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/brimittleman/Net-seq/9787ad57188d56e781b8b245c10bf691968f64bb/docs/net-4-explore.html" target="_blank">9787ad5</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
 <a href="https://github.com/brimittleman/Net-seq/blob/4e3c6796b1363c97c80202e91aeec6f8e5adbcfa/analysis/net-4-explore.Rmd" target="_blank">4e3c679</a>
 </td>
 <td style="text-align:left;">
@@ -798,6 +832,78 @@ barplot(detected_genes0, ylim = c(0,1), main=&quot;Net-seq Genes detected greate
 
 abline(h=mean(detected_genes0))</code></pre>
 <p><img src="figure/net-4-explore.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-9-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/9787ad57188d56e781b8b245c10bf691968f64bb/docs/figure/net-4-explore.Rmd/unnamed-chunk-9-1.png" target="_blank">9787ad5</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
+<p>0 is not the most informative detection rate because it could be due to noise. I need to look at the distribution to pick a better cuttoff.</p>
+<pre class="r"><code>plot(log10(sort(cov_all_df$st_18486, decreasing = T)))</code></pre>
+<p><img src="figure/net-4-explore.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-10-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/9787ad57188d56e781b8b245c10bf691968f64bb/docs/figure/net-4-explore.Rmd/unnamed-chunk-10-1.png" target="_blank">9787ad5</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
+<p>I should use .001 or <span class="math inline">\(10^{-3}\)</span> as a cuttoff.</p>
+<pre class="r"><code>detected_genes_cut=c(genes_detected(cov_all_df$st_18486, .001), genes_detected(cov_all_df$st_18497,.001), genes_detected(cov_all_df$st_18500,.001), genes_detected(cov_all_df$st_18505,.001), genes_detected(cov_all_df$st_18508,.001), genes_detected(cov_all_df$st_18853,.001), genes_detected(cov_all_df$st_18870,.001), genes_detected(cov_all_df$st_19128,0.001), genes_detected(cov_all_df$st_19141,0.001), genes_detected(cov_all_df$st_19193,0.001), genes_detected(cov_all_df$st_19209,0.001), genes_detected(cov_all_df$st_19223,0.001), genes_detected(cov_all_df$st_19225,0.001), genes_detected(cov_all_df$st_19238,0.001), genes_detected(cov_all_df$st_19239,0.001), genes_detected(cov_all_df$st_19257,0.001))
+
+names(detected_genes_cut)=c(&quot;18486&quot;, &quot;18497&quot;, &quot;18500&quot;, &quot;18505&quot;, &quot;18508&quot;, &quot;18853&quot;, &quot;18870&quot;, &quot;19128&quot;, &quot;19141&quot;, &quot;19193&quot;, &quot;19209&quot;, &quot;19223&quot;, &quot;19225&quot;, &quot;19238&quot;, &quot;19239&quot;, &quot;19257&quot;)
+
+barplot(detected_genes_cut, ylim = c(0,1), main=&quot;Net-seq Genes detected greater than .001 standardized reads&quot;, ylab=&quot;Proportion genes passing filter&quot;, xlab=&quot;Library&quot;, col = &#39;Blue&#39;)
+
+abline(h=mean(detected_genes_cut))</code></pre>
+<p><img src="figure/net-4-explore.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="correlation-between-libraries" class="section level2">
 <h2>Correlation between libraries:</h2>
@@ -826,7 +932,7 @@ ggheatmap=ggplot(data = covall_cor_melt, aes(x=Var1, y=Var2, fill=value)) +
   geom_tile() +
   labs(title=&quot;Net-seq Correlation Heatplot&quot;)
 ggheatmap</code></pre>
-<p><img src="figure/net-4-explore.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/net-4-explore.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>Line 19223 is the line with mapping problems. I expected this one to have low correlations.</p>
 </div>
 <div id="session-information" class="section level2">
