@@ -1,7 +1,8 @@
 ---
+site: workflowr::wflow_site
 title: "Home"
 output:
-  html_document:
+  workflowr::wflow_html:
     toc: false
 ---
 
@@ -63,5 +64,10 @@ Exploration of the 3` seq and ApA sites:
 * [UTR coverage analysis](UTR_coverage.html)
 
 * [Look at enrichment using Deep tools](use_deeptools.html)
+
+
+Net 4 analysis- includes 3 lanes for all 16 individuals:  
+
+* [Explore Net 4](net-4-explore.Rmd)  
 
 

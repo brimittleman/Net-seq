@@ -1,0 +1,22 @@
+---
+title: "Data exploration of Net-4"
+author: "Briana Mittleman"
+date: "6/11/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+The goal of this analysis is to explore the second batch of pilot netseq data (net4). This data has been run on 3 lanes.  
+
+* 19238  
+* 19223  
+* 18497  
+* 19209  
+* 18500  
+* 18870  
+* 19225  
+* 18853  
+
