@@ -228,3 +228,17 @@ ggheatmap
 ```
 
 Line 19223 is the line with mapping problems. I expected this one to have low correlations. 
+
+
+##Look at Intergenic/genic bases 
+I will use the per_intergenic bases stat from the PICARD RNA metrics results.  
+
+```{r}
+genic_bases=read.csv("../data/netcomb_intronicbases.csv", header=T)
+
+genic_bases=genic_bases %>% mutate(Pct_geneic=1-Pct_intergenic)
+
+
+ggplot(genic_bases,aes(x=Library, y=Pct_geneic)) + geom_col(fill="blue") + labs(y="Pct mapped reads in genic region", title="Percent of mapped bases in genic region")
+```
+
