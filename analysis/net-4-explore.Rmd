@@ -9,8 +9,9 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-The goal of this analysis is to explore the second batch of pilot netseq data (net4). This data has been run on 3 lanes.  
+The goal of this analysis is to explore the second batch of pilot netseq data (net4) with the 3 lanes of the original line. This data has been run on 3 lanes.  
 
+Net4 lines
 * 19238  
 * 19223  
 * 18497  
@@ -20,3 +21,190 @@ The goal of this analysis is to explore the second batch of pilot netseq data (n
 * 19225  
 * 18853  
 
+##Feature counts on protein coding genes 
+
+I want to use feature counts to summarize how many counds we have in each protien coding gene. There are 20,347 genes in the annotation file.    
+
+Make an SAF file instead: Gene id, Chr, Start, End, Strand from the gencode.v19.annotation.proteincodinggene.bed  
+
+```{bash, eval=F}
+
+awk 'BEGIN {print "GeneID" "\t" "Chr" "\t" "Start" "\t" "End" "\t" "Strand"} {print $4 "\t" $1 "\t" $2 "\t" $3 "\t" $6}' gencode.v19.annotation.proteincodinggene.bed  >gencode.v19.annotation.proteincodinggene.saf
+
+```
+
+
+fc_gene.sh
+```{bash, eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=FC_genes
+#SBATCH --time=8:00:00
+#SBATCH --partition=gilad
+#SBATCH --output=fc_gene.out
+#SBATCH --error=fc_gene.err
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+module load Anaconda3  
+
+source activate net-seq 
+
+#input is a bam file 
+sample=$1
+
+
+describer=$(echo ${sample} | sed -e 's/.*\YG-SP-//' | sed -e "s/_combined_Netpilot-sort.bam$//")
+
+
+featureCounts -T 5 -a /project2/gilad/briana/genome_anotation_data/gencode.v19.annotation.proteincodinggene.saf -F 'SAF' -g 'GeneID' -o /project2/gilad/briana/Net-seq-pilot/data/fc_genecov/genecov.${describer}.txt $1
+```
+test on: /project2/gilad/briana/Net-seq-pilot/data/sort/YG-SP-NET3-19257_combined_Netpilot-sort.bam 
+
+Create a wrapper: 
+```{bash,eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=w_fcgenes
+#SBATCH --time=8:00:00
+#SBATCH --output=w_fcgenes.out
+#SBATCH --error=w_fcgenes.err
+#SBATCH --partition=gilad
+#SBATCH --mem=8G
+#SBATCH --mail-type=END
+
+
+for i in $(ls /project2/gilad/briana/Net-seq-pilot/data/sort/*combined_Netpilot-sort.bam); do
+            sbatch fc_gene.sh  $i 
+        done
+
+```
+
+
+##Genes with coverage per line   
+
+At this point 8 samples have over 100mil mapped reads. They are 18497, 18508, 18853, 18870, 19128, 19193, 19209 and 19239. We are waiting for more reads for 19225 and 18500. Unfortunately maping is low for 19223, but I have not diagnosed the problem yet.  
+
+####Load libraries:  
+
+```{r}
+library(workflowr)
+library(dplyr)
+library(ggplot2)
+library(tidyr)
+library(reshape2)
+library(edgeR)
+```
+####Load data:  
+
+```{r}
+
+cov_18486=read.table("../data/fc_genecov/genecov.NET3-18486.txt", header=TRUE)
+cov_18497=read.table("../data/fc_genecov/genecov.NET3-18497.txt", header=TRUE)
+cov_18500=read.table("../data/fc_genecov/genecov.NET3-18500.txt", header=TRUE)
+cov_18505=read.table("../data/fc_genecov/genecov.NET3-18505.txt", header=TRUE)
+cov_18508=read.table("../data/fc_genecov/genecov.NET3-18508.txt", header=TRUE)
+cov_18853=read.table("../data/fc_genecov/genecov.NET3-18853.txt", header=TRUE)
+cov_18870=read.table("../data/fc_genecov/genecov.NET3-18870.txt", header=TRUE)
+cov_19128=read.table("../data/fc_genecov/genecov.NET3-19128.txt", header=TRUE)
+cov_19141=read.table("../data/fc_genecov/genecov.NET3-19141.txt", header=TRUE)
+cov_19193=read.table("../data/fc_genecov/genecov.NET3-19193.txt", header=TRUE)
+cov_19209=read.table("../data/fc_genecov/genecov.NET3-19209.txt", header=TRUE)
+cov_19223=read.table("../data/fc_genecov/genecov.NET3-19223.txt", header=TRUE)
+cov_19225=read.table("../data/fc_genecov/genecov.NET3-19225.txt", header=TRUE)
+cov_19238=read.table("../data/fc_genecov/genecov.NET3-19238.txt", header=TRUE)
+cov_19239=read.table("../data/fc_genecov/genecov.NET3-19239.txt", header=TRUE)
+cov_19257=read.table("../data/fc_genecov/genecov.NET3-19257.txt", header=TRUE)
+```
+
+####Process data  
+
+```{r}
+gene_length=cov_18486$End- cov_18486$Start
+```
+Standardize by gene length
+```{r}
+cov_18486=cov_18486 %>% mutate(st_18486=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18486_combined_Netpilot.sort.bam/gene_length)
+cov_18497=cov_18497 %>% mutate(st_18497=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18497_combined_Netpilot.sort.bam/gene_length)
+cov_18500=cov_18500 %>% mutate(st_18500=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18500_combined_Netpilot.sort.bam/gene_length)
+cov_18505=cov_18505 %>% mutate(st_18505=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18505_combined_Netpilot.sort.bam/gene_length)
+cov_18508=cov_18508 %>% mutate(st_18508=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18508_combined_Netpilot.sort.bam/gene_length)
+cov_18853=cov_18853 %>% mutate(st_18853=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18853_combined_Netpilot.sort.bam/gene_length)
+cov_18870=cov_18870 %>% mutate(st_18870=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.18870_combined_Netpilot.sort.bam/gene_length)
+cov_19128=cov_19128 %>% mutate(st_19128=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19128_combined_Netpilot.sort.bam/gene_length)
+cov_19141=cov_19141 %>% mutate(st_19141=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19141_combined_Netpilot.sort.bam/gene_length)
+cov_19193=cov_19193 %>% mutate(st_19193=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19193_combined_Netpilot.sort.bam/gene_length)
+cov_19209=cov_19209 %>% mutate(st_19209=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19209_combined_Netpilot.sort.bam/gene_length)
+cov_19223=cov_19223 %>% mutate(st_19223=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19223_combined_Netpilot.sort.bam/gene_length)
+cov_19225=cov_19225 %>% mutate(st_19225=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19225_combined_Netpilot.sort.bam/gene_length)
+cov_19238=cov_19238 %>% mutate(st_19238=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19238_combined_Netpilot.sort.bam/gene_length)
+cov_19239=cov_19239 %>% mutate(st_19239=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19239_combined_Netpilot.sort.bam/gene_length)
+cov_19257=cov_19257 %>% mutate(st_19257=X.project2.gilad.briana.Net.seq.pilot.data.sort.YG.SP.NET3.19257_combined_Netpilot.sort.bam/gene_length)
+```
+
+
+Join these on the gene name:  
+
+```{r}
+names=c("GeneID", "st_18486", "st_18497", "st_18500", "st_18505", "st_18508", "st_18853", "st_18870", "st_19128", "st_19141", "st_19193", "st_19209", "st_19223", "st_19225", "st_19238", "st_19239", "st_19257")
+cov_all_df=data.frame(cov_18486$Geneid,cov_18486$st_18486, cov_18497$st_18497, cov_18500$st_18500, cov_18505$st_18505, cov_18508$st_18508, cov_18853$st_18853, cov_18870$st_18870, cov_19128$st_19128, cov_19141$st_19141, cov_19193$st_19193, cov_19209$st_19209, cov_19223$st_19223, cov_19225$st_19225, cov_19238$st_19238, cov_19239$st_19239, cov_19257$st_19257)
+
+colnames(cov_all_df)= names
+```
+
+##Genes with coverage  
+
+
+```{r}
+
+genes_detected=function(col, num){
+  #takes incov_all_dfl col which corresponds to one library
+  tot_genes=nrow(cov_all_df)
+  exp_genes=sum(col >num)
+  return(exp_genes/tot_genes)
+}
+
+
+detected_genes0=c(genes_detected(cov_all_df$st_18486, 0), genes_detected(cov_all_df$st_18497,0), genes_detected(cov_all_df$st_18500,0), genes_detected(cov_all_df$st_18505,0), genes_detected(cov_all_df$st_18508,0), genes_detected(cov_all_df$st_18853,0), genes_detected(cov_all_df$st_18870,0), genes_detected(cov_all_df$st_19128,0), genes_detected(cov_all_df$st_19141,0), genes_detected(cov_all_df$st_19193,0), genes_detected(cov_all_df$st_19209,0), genes_detected(cov_all_df$st_19223,0), genes_detected(cov_all_df$st_19225,0), genes_detected(cov_all_df$st_19238,0), genes_detected(cov_all_df$st_19239,0), genes_detected(cov_all_df$st_19257,0))
+
+names(detected_genes0)=c("18486", "18497", "18500", "18505", "18508", "18853", "18870", "19128", "19141", "19193", "19209", "19223", "19225", "19238", "19239", "19257")
+
+barplot(detected_genes0, ylim = c(0,1), main="Net-seq Genes detected greater than 0 standardized reads", ylab="Proportion non zero genes", xlab="Library", col = 'Blue')
+
+abline(h=mean(detected_genes0))
+```
+
+
+
+
+##Correlation between libraries:  
+
+```{r}
+cor_function=function(data){
+  corr_matrix= matrix(0,ncol(data),ncol(data))
+  for (i in seq(1,ncol(data))){
+    for (j in seq(1,ncol(data))){
+      x=cor.test(data[,i], data[,j], method='pearson')
+      cor_ij=as.numeric(x$estimate)
+      corr_matrix[i,j]=cor_ij
+    }
+  }
+  return(corr_matrix)
+}
+
+covall_matrix=as.matrix(cov_all_df[,2:17])
+
+covall_cor= cor_function(covall_matrix)
+rownames(covall_cor)=c("NA18486", "NA18497", "NA18500", "NA18505", "NA18508", "NA18853", "NA18870", "NA19128", "NA19141", "NA19193", "NA19209", "NA19223", "NA19225", "NA19238", "NA19239", "NA19257")
+colnames(covall_cor)=c("NA18486", "NA18497", "NA18500", "NA18505", "NA18508", "NA18853", "NA18870", "NA19128", "NA19141", "NA19193", "NA19209", "NA19223", "NA19225", "NA19238", "NA19239", "NA19257")
+
+
+covall_cor_melt=melt(covall_cor)
+
+ggheatmap=ggplot(data = covall_cor_melt, aes(x=Var1, y=Var2, fill=value)) +
+  geom_tile() +
+  labs(title="Net-seq Correlation Heatplot")
+ggheatmap
+```
+
+Line 19223 is the line with mapping problems. I expected this one to have low correlations. 
