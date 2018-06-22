@@ -341,7 +341,7 @@ div.section {
 </details>
 </li>
 <li>
-<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/brimittleman/Net-seq/tree/0201bd84cd4b123ecff5240b71659f32a7899879" target="_blank">0201bd8</a> </summary></p>
+<p><details> <summary> <strong style="color:blue;">✔</strong> <strong>Repository version:</strong> <a href="https://github.com/brimittleman/Net-seq/tree/eb85223bca71d8fd9bab9494749af630c4408d64" target="_blank">eb85223</a> </summary></p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
 <pre><code>
 Ignored files:
@@ -495,6 +495,7 @@ Untracked files:
     Untracked:  data/net4_readcounts.xlsx
     Untracked:  data/net_pilot_eqtl_expression.bed
     Untracked:  data/net_pilot_eqtl_genotypes.vcf
+    Untracked:  data/netcomb_intronicbases.csv
     Untracked:  data/opp_strand_genecounts_18486.txt
     Untracked:  data/opp_strand_genecounts_18505.txt
     Untracked:  data/opp_strand_genecounts_filt_18486.txt
@@ -587,6 +588,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td style="text-align:left;">
+Rmd
+</td>
+<td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/eb85223bca71d8fd9bab9494749af630c4408d64/analysis/net-4-explore.Rmd" target="_blank">eb85223</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+<td style="text-align:left;">
+genic bases
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+html
+</td>
+<td style="text-align:left;">
+<a href="https://cdn.rawgit.com/brimittleman/Net-seq/f9622a0cbd8017a31caed2f1e4d59e2e5a97156a/docs/net-4-explore.html" target="_blank">f9622a0</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+<td style="text-align:left;">
+Build site.
+</td>
+</tr>
 <tr>
 <td style="text-align:left;">
 Rmd
@@ -883,6 +918,17 @@ Date
 <tbody>
 <tr>
 <td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/f9622a0cbd8017a31caed2f1e4d59e2e5a97156a/docs/figure/net-4-explore.Rmd/unnamed-chunk-10-1.png" target="_blank">f9622a0</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
 <a href="https://github.com/brimittleman/Net-seq/blob/9787ad57188d56e781b8b245c10bf691968f64bb/docs/figure/net-4-explore.Rmd/unnamed-chunk-10-1.png" target="_blank">9787ad5</a>
 </td>
 <td style="text-align:left;">
@@ -904,6 +950,36 @@ barplot(detected_genes_cut, ylim = c(0,1), main=&quot;Net-seq Genes detected gre
 
 abline(h=mean(detected_genes_cut))</code></pre>
 <p><img src="figure/net-4-explore.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-11-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/f9622a0cbd8017a31caed2f1e4d59e2e5a97156a/docs/figure/net-4-explore.Rmd/unnamed-chunk-11-1.png" target="_blank">f9622a0</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 </div>
 <div id="correlation-between-libraries" class="section level2">
 <h2>Correlation between libraries:</h2>
@@ -933,7 +1009,48 @@ ggheatmap=ggplot(data = covall_cor_melt, aes(x=Var1, y=Var2, fill=value)) +
   labs(title=&quot;Net-seq Correlation Heatplot&quot;)
 ggheatmap</code></pre>
 <p><img src="figure/net-4-explore.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<details> <summary><em>Expand here to see past versions of unnamed-chunk-12-1.png:</em></summary>
+<table style="border-collapse:separate; border-spacing:5px;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Version
+</th>
+<th style="text-align:left;">
+Author
+</th>
+<th style="text-align:left;">
+Date
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+<a href="https://github.com/brimittleman/Net-seq/blob/f9622a0cbd8017a31caed2f1e4d59e2e5a97156a/docs/figure/net-4-explore.Rmd/unnamed-chunk-12-1.png" target="_blank">f9622a0</a>
+</td>
+<td style="text-align:left;">
+Briana Mittleman
+</td>
+<td style="text-align:left;">
+2018-06-22
+</td>
+</tr>
+</tbody>
+</table>
+<p></details></p>
 <p>Line 19223 is the line with mapping problems. I expected this one to have low correlations.</p>
+</div>
+<div id="look-at-intergenicgenic-bases" class="section level2">
+<h2>Look at Intergenic/genic bases</h2>
+<p>I will use the per_intergenic bases stat from the PICARD RNA metrics results.</p>
+<pre class="r"><code>genic_bases=read.csv(&quot;../data/netcomb_intronicbases.csv&quot;, header=T)
+
+genic_bases=genic_bases %&gt;% mutate(Pct_geneic=1-Pct_intergenic)
+
+
+ggplot(genic_bases,aes(x=Library, y=Pct_geneic)) + geom_col(fill=&quot;blue&quot;) + labs(y=&quot;Pct mapped reads in genic region&quot;, title=&quot;Percent of mapped bases in genic region&quot;)</code></pre>
+<p><img src="figure/net-4-explore.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
