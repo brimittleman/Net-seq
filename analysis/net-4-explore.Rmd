@@ -174,6 +174,26 @@ barplot(detected_genes0, ylim = c(0,1), main="Net-seq Genes detected greater tha
 abline(h=mean(detected_genes0))
 ```
 
+0 is not the most informative detection rate because it could be due to noise. I need to look at the distribution to pick a better cuttoff. 
+
+```{r}
+plot(log10(sort(cov_all_df$st_18486, decreasing = T)))
+
+```
+
+I should use .001 or $10^{-3}$ as a cuttoff.  
+
+```{r}
+
+detected_genes_cut=c(genes_detected(cov_all_df$st_18486, .001), genes_detected(cov_all_df$st_18497,.001), genes_detected(cov_all_df$st_18500,.001), genes_detected(cov_all_df$st_18505,.001), genes_detected(cov_all_df$st_18508,.001), genes_detected(cov_all_df$st_18853,.001), genes_detected(cov_all_df$st_18870,.001), genes_detected(cov_all_df$st_19128,0.001), genes_detected(cov_all_df$st_19141,0.001), genes_detected(cov_all_df$st_19193,0.001), genes_detected(cov_all_df$st_19209,0.001), genes_detected(cov_all_df$st_19223,0.001), genes_detected(cov_all_df$st_19225,0.001), genes_detected(cov_all_df$st_19238,0.001), genes_detected(cov_all_df$st_19239,0.001), genes_detected(cov_all_df$st_19257,0.001))
+
+names(detected_genes_cut)=c("18486", "18497", "18500", "18505", "18508", "18853", "18870", "19128", "19141", "19193", "19209", "19223", "19225", "19238", "19239", "19257")
+
+barplot(detected_genes_cut, ylim = c(0,1), main="Net-seq Genes detected greater than .001 standardized reads", ylab="Proportion genes passing filter", xlab="Library", col = 'Blue')
+
+abline(h=mean(detected_genes_cut))
+```
+
 
 
 
