@@ -68,6 +68,6 @@ Exploration of the 3` seq and ApA sites:
 
 Net 4 analysis- includes 3 lanes for all 16 individuals:  
 
-* [Explore Net 4](net-4-explore.Rmd)  
+* [Explore Net 4](net-4-explore.html)  
 
 
