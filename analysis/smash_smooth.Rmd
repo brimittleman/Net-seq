@@ -1,0 +1,242 @@
+---
+title: "SMASH_smooth"
+author: "Briana Mittleman"
+date: "7/19/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Use SMASH to smooth regions of the Netseq data.  
+
+I want to use the first 8 lines (NET3)  
+  
+* 18505  
+
+* 18508  
+
+* 18486  
+
+* 19239  
+
+* 19141  
+
+* 19193  
+
+* 19257  
+
+* 19128 
+
+The coverage files I need to make the matrix are in /project2/gilad/briana/Net-seq-pilot/data/cov. 
+
+##ACTB
+I am going to look at the region chr7:5,565,291-5,573,483 around the actb gene.  
+
+
+```{bash, eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=testsmash.actb
+#SBATCH --account=pi-yangili1
+#SBATCH --time=24:00:00
+#SBATCH --output=testsmash.actb.out
+#SBATCH --error=testsmash.actb.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-18486_combined_Netpilot-actb.bed
+
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18505_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-18505_combined_Netpilot-actb.bed
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18508_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-18508_combined_Netpilot-actb.bed
+
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19128_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19128_combined_Netpilot-sort.actb.bed
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19141_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19141_combined_Netpilot.actb.bed
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19193_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19193_combined_Netpilot.actb.bed
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19239_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19239_combined_Netpilot.actb.bed
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19257_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19257_combined_Netpilot.actb.bed
+```
+
+
+
+Load Packages:
+```{r}
+library(devtools)
+library(scales)
+library(smashr)
+library(tidyr)
+library(workflowr)
+library(dplyr)
+```
+
+
+```{r}
+actb_18486=read.table("../data/smash_test/YG-SP-NET3-18486_combined_Netpilot-actb.bed", col.names=c("chr", "base", "net18486"))
+
+actb_18505=read.table("../data/smash_test/YG-SP-NET3-18505_combined_Netpilot-actb.bed", col.names=c("chr", "base", "net18505"))
+
+actb_18508=read.table("../data/smash_test/YG-SP-NET3-18508_combined_Netpilot-actb.bed", col.names=c("chr", "base", "net18508"))
+
+actb_19128=read.table("../data/smash_test/YG-SP-NET3-19128_combined_Netpilot.actb.bed", col.names=c("chr", "base", "net19128"))
+
+actb_19141=read.table("../data/smash_test/YG-SP-NET3-19141_combined_Netpilot.actb.bed", col.names=c("chr", "base", "net19141"))
+
+actb_19193=read.table("../data/smash_test/YG-SP-NET3-19193_combined_Netpilot.actb.bed", col.names=c("chr", "base", "net19193"))
+
+actb_19239=read.table("../data/smash_test/YG-SP-NET3-19239_combined_Netpilot.actb.bed", col.names=c("chr", "base", "net19239"))
+
+actb_19257=read.table("../data/smash_test/YG-SP-NET3-19257_combined_Netpilot.actb.bed", col.names=c("chr", "base", "net19257"))
+```
+
+Make matrix
+```{r}
+actb_matrix=cbind(actb_18486$net18486, actb_18505$net18505,actb_18508$net18508, actb_19128$net19128, actb_19141$net19141,actb_19193$net19193, actb_19239$net19239, actb_19257$net19257) %>%t
+```
+
+write the matrix out:  
+
+```{r}
+#write.table(actb_matrix, "../data/smash_test/actb_countmatrix.txt", quote = F, row.names = F, col.names = F)
+```
+
+
+Run smash:  
+
+```{r}
+actb_res = smash.poiss(actb_matrix[1,]+actb_matrix[2,]+ actb_matrix[3,]+ actb_matrix[4,]+actb_matrix[5,]+actb_matrix[6,]+actb_matrix[7,]+actb_matrix[8,], post.var=TRUE)
+```
+
+
+
+```{r}
+
+region=5565291:5573483
+
+
+plot(region,actb_res$est,type='l',xlab="position",ylab="intensity", main="SMASH results ACTB")
+
+```
+
+Next I want to run it seperatly for all 8 individuals and plot them together to see if the peaks line up.  
+
+```{r}
+actb_res1 = smash.poiss(actb_matrix[1,], post.var=TRUE)
+
+actb_res2 = smash.poiss(actb_matrix[2,], post.var=TRUE)
+
+actb_res3 = smash.poiss(actb_matrix[3,], post.var=TRUE)
+
+actb_res4 = smash.poiss(actb_matrix[4,], post.var=TRUE)
+
+actb_res5 = smash.poiss(actb_matrix[5,], post.var=TRUE)
+
+actb_res6 = smash.poiss(actb_matrix[6,], post.var=TRUE)
+
+actb_res7 = smash.poiss(actb_matrix[7,], post.var=TRUE)
+
+actb_res8 = smash.poiss(actb_matrix[8,], post.var=TRUE)
+
+```
+Make results matrix:  
+
+```{r}
+res_matrix=rbind(actb_res$est,actb_res1$est,actb_res2$est,actb_res3$est,actb_res4$est,actb_res5$est,actb_res6$est,actb_res7$est,actb_res8$est)
+
+#write.table(res_matrix, "../data/smash_test/actb_smash_res.txt", quote = F, col.names = F, row.names = F, sep="\t")
+```
+
+
+```{r}
+
+par(mfrow=c(3,3))
+plot(region,actb_res$est,type='l',xlab="position",ylab="intensity", main="Combined")
+plot(region,actb_res1$est,type='l',xlab="position",ylab="intensity", main="18486")
+plot(region,actb_res2$est,type='l',xlab="position",ylab="intensity",main="18505")
+plot(region,actb_res3$est,type='l',xlab="position",ylab="intensity",main="18508")
+plot(region,actb_res4$est,type='l',xlab="position",ylab="intensity",main="19128")
+plot(region,actb_res5$est,type='l',xlab="position",ylab="intensity",main="19141")
+plot(region,actb_res6$est,type='l',xlab="position",ylab="intensity",main="19193")
+plot(region,actb_res7$est,type='l',xlab="position",ylab="intensity",main="19239")
+plot(region,actb_res8$est,type='l',xlab="position",ylab="intensity",main="19257")
+
+```
+
+
+
+I also am going to run it on the Mayer hek data.  
+
+```{bash, eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=testsmash.actb
+#SBATCH --account=pi-yangili1
+#SBATCH --time=24:00:00
+#SBATCH --output=testsmash.actb.out
+#SBATCH --error=testsmash.actb.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+
+awk '$1 == 7 && $2 >= 5565291 && $2 <= 5573483 {print}' /project2/gilad/briana/mayer.data/mayer_hek/data/cov/mayer_hek-sort.dedup.cov.bed > /project2/gilad/briana/mayer.data/mayer_hek/data/mayer_hek-dedup-smashactb.bed
+```
+This is not the correct coverage file to run this on. I need to make a genome coverage file of the data then I can run this.  
+
+##COMT
+
+Second gene to look at COMT chr22:19,928,209-19,960,444
+
+
+```{bash, eval=F}
+#!/bin/bash
+
+#SBATCH --job-name=testsmash.comt
+#SBATCH --account=pi-yangili1
+#SBATCH --time=24:00:00
+#SBATCH --output=testsmash.comt.out
+#SBATCH --error=testsmash.comt.err
+#SBATCH --partition=broadwl
+#SBATCH --mem=20G
+#SBATCH --mail-type=END
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18486_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-18486_combined_Netpilot-comt.bed
+
+
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18505_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-18505_combined_Netpilot-comt.bed
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-18508_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-18508_combined_Netpilot-comt.bed
+
+
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19128_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19128_combined_Netpilot-sort.comt.bed
+
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19141_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19141_combined_Netpilot.comt.bed
+
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19193_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19193_combined_Netpilot.comt.bed
+
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19239_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19239_combined_Netpilot.comt.bed
+
+
+awk '$1 == 22 && $2 >= 19928209 && $2 <= 19960444 {print}' /project2/gilad/briana/Net-seq-pilot/data/cov/YG-SP-NET3-19257_combined_Netpilot-sort.cov.bed > /project2/gilad/briana/Net-seq-pilot/data/smash.test/YG-SP-NET3-19257_combined_Netpilot.comt.bed
+
+```
+

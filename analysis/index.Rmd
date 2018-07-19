@@ -71,3 +71,7 @@ Net 4 analysis- includes 3 lanes for all 16 individuals:
 * [Explore Net 4](net-4-explore.html)  
 
 
+Smoothing data:  
+
+* [Test smash on netseq 3 first 8 ind.](smash_smooth.html)  
+
