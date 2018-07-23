@@ -420,23 +420,58 @@ I also did this for the mayer_hek line.
 Use the instrutions on https://rcc.uchicago.edu/docs/data-transfer/index.html#http-web-access to create a public directory and copy the files to my ~/public_html directory.  
 
 
-'''
-http://users.rcc.uchicago.edu/~brimittleman/mayer_hek.actb.bw 
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-19257_combined_Netpilot.actb.bw
+Make bedfile with results from smash:  
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-19239_combined_Netpilot.actb.bw
+```{r}
+actb_res_18486=cbind(lapply(actb_18486$chr, function(x) paste("chr", x, sep="")), actb_18486$base, actb_18486$base +1 , actb_res1$est)
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-19193_combined_Netpilot.actb.bw
+actb_res_18505=cbind(lapply(actb_18505$chr, function(x) paste("chr", x, sep="")), actb_18505$base, actb_18505$base +1, actb_res2$est)
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-19141_combined_Netpilot.actb.bw
+actb_res_18508=cbind(lapply(actb_18508$chr, function(x) paste("chr", x, sep="")), actb_18508$base, actb_18508$base +1, actb_res3$est)
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-18486_combined_Netpilot.actb.bw
+actb_res_19128=cbind(lapply(actb_19128$chr, function(x) paste("chr", x, sep="")), actb_19128$base, actb_19128$base +1, actb_res4$est)
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-18505_combined_Netpilot.actb.bw
+actb_res_19141=cbind(lapply(actb_19141$chr, function(x) paste("chr", x, sep="")), actb_19141$base, actb_19141$base +1, actb_res5$est)
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-18508_combined_Netpilot.actb.bw
+actb_res_19193=cbind(lapply(actb_19193$chr, function(x) paste("chr", x, sep="")), actb_19193$base, actb_19193$base +1, actb_res6$est)
 
-http://users.rcc.uchicago.edu/~brimittleman/YG-SP-NET3-19128_combined_Netpilot.actb.bw
+actb_res_19239=cbind(lapply(actb_19239$chr, function(x) paste("chr", x, sep="")), actb_19239$base, actb_19239$base +1, actb_res7$est)
 
-'''
+actb_res_19257=cbind(lapply(actb_19257$chr, function(x) paste("chr", x, sep="")), actb_19257$base, actb_19257$base +1, actb_res8$est)
+
+```
+
+
+
+write these as CSV.  
+
+```{r, eval=F}
+write.table(actb_res_18486, "../data/smash_test/results.actb/actb_smash_18486.bg", quote = F, row.names = F, col.names = F)
+
+
+write.table(actb_res_18505, "../data/smash_test/results.actb/actb_smash_18505.bg", quote = F, row.names = F, col.names = F)
+
+
+write.table(actb_res_18508, "../data/smash_test/results.actb/actb_smash_18508.bg", quote = F, row.names = F, col.names = F)
+
+write.table(actb_res_19128, "../data/smash_test/results.actb/actb_smash_19128.bg", quote = F, row.names = F, col.names = F)
+
+write.table(actb_res_19141, "../data/smash_test/results.actb/actb_smash_19141.bg", quote = F, row.names = F, col.names = F)
+
+write.table(actb_res_19193, "../data/smash_test/results.actb/actb_smash_19193.bg", quote = F, row.names = F, col.names = F)
+
+write.table(actb_res_19239, "../data/smash_test/results.actb/actb_smash_19239.bg", quote = F, row.names = F, col.names = F)
+
+write.table(actb_res_19257, "../data/smash_test/results.actb/actb_smash_19257.bg", quote = F, row.names = F, col.names = F)
+
+
+```
+  I can just upload the bam files to ucsc as long as the bam fila and and index is in the public_html directory.
+  
+```
+track type=bedGraph name=smash18486 visibility=2 color=000,000,000
+http://users.rcc.uchicago.edu/~brimittleman/actb_smash_18486.bg 
+
+```
+
